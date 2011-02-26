@@ -1,15 +1,18 @@
 require 'rubygems'
-require 'lib/file_scanner'
-require 'lib/anidb'
+require 'fileutils'
+require File.expand_path('../lib/libs', __FILE__)
 
-options = YAML.load_file(File.expand_path('../../options.yml', __FILE__))
+abort "nfoize <source_path> <destination_path>" unless ARGV.length == 2
+
+options = YAML.load_file(File.expand_path('../options.yml', __FILE__))
 
 destination = ARGV[1]
 puts "moving done to #{destination}"
+FileUtils.mkdir_p destination
 
 
 dirs = Dir["#{ARGV.first}/*"].entries.select{|f| File.directory? f}
-extensions = %w(avi mpg mkv ogm mp4 flv wmv).map{|e| ".#{e}"}
+extensions = options[:scanner][:extensions].split.map{|e| ".#{e}"}
 tuples = dirs.map {|d| [d, Dir["#{d}/*"].entries.find {|e| extensions.include? File.extname(e)}]}
 files = tuples.map{|d,f| f}.compact
 
@@ -37,7 +40,8 @@ nfo_creator = Thread.new do
     file, aid = info_queue.pop
     if aid
       dir = File.dirname(file)
-      puts "dir #{dir} is aid #{aid}"
+      File.open("#{dir}/tvshow.nfo", 'w') {|f| f.write("aid=#{aid}")}
+      FileUtils.mv dir, destination 
     else
       unknown << file
     end  

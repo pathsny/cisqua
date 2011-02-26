@@ -5,3 +5,9 @@ This client, every time it runs, scans all the files in a given folder, identifi
 To use it, first download this repository using git or by downloading the archive. Copy options.yml.bak to options.yml and then edit the file to choose what you want the client to do. There are comments letting you know what's possible.
 
 To change the renaming rules, you will have to edit rename_rules.rb. There are comments to help you along.
+
+Finally you can run it as "ruby anidb_renamer.rb"
+
+____________________________________________________________________________________________________________________
+
+There is another top level script called nfoize. This is to create nfo files in your anime folders for XBMC. To run this just say "ruby nfoize.rb <anime_folder> <location to keep the processed folders>".  The script assumes that in the anime folder you have one folder per anime and each of these has files. It uses the anidb api, so you'll have to edit the options.yml
