@@ -1,0 +1,7 @@
+This is a very simple anidb client, made mostly for my needs. It's been built by scavenging a much more featurefull client that you can find here http://www.lacave.net/~fred/projets/ranidb/.
+
+This client, every time it runs, scans all the files in a given folder, identifies them and renames them however you want. Additionally it adds the files to your mylist. If you use xbmc, you can also use it to generate nfo files that work well with the anidb scraper.
+
+To use it, first download this repository using git or by downloading the archive. Copy options.yml.bak to options.yml and then edit the file to choose what you want the client to do. There are comments letting you know what's possible.
+
+To change the renaming rules, you will have to edit rename_rules.rb. There are comments to help you along.
