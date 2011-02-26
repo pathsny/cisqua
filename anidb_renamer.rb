@@ -23,6 +23,12 @@ info_getter = Thread.new do
     file = data.first
     info = anidb_api.search_file(*data)
     logger.debug "file #{file} identified as #{info.inspect}"
+    
+    if info
+      logger.debug "adding #{file} to mylist"
+      anidb_api.mylist_add(info[:fid])
+    end  
+    
     info_queue << [file, info]
   end
 end
@@ -30,7 +36,7 @@ end
 rename_worker = Thread.new do
   renamer = Renamer.new(options[:renamer])
   files.each do
-    renamer.process *info_queue.pop
+    renamer.process(*info_queue.pop)
   end  
 end
 
