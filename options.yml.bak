@@ -1,0 +1,27 @@
+---
+:anidb:
+    # configuration details for the api     
+    :port: 9000
+    :host: api.anidb.net
+    :localport: 12387
+    :nat: true
+    :user: <your username>
+    :pass: <password>
+:scanner:
+    # the location where you keep your anime to be scanned
+    :basedir: < /path/to/anime
+    # list of file extensions to scan
+    :extensions: avi mpg mkv ogm mp4 flv wmv
+    # if this is false. Only the top level files of each directory in the basedir are scanned. 
+    # if this is true, all the files are picked up recursively 
+    :recursive: true
+:renamer:
+    # list of extensions for subtitle files. If a show is present with a subtitle, the subtitle is also copied
+    :subtitle_extensions: srt ass idx sub pdf ssa
+    # location to store incomplete anime.
+    :incomplete_location: /path/to/IncompleteAnime
+    # location to store completed shows. Currently not supported
+    :complete_location: /path/to/CompleteAnime
+    # location to store files that are duplicates.
+    :duplicate_location: /path/to/DuplicateAnime
+    
