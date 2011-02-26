@@ -13,24 +13,31 @@ class Renamer
 
     path, name = generate_name(info).map{|n| escape(n)}
     logger.debug "have to rename #{file} using #{path}/#{name}"
+    location = create_location(path, info)
 
-    ([file] + sub_files(file)).map{|f| move_file(f, path, name)}
+    ([file] + sub_files(file)).map{|f| move_file(f, location, name)}
   end
+
+  def create_location(path, info)
+    "#{options[:incomplete_location]}/#{path}".tap do |location|
+      unless File.exists? location
+        FileUtils.mkdir_p location
+        File.open("#{location}/tvshow.nfo", 'w') {|f| f.write("aid=#{info[:file][:aid]}")} if options[:create_nfo_files]
+      end
+    end  
+  end  
 
   def sub_files(file)
     extensions = options[:subtitle_extensions].split
     sub_files = extensions.map{|e| "#{file.chomp(File.extname(file))}.#{e}"}.select{|sf| File.exists?(sf)}
   end  
 
-  def move_file(old_name, path, new_name_without_extension)
-    location = "#{options[:incomplete_location]}/#{path}"
+  def move_file(old_name, location, new_name_without_extension)
     new_name = "#{new_name_without_extension}#{File.extname(old_name)}"
-    
     destination = "#{location}/#{new_name}"
-    
+
     move_duplicate_file(options[:duplicate_location], old_name, new_name) and return if File.exists?(destination) && destination != old_name
 
-    FileUtils.mkdir_p location
     FileUtils.mv old_name, destination
     logger.info "moving #{old_name} to #{destination}"
   end  
