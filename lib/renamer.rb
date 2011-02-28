@@ -54,6 +54,6 @@ class Renamer
   end  
 
   def escape(name)
-    name.gsub(/[^\w\s\.\-\[\]\(\)]/, '')
+    name.gsub(/[^\w\s\.\-\[\]\(\)&]/, '')
   end    
 end
