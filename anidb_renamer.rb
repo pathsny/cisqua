@@ -17,19 +17,10 @@ end
 
 info_getter = Thread.new do
   anidb_api = Anidb.new options[:anidb]
-  anidb_api.connect
   files.each do
     data = scan_queue.pop
-    file = data.first
-    info = anidb_api.search_file(*data)
-    logger.debug "file #{file} identified as #{info.inspect}"
-    
-    if info
-      logger.debug "adding #{file} to mylist"
-      anidb_api.mylist_add(info[:fid])
-    end  
-    
-    info_queue << [file, info]
+    info = anidb_api.process(*data)    
+    info_queue << [data.first, info]
   end
 end
 
@@ -41,3 +32,9 @@ rename_worker = Thread.new do
 end
 
 [scanner, info_getter, rename_worker].each(&:join)
+
+exit unless options[:clean_up_empty_dirs]
+basedir = options[:scanner][:basedir]
+abort('empty basedir') unless basedir
+
+Dir["#{basedir}/**/*"].select { |d| File.directory? d }.sort{|a,b| b <=> a}.each {|d| Dir.rmdir(d) if Dir.entries(d).size ==  2} 

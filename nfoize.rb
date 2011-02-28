@@ -25,7 +25,6 @@ end
 
 info_getter = Thread.new do
   anidb_api = Anidb.new options[:anidb]
-  anidb_api.connect
   files.each do
     data = scan_queue.pop
     res = anidb_api.search_file(*data)[:file][:aid] rescue nil
