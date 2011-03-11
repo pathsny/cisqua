@@ -11,5 +11,10 @@ def generate_name(info)
   anime = info[:anime]
   name = anime[:romaji_name]
   part = anime[:type] == "Movie" ? anime[:ep_english_name] : "episode #{anime[:epno]}"
-  [anime[:romaji_name], "#{name} - #{part} [#{anime[:group_short_name]}]"]
-end  
+  [anime[:romaji_name], "#{name} - #{part}#{group_name(anime)}"]
+end
+
+def group_name(anime)
+  g = anime[:group_short_name]
+  g == 'raw' ? nil : " [#{g}]"
+end    

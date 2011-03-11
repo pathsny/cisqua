@@ -15,7 +15,7 @@ def ed2k_file_hash(file_name)
     ed2k_hash << OpenSSL::Digest::MD4.digest("") if(file_size % ed2k_block) == 0
   end
   #finally
-  ed2k_hash = OpenSSL::Digest::MD4.hexdigest(ed2k_hash)
+  ed2k_hash = (file_size >= ed2k_block) ? OpenSSL::Digest::MD4.hexdigest(ed2k_hash) : ed2k_hash.unpack("H*").first
   [file_name, file_size, ed2k_hash ]
 end
 
