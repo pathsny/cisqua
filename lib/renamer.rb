@@ -16,6 +16,8 @@ class Renamer
     location = create_location(path, info)
 
     ([file] + sub_files(file)).map{|f| move_file(f, location, name)}
+  rescue
+    logger.warn "error naming #{file} from #{info.inspect}"
   end
 
   def create_location(path, info)

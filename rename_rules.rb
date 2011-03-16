@@ -10,11 +10,31 @@
 def generate_name(info)
   anime = info[:anime]
   name = anime[:romaji_name]
-  part = anime[:type] == "Movie" ? anime[:ep_english_name] : "episode #{anime[:epno]}"
-  [anime[:romaji_name], "#{name} - #{part}#{group_name(anime)}"]
+  part = movie?(anime) ? anime[:ep_english_name] : "episode #{anime[:epno]}"
+  [anime[:romaji_name], "#{name} - #{part}#{group_name(anime)}#{metadata_for_xbmc(anime)}"]  
 end
 
 def group_name(anime)
   g = anime[:group_short_name]
   g == 'raw' ? nil : " [#{g}]"
+end
+
+def movie?(anime)
+  anime[:type] == "Movie"
+end
+
+def char_value(char)
+  char == 'S' ? 0 : char.upcase.bytes.first - 64
+end  
+
+def special_metadata(epno)
+  result = /^([A-Z])?(\d+)$/.match epno
+  raise "unknown" unless result
+  result[1] && " [(XS-#{char_value result[1]}-#{result[2]})]"
 end    
+
+def metadata_for_xbmc(anime)
+  epno = anime[:epno]
+  special_metadata(epno) || (movie?(anime) ? " [(X-#{epno})]" : "")
+end
+     
