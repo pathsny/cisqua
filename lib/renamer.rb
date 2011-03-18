@@ -56,6 +56,10 @@ class Renamer
   end  
 
   def escape(name)
-    name.gsub(/[^\w\s\.\-\[\]\(\)&]/, '')
-  end    
+    valid_chars = %w(\w \. \- \[ \] \( \) &).join('')
+    invalid_rg = "[^#{valid_chars}\s]"
+    without_dups = name.gsub(Regexp.new("#{invalid_rg}(?![#{valid_chars}])"), '').
+    gsub(Regexp.new("\s#{invalid_rg}"), ' ').
+    gsub(Regexp.new(invalid_rg), ' ').strip.squeeze(' ')
+  end
 end
