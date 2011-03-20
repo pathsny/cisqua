@@ -18,6 +18,7 @@ files.reject{|f| f.match /.*\[\(XS-[^\)]*\)\]/ }.tap{|fs| p fs.inspect}.each do 
     extension = File.extname(file)
     new_name = file.gsub(/(.*episode )([A-Z])(\d+)(.*)#{extension}/) { "#{$1}#{$2}#{$3}#{$4} [(XS-#{transform($2)}-#{$3})]#{extension}" }
     FileUtils.mv file, new_name
+    p "renamed #{file} to #{new_name}"
   rescue
     p "cannot process #{file} because #{$!}"
   end
