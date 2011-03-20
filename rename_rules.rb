@@ -24,7 +24,7 @@ def movie?(anime)
 end
 
 def char_value(char)
-  char == 'S' ? 0 : char.upcase.bytes.first - 64
+  char == 'S' ? 0 : 100 + char.upcase.bytes.first - 64
 end  
 
 def special_metadata(epno)

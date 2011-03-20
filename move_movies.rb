@@ -1,3 +1,5 @@
+#moves all folders with movies
+
 require 'rubygems'
 require 'fileutils'
 
