@@ -60,6 +60,7 @@ class Renamer
     invalid_rg = "[^#{valid_chars}\s]"
     without_dups = name.gsub(Regexp.new("#{invalid_rg}(?![#{valid_chars}])"), '').
     gsub(Regexp.new("\s#{invalid_rg}"), ' ').
-    gsub(Regexp.new(invalid_rg), ' ').strip.squeeze(' ')
+    gsub(Regexp.new(invalid_rg), ' ').strip.squeeze(' ').
+    sub(Regexp.new("\.$"),'')
   end
 end
