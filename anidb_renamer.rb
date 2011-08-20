@@ -37,4 +37,4 @@ exit unless options[:clean_up_empty_dirs]
 basedir = options[:scanner][:basedir]
 abort('empty basedir') unless basedir
 
-Dir["#{basedir}/**/*"].select { |d| File.directory? d }.sort{|a,b| b <=> a}.each {|d| Dir.rmdir(d) if Dir.entries(d).size ==  2 || (Dir.entries(d).size == 3 && Dir.entries(d).include? 'tvshow.nfo')} 
+Dir["#{basedir}/**/*"].select { |d| File.directory? d }.sort{|a,b| b <=> a}.each {|d| Dir.rmdir(d) if Dir.entries(d).size ==  2 || (Dir.entries(d).size == 3 && Dir.entries(d).include?('tvshow.nfo'))} 
