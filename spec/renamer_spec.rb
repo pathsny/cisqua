@@ -28,6 +28,10 @@ describe 'renamer' do
       match do |actual|
         subject.escape(actual) == expected 
       end
+      
+      failure_message_for_should do |actual|
+          "expected that #{actual} would escape to #{expected} but it escaped to #{subject.escape(actual)}"
+      end
     end
 
     it { 'fate/stay'.should escape_to 'fate stay' }
