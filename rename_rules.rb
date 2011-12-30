@@ -28,7 +28,7 @@ def char_value(char)
 end  
 
 def special_metadata(epno)
-  result = /^([A-Z])?(\d+)$/.match epno
+  result = /^([A-Z])?(\d+(?:-\d+)?)$/.match epno
   raise "unknown" unless result
   result[1] && " [(XS-#{char_value result[1]}-#{result[2]})]"
 end    
