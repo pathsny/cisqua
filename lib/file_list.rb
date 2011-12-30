@@ -1,7 +1,7 @@
 def file_list(options)
   basedir = options[:basedir]
   extensions = options[:extensions] == :all ? '*' : "{#{extension_glob options[:extensions]}}"
-  Dir[File.join("#{basedir}","#{'**/' if options[:recursive]}*.#{extensions}")]
+  Dir.glob(File.join("#{basedir}","#{'**/' if options[:recursive]}*.#{extensions}"),File::FNM_CASEFOLD)
 end
 
 def extension_glob(extensions)
