@@ -11,6 +11,7 @@ class Anidb
     identify_file(*args).tap do |info|
       return nil if info.nil?
       update_mylist_with info
+      info[:anime].merge! retrieve_show_details(info[:file][:aid])[:anime]
       # verify_if_show_is_complete_using info
       info
     end
@@ -34,7 +35,7 @@ class Anidb
   end
 
   def retrieve_show_details(aid)
-    @cache[aid] ||= anime(aid)    
+    @cache['anime_' + aid] ||= anime(aid).tap{|x| puts x.inspect}    
   end    
 
   private

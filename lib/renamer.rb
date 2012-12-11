@@ -25,6 +25,11 @@ class Renamer
       unless File.exists? location
         FileUtils.mkdir_p location
         File.open("#{location}/tvshow.nfo", 'w') {|f| f.write("aid=#{info[:file][:aid]}")} if options[:create_nfo_files]
+        puts options[:adult_location]
+        puts info[:anime].inspect
+        puts info[:anime][:is_18_restricted] == "1"
+        puts "#{options[:adult_location]}/#{path}"
+        File.symlink(location, "#{options[:adult_location]}/#{path}") if options[:adult_location] && info[:anime][:is_18_restricted] == "1"
       end
     end  
   end  
