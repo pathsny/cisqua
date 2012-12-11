@@ -20,12 +20,14 @@
 :renamer:
     # list of extensions for subtitle files. If a show is present with a subtitle, the subtitle is also copied
     :subtitle_extensions: srt ass idx sub pdf ssa
-    # location to store incomplete anime.
-    :incomplete_location: /path/to/IncompleteAnime
-    # location to store completed shows. Currently not supported
-    :complete_location: /path/to/CompleteAnime
+    # location to store anime.
+    :output_location: /path/to/IncompleteAnime
     # location to store files that are duplicates.
     :duplicate_location: /path/to/DuplicateAnime
+		# location to store incomplete anime.
+		# incomplete_location
+    # location to store completed shows. Currently not supported
+    :complete_location: /path/to/CompleteAnime
     # this is useful if you use xbmc. an nfo file is created in each folder to identify the anime.
     :create_nfo_files: false
 # set this to false if you want the base directory left alone. Otherwise this removes all directories that can be 

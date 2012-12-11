@@ -21,7 +21,7 @@ class Renamer
   end
 
   def create_location(path, info)
-    "#{options[:incomplete_location]}/#{path}".tap do |location|
+    "#{options[:output_location]}/#{path}".tap do |location|
       unless File.exists? location
         FileUtils.mkdir_p location
         File.open("#{location}/tvshow.nfo", 'w') {|f| f.write("aid=#{info[:file][:aid]}")} if options[:create_nfo_files]
