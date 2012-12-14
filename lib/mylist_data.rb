@@ -1,23 +1,10 @@
 require 'set'
 
 class MylistData
-  class Single
-    class << self
-      def add(ep); end
-      def normal_episodes; [1]; end
-      def special_episodes; []; end
-      def complete?; true; end 
-    end  
-  end  
-  
-  def self.new(params)
-    return MylistData::Single if params[:single_episode]
-    super
-  end
-    
-  def initialize(params)
-    @episodes = process_ranges [:unknown_ep_list, :hdd_ep_list, :cd_ep_list].map {|t| params[t].split(',')}.flatten
-    @count = params[:episodes].to_i rescue 0
+  def initialize(count, params)
+    data = params[:single_episode] ? [params[:epno]] : [:unknown_ep_list, :hdd_ep_list, :cd_ep_list].map {|t| params[t].split(',')}.flatten
+    @episodes = process_ranges(data)
+    @count = count
   end
   
   def add(ep)

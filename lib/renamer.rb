@@ -16,6 +16,7 @@ class Renamer
     location = create_location(path, info)
 
     ([file] + sub_files(file)).map{|f| move_file(f, location, name)}
+    update_symlinks_for info[:anime], path, location if options[:create_symlinks]
   rescue
     logger.warn "error naming #{file} from #{info.inspect}"
   end
@@ -54,7 +55,33 @@ class Renamer
     end
     FileUtils.mv old_name, "#{location}/#{new_name}#{prefix}"
     true   
-  end  
+  end
+  
+  def update_symlinks_for(ainfo, folder, location)
+    all_locations = [:movies, :incomplete_series, :complete_series, 
+      :incomplete_other, :complete_other].map {|k| options[:create_symlinks][k] }.compact
+    correct_location = decide_symlink_location(ainfo)
+    incorrect_locations = all_locations.reject{|a| a == correct_location }
+    incorrect_locations.each do |l|
+      s = "#{l}/#{folder}"
+      if File.symlink?(s)
+        File.unlink(s)
+        logger.info "deleting symlink #{s} to #{location}" 
+      end  
+    end  
+    if correct_location && !File.symlink?("#{correct_location}/#{folder}")
+      File.symlink(location, "#{correct_location}/#{folder}")
+      logger.info "symlinking #{location} to #{correct_location}/#{folder}" 
+    end  
+  end
+  
+  def decide_symlink_location(ainfo)
+    symlink_locations = options[:create_symlinks]
+    return symlink_locations[:movies] if ainfo[:type] == "Movie"
+    type = ["Web", "TV Series", "OVA"].include?(ainfo[:type]) ? :series : :other
+    status = ainfo[:ended] && ainfo[:completed] ? :complete : :incomplete
+    symlink_locations["#{status}_#{type}".to_sym]
+  end     
 
   def escape(name)
     valid_chars = %w(\w \. \- \[ \] \( \) &).join('')

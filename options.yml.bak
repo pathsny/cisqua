@@ -26,12 +26,13 @@
     :duplicate_location: /path/to/DuplicateAnime
 		# set this to a non null value if adult shows should be symlinked to a folder
 		:adult_location: /path/to/store
-		# create symlinks to access anime by type and completeness factor
-		:create_symlinks: true
-		# location to store incomplete anime.
-		# incomplete_location
-    # location to store completed shows. Currently not supported
-    :complete_location: /path/to/CompleteAnime
+		# create symlinks to access anime by type and completeness factor. can be false, or a nested hash
+    :create_symlinks: 
+        :movies: /path/to/movies
+        :incomplete_series: /path/to/incomplete tv series, oav and web
+        :complete_series: /path/to/complete tv series, oav and web
+        :incomplete_other: /path/to/incomplete other, music video etc
+        :complete_other: /path/to/complete other, music video etc
     # this is useful if you use xbmc. an nfo file is created in each folder to identify the anime.
     :create_nfo_files: false
 # set this to false if you want the base directory left alone. Otherwise this removes all directories that can be 
