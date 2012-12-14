@@ -18,8 +18,8 @@ module Net
   DEFAULT_FILE_AFIELDS =  [ :type, :year, :highest_episode_number,
                             :english_name, :romaji_name, :epno, :ep_english_name,
                             :ep_romaji_name, :group_name, :group_short_name ]
-  DEFAULT_ANIME_AFIELDS = [ :aid, :year, :type, :romaji_name, :english_name,
-                            :highest_episode_number, :air_date, :end_date,
+  DEFAULT_ANIME_AFIELDS = [ :aid, :dateflags, :year, :type, :romaji_name, :english_name,
+                            :episodes, :highest_episode_number, :air_date, :end_date,
                             :is_18_restricted ]
   EPISODE_FIELDS =        [ :eid, :aid, :length, :rating, :votes, :epno,
                             :english_name, :romaji_name, :kanji_name, :aired ]
@@ -27,6 +27,7 @@ module Net
                             :short_name, :irc_channel, :irc_server, :url, :picname ]
   MYLIST_FIELDS =         [ :lid, :fid, :eid, :aid, :gid, :date, :state, :viewdate,
                             :storage, :source, :other, :filestate ]
+  MULTI_MYLIST_FIELDS =   [ :title, :episodes, :unknown_ep_list, :hdd_ep_list, :cd_ep_list, :deleted_ep_list]
 
   MYLIST_STATES = {
     :unknown     => 0,
@@ -414,6 +415,10 @@ module Net
       mylist_any(:ed2k, [ size, ed2k ]) \
         if(size && ed2k && size.to_i != 0 && ed2k.strip != '')
     end
+    
+    def mylist_by_aid(aid)
+      mylist_any(:aid, [aid]) if (aid && aid.to_i != 0) 
+    end  
 
     # MYLISTADD
     #    fid={int4 fid}
@@ -629,6 +634,7 @@ module Net
             h[:anime][k] = lr.shift
           end
         end
+        h[:anime][:ended] = h[:anime][:dateflags].to_i[4] == 1
         h
       else
         nil
@@ -692,23 +698,32 @@ module Net
                 :ed2k   => pars[1])
       when :name
         command('MYLIST', 
-                :aname => pars[0])          
+                :aname => pars[0])
+      when :aid
+        command('MYLIST',
+                :aid => pars[0])                    
       end
       case reply.code
       when 221
-        h = { :mylist => {}}
-        lr = reply.lines[0].split(/\|/)
-        h[:lid] = lr.shift.to_i
-        MYLIST_FIELDS[1..-1].each do |k|
-          h[:mylist][k] = lr.shift
-        end
-        h
+        mylist_response(reply, MYLIST_FIELDS).tap {|h| 
+          h[:mylist][:lid] = h[:mylist][:lid].to_i
+          h[:mylist][:single_episode] = true
+      }
       when 312
-        h = { :mylist => {}}
+        mylist_response(reply, MULTI_MYLIST_FIELDS).tap {|h| h[:mylist][:single_episode] = false}
       else  
         nil
       end
     end
+    
+    def mylist_response(reply, fields)
+      {:mylist => {}.tap do |h|
+        lr = reply.lines[0].split(/\|/)
+        fields.each do |k|
+          h[k] = lr.shift
+        end
+      end }  
+    end  
 
     def mylist_add_any(type, pars, edit = false, viewed = 0, state = :hdd, source = nil, storage = nil)
       h = { :viewed => viewed,

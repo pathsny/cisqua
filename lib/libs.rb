@@ -4,7 +4,9 @@ require File.expand_path('../anidb', __FILE__)
 require File.expand_path('../file_list', __FILE__)
 require File.expand_path('../file_scanner', __FILE__)
 require File.expand_path('../renamer', __FILE__)
+require File.expand_path('../mylist_data', __FILE__)
 require File.expand_path('../../external/lru_hash', __FILE__)
+
 
 require 'logger'
 

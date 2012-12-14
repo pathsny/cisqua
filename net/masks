@@ -84,7 +84,7 @@ FILE_FMASKS_ORDER = [
 
 ANIME_AMASKS = {
   :aid                    => 0x80000000000000,
-  #unused                 => 0x40000000000000,
+  :dateflags             => 0x40000000000000,
   :year                   => 0x20000000000000,
   :type                   => 0x10000000000000,
   :related_aid_list       => 0x08000000000000,
@@ -142,7 +142,7 @@ ANIME_AMASKS = {
 }
 
 ANIME_AMASKS_ORDER = [
-  :aid, :year, :type, :related_aid_list, :related_aid_type, :category_list, :category_weight_list, 
+  :aid, :dateflags, :year, :type, :related_aid_list, :related_aid_type, :category_list, :category_weight_list, 
   :romaji_name, :kanji_name, :english_name, :other_name, :short_name_list, :synonym_list, 
   :episodes, :highest_episode_number, :special_ep_count, :air_date, :end_date, :url, :picname, :category_id_list, 
   :rating, :vote_count, :temp_rating, :temp_vote_count, :average_review_rating, :review_count, :award_list, :is_18_restricted, 

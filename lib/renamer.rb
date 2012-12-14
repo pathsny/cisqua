@@ -10,7 +10,7 @@ class Renamer
 
   def process(file, info)
     logger.info "file #{file} is unknown" and return unless info
-
+    puts "file #{file} has info #{info.inspect}"
     path, name = generate_name(info).map{|n| escape(n)}
     logger.debug "have to rename #{file} using #{path}/#{name}"
     location = create_location(path, info)
@@ -25,10 +25,6 @@ class Renamer
       unless File.exists? location
         FileUtils.mkdir_p location
         File.open("#{location}/tvshow.nfo", 'w') {|f| f.write("aid=#{info[:file][:aid]}")} if options[:create_nfo_files]
-        puts options[:adult_location]
-        puts info[:anime].inspect
-        puts info[:anime][:is_18_restricted] == "1"
-        puts "#{options[:adult_location]}/#{path}"
         File.symlink(location, "#{options[:adult_location]}/#{path}") if options[:adult_location] && info[:anime][:is_18_restricted] == "1"
       end
     end  
