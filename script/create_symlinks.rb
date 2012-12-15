@@ -4,7 +4,7 @@ require File.expand_path('../../lib/libs', __FILE__)
 options = YAML.load_file(File.expand_path('../../options.yml', __FILE__))
 r_options = options[:renamer]
 
-all_folders = Dir["#{r_options[:output_location]}/**"]
+all_folders = Dir["#{r_options[:output_location]}/**"].sort
 first_folder = ARGV.first
 folders = first_folder ? all_folders.drop_while {|k| File.basename(k) != first_folder} : all_folders
 abort "nothing to do" if folders.empty?
