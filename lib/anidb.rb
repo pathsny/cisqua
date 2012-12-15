@@ -49,7 +49,7 @@ class Anidb
 
   def identify_file(name, size, ed2k)
     search_file(name, size, ed2k).tap do |info|
-      @cache['episode_' + info[:file][:eid]] = info[:anime][:epno]
+      @cache['episode_' + info[:file][:eid]] = info[:anime][:epno] if info
       logger.debug "file #{name} identified as #{info.inspect}"
     end
   end    
