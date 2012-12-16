@@ -9,7 +9,7 @@ mylist_location = ARGV.first
 mylist = REXML::Document.new File.new("#{mylist_location}/mylist.xml")
 
 all_folders = Dir["#{r_options[:output_location]}/**"].sort
-first_folder = ARGV.second
+first_folder = ARGV[1]
 folders = first_folder ? all_folders.drop_while {|k| File.basename(k) != first_folder} : all_folders
 abort "nothing to do" if folders.empty?
 
