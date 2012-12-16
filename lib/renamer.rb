@@ -1,5 +1,6 @@
 require File.expand_path('../../rename_rules', __FILE__)
 require 'fileutils'
+require 'pathname'
 
 class Renamer
   def initialize(options)
@@ -18,7 +19,7 @@ class Renamer
     ([file] + sub_files(file)).map{|f| move_file(f, location, name)}
     update_symlinks_for info[:anime], path, location if options[:create_symlinks]
   rescue
-    logger.warn "error naming #{file} from #{info.inspect}"
+    logger.warn "error naming #{file} from #{info.inspect} with #{$!}"
   end
 
   def create_location(path, info)
@@ -26,7 +27,7 @@ class Renamer
       unless File.exists? location
         FileUtils.mkdir_p location
         File.open("#{location}/tvshow.nfo", 'w') {|f| f.write("aid=#{info[:file][:aid]}")} if options[:create_nfo_files]
-        File.symlink(location, "#{options[:adult_location]}/#{path}") if options[:adult_location] && info[:anime][:is_18_restricted] == "1"
+        symlink(location, options[:adult_location], path) if options[:adult_location] && info[:anime][:is_18_restricted] == "1"
       end
     end  
   end  
@@ -70,7 +71,7 @@ class Renamer
       end  
     end  
     if correct_location && !File.symlink?("#{correct_location}/#{folder}")
-      File.symlink(location, "#{correct_location}/#{folder}")
+      symlink(location, correct_location, folder)
       logger.info "symlinking #{location} to #{correct_location}/#{folder}" 
     end  
   end
@@ -78,10 +79,19 @@ class Renamer
   def decide_symlink_location(ainfo)
     symlink_locations = options[:create_symlinks]
     return symlink_locations[:movies] if ainfo[:type] == "Movie"
-    type = ["Web", "TV Series", "OVA"].include?(ainfo[:type]) ? :series : :other
+    type = ["Web", "TV Series", "OVA", "TV Special"].include?(ainfo[:type]) ? :series : :other
     status = ainfo[:ended] && ainfo[:completed] ? :complete : :incomplete
     symlink_locations["#{status}_#{type}".to_sym]
-  end     
+  end
+  
+  def symlink(source, dest, name)
+    src_path = Pathname.new source
+    dest_path = Pathname.new dest
+    relative = src_path.relative_path_from dest_path
+    File.symlink(relative, File.join(dest,name))
+  rescue Exception => e
+    logger.warn e.inspect
+  end       
 
   def escape(name)
     valid_chars = %w(\w \. \- \[ \] \( \) &).join('')

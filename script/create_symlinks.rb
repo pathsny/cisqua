@@ -9,7 +9,6 @@ first_folder = ARGV.first
 folders = first_folder ? all_folders.drop_while {|k| File.basename(k) != first_folder} : all_folders
 abort "nothing to do" if folders.empty?
 
-
 client = Anidb.new(options[:anidb])
 renamer = Renamer.new(r_options)
 
@@ -19,7 +18,7 @@ folders.each do |f|
   data[:completed] = client.__send__(:create_mylist_data, aid, data[:episodes].to_i).complete?
   
   folder = File.basename f
-  File.symlink(f, "#{r_options[:adult_location]}/#{folder}") if r_options[:adult_location] && data[:is_18_restricted] == "1" && !File.symlink?("#{r_options[:adult_location]}/#{folder}")
+  renamer.symlink(f, "#{r_options[:adult_location]}/#{folder}") if r_options[:adult_location] && data[:is_18_restricted] == "1" && !File.symlink?("#{r_options[:adult_location]}/#{folder}")
   renamer.update_symlinks_for data, folder, f
   puts "processed #{f}"
 end
