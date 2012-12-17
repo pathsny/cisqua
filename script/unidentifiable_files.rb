@@ -7,17 +7,20 @@ mylist_location = ARGV.first
 mylist = REXML::Document.new File.new("#{mylist_location}/mylist.xml")
 
 def m_pattern(folder_name)
-  extension = /\.[a-z0-9]+$/
-  end_part = /\s- (?:Complete Movie|Part \d+ of \d+)(?:\s\[[\w&-\.]+\])? \[\(X-\d+\)\]/
-  [Regexp.new("^#{Regexp.quote(folder_name)}#{end_part.source}#{extension.source}")] 
+  extension = /\.[A-Za-z0-9]+$/
+  end_part = /\s- (?:Complete Movie|Part \d+ of \d+)(?:\s\[[\w&-\.~\s!]+\])? \[\(X-\d+\)\]/
+  [Regexp.new("^#{Regexp.quote(folder_name)}\.#{end_part.source}#{extension.source}")] 
 end
 
 def s_pattern(folder_name)
-  extension = /\.[a-z0-9]+$/
-  end_part = /\s- episode \d+(?:\s\[[\w&-\.]+\])?/
-  special_end = /\s- episode [A-Z](\d+)(?:\s\[[\w&-\.]+\])?\s\[\(XS-\d+-\1\)\]/
-  [Regexp.new("^#{Regexp.quote(folder_name)}#{end_part.source}#{extension.source}"), 
-    Regexp.new("^#{Regexp.quote(folder_name)}#{special_end.source}#{extension.source}")]
+  extension = /\.[A-Za-z0-9]+$/
+  end_part = /\s- episode \d+(?:\s\[[\w&-\.~\s!]+\])?/
+  special_end = /\s- episode [A-Z](\d+)(?:\s\[[\w&-\.~\s!]+\])?\s\[\(XS-\d+-\1\)\]/
+  f = Regexp.quote(folder_name)
+  [Regexp.new("^#{f}\\.?#{end_part.source}#{extension.source}"), 
+    Regexp.new("^#{f}\\.?#{special_end.source}#{extension.source}"),
+    Regexp.new("^#{f}\\.?\\s- episode \\d+-\\d+(?:\\s\\[[\\w&-\\.~\\s!]+\\])?#{extension.source}")
+    ]
 end
 
 def m_pattern_fix(folder_name)
@@ -25,7 +28,12 @@ def m_pattern_fix(folder_name)
 end
 
 def s_pattern_fix(folder_name)
-  [Regexp.new("(^#{Regexp.quote(folder_name)}\\s- episode \\d+)((?:\\[[\\w&-\\.]+\\])?\\.[a-z0-9]+$)")]
+  f = Regexp.quote(folder_name)
+  [{ :r => Regexp.new("(^#{f}\\.?\\s- episode \\d+)((?:\\[[\\w&-\\.~\\s!]+\\])?\\.[A-Za-z0-9]+$)"),
+    :p => [1,2]
+  }, { :r => Regexp.new("(^#{f}\\.?\\s- episode [A-Z](\\d+))((?:\\[[\\w&-\\.~\\s!]+\\])?\s\\[\\(XS-\\d+-\\2\\)\\]\\.[A-Za-z0-9]+$)"),
+    :p => [2,3]
+  }]
 end
 
 Duplicates = {}
@@ -37,9 +45,10 @@ def try_fix(folder, movie)
   fix_patterns = movie ? m_pattern_fix(folder_name) : s_pattern_fix(folder_name)
   files.each do |file|
     fix_patterns.each do |p|
-      m = p.match File.basename(file)  
+      m = p[:r].match File.basename(file)  
       if m
-        destination = File.join(File.dirname(file), "#{m[1]} #{m[2]}")
+        new_name = p[:p].map{|part| m[part]}.join(' ')
+        destination = File.join(File.dirname(file), new_name)
         if File.exists? destination
           Duplicates[file] = destination
           puts "#{file} seems to be duplicate of #{destination}"
