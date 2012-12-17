@@ -9,7 +9,7 @@ mylist = REXML::Document.new File.new("#{mylist_location}/mylist.xml")
 def m_pattern(folder_name)
   extension = /\.[A-Za-z0-9]+$/
   end_part = /\s- (?:Complete Movie|Part \d+ of \d+)(?:\s\[[\w&-\.~\s!]+\])? \[\(X-\d+\)\]/
-  [Regexp.new("^#{Regexp.quote(folder_name)}\.#{end_part.source}#{extension.source}")] 
+  [Regexp.new("^#{Regexp.quote(folder_name)}\.?#{end_part.source}#{extension.source}")] 
 end
 
 def s_pattern(folder_name)
