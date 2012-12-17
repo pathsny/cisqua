@@ -43,6 +43,7 @@ def try_fix(folder, movie)
         destination = File.join(File.dirname(file), "#{m[1]} #{m[2]}")
         if File.exists? destination
           Duplicates[file] = destination
+          puts "#{file} seems to be duplicate of #{destination}"
         else
           puts "renaming #{file} as #{destination}"
           FileUtils.mv file, destination
