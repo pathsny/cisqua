@@ -27,7 +27,7 @@ all_folders.each do |folder|
   movie = mylist.elements["myList/animeList/anime[@id = '#{aid}']"].attributes['type'] == 'Movie'
   patterns = movie ? m_pattern(folder_name) : s_pattern(folder_name)
   files.each do |file| 
-    puts "do not know file #{file} of #{folder}" unless patterns.any?{|p| p.match file}
+    puts "do not know file #{file} of #{folder} using #{patterns.inspect}" unless patterns.any?{|p| p.match file}
   end  
 end
 
