@@ -25,8 +25,7 @@ def m_pattern_fix(folder_name)
 end
 
 def s_pattern_fix(folder_name)
-  end_part = /\s- episode \d+(?:\s\[[\w&-\.]+\])?/
-  [Regexp.new("(^#{Regexp.quote(folder_name)}\\s- episode \\d+)((?:\\[[\\w-]+\\])?\\.[a-z0-9]+$)")]
+  [Regexp.new("(^#{Regexp.quote(folder_name)}\\s- episode \\d+)((?:\\[[\\w&-\\.]+\\])?\\.[a-z0-9]+$)")]
 end
 
 Duplicates = {}
