@@ -30,9 +30,12 @@ end
 def s_pattern_fix(folder_name)
   f = Regexp.quote(folder_name)
   [{ :r => Regexp.new("(^#{f}\\.?\\s- episode \\d+)((?:\\[[\\w&-\\.~\\s!]+\\])?\\.[A-Za-z0-9]+$)"),
-    :p => [1,2]
+    :p => [1,' ',2]
   }, { :r => Regexp.new("(^#{f}\\.?\\s- episode [A-Z](\\d+))((?:\\[[\\w&-\\.~\\s!]+\\])?\s\\[\\(XS-\\d+-\\2\\)\\]\\.[A-Za-z0-9]+$)"),
-    :p => [2,3]
+    :p => [2,' ',3]
+  }, {
+    :r => Regexp.new("(^#{f}\\.?\\s- episode \\d+)\s(\\.[A-Za-z0-9]+$)"),
+    :p => [1,2]
   }]
 end
 
@@ -47,7 +50,7 @@ def try_fix(folder, movie)
     fix_patterns.each do |p|
       m = p[:r].match File.basename(file)  
       if m
-        new_name = p[:p].map{|part| m[part]}.join(' ')
+        new_name = p[:p].map{|part| part.is_a?(Integer) ? m[part] : part }.join('')
         destination = File.join(File.dirname(file), new_name)
         if File.exists? destination
           Duplicates[file] = destination
