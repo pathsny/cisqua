@@ -8,14 +8,14 @@ mylist = REXML::Document.new File.new("#{mylist_location}/mylist.xml")
 
 def m_pattern(folder_name)
   extension = /\.[A-Za-z0-9]+$/
-  end_part = /\s- (?:Complete Movie|Part \d+ of \d+)(?:\s\[[\w&-\.~\s!]+\])? \[\(X-\d+\)\]/
-  [Regexp.new("^#{Regexp.quote(folder_name)}\.?#{end_part.source}#{extension.source}")] 
+  end_part = /\s- (?:Complete Movie|Part \d+ of \d+|[^\[]*)(?:\s\[[\w&-\.~\s!=]+\])? \[\(XS?-\d+-\d+\)\]/
+  Regexp.new("^#{Regexp.quote(folder_name)}\.?#{end_part.source}#{extension.source}") 
 end
 
 def s_pattern(folder_name)
   extension = /\.[A-Za-z0-9]+$/
-  end_part = /\s- episode \d+(?:\s\[[\w&-\.~\s!]+\])?/
-  special_end = /\s- episode [A-Z](\d+)(?:\s\[[\w&-\.~\s!]+\])?\s\[\(XS-\d+-\1\)\]/
+  end_part = /\s- episode \d+(?:\s\[[\w&-\.~\s!=]+\])?/
+  special_end = /\s- episode [A-Z](\d+)(?:\s\[[\w&-\.~\s!=]+\])?\s\[\(XS-\d+-\1\)\]/
   f = Regexp.quote(folder_name)
   [Regexp.new("^#{f}\\.?#{end_part.source}#{extension.source}"), 
     Regexp.new("^#{f}\\.?#{special_end.source}#{extension.source}"),
@@ -29,9 +29,9 @@ end
 
 def s_pattern_fix(folder_name)
   f = Regexp.quote(folder_name)
-  [{ :r => Regexp.new("(^#{f}\\.?\\s- episode \\d+)((?:\\[[\\w&-\\.~\\s!]+\\])?\\.[A-Za-z0-9]+$)"),
+  [{ :r => Regexp.new("(^#{f}\\.?\\s- episode \\d+)((?:\\[[\\w&-\\.~\\s!=]+\\])?\\.[A-Za-z0-9]+$)"),
     :p => [1,' ',2]
-  }, { :r => Regexp.new("(^#{f}\\.?\\s- episode [A-Z](\\d+))((?:\\[[\\w&-\\.~\\s!]+\\])?\s\\[\\(XS-\\d+-\\2\\)\\]\\.[A-Za-z0-9]+$)"),
+  }, { :r => Regexp.new("(^#{f}\\.?\\s- episode [A-Z](\\d+))((?:\\[[\\w&-\\.~\\s!=]+\\])?\s\\[\\(XS-\\d+-\\2\\)\\]\\.[A-Za-z0-9]+$)"),
     :p => [2,' ',3]
   }, {
     :r => Regexp.new("(^#{f}\\.?\\s- episode \\d+)\s(\\.[A-Za-z0-9]+$)"),
