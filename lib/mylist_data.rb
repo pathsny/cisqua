@@ -25,10 +25,11 @@ class MylistData
   
   private
   def process_ranges(ranges)
-    pieces = ranges.map do |r| 
-      if r =~ /^[A-Z]*\d+-[A-Z]*\d+$/
-        parts = r.split('-')
-        (parts[0]..parts[1]).to_a
+    pieces = ranges.map do |r|
+      match = /^([A-Z])?(\d+)-\1?(\d+)$/.match r
+      if match
+        puts match.inspect
+        ((match[2].to_i)..(match[3].to_i)).map {|x| "#{match[1]}#{x}"}
       else 
         r      
       end  

@@ -34,6 +34,11 @@ describe MylistData do
     data.special_episodes.should match_array(["C1", "C2", "C3", "T01", "T02"])
   end
   
+  it 'supports large ranges' do
+    data = MylistData.new 20, :title=>"Binchou-tan", :unknown_ep_list=>"", :episodes=>"12", :hdd_ep_list=>"1-5,7,9,11", :deleted_ep_list=>"", :cd_ep_list=>"1-20", :single_episode => false
+    data.should be_complete
+  end  
+  
   it 'reports if the show is complete (comparing episode count with the number of normal episodes)' do
     data = MylistData.new 12, :title=>"Binchou-tan", :unknown_ep_list=>"", :episodes=>"12", :hdd_ep_list=>"1-5,7,9,11", :deleted_ep_list=>"", :cd_ep_list=>"C1-C3,T01", :single_episode => false
     data.should_not be_complete
