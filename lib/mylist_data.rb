@@ -28,7 +28,6 @@ class MylistData
     pieces = ranges.map do |r|
       match = /^([A-Z])?(\d+)-\1?(\d+)$/.match r
       if match
-        puts match.inspect
         ((match[2].to_i)..(match[3].to_i)).map {|x| "#{match[1]}#{x}"}
       else 
         r      

@@ -27,7 +27,6 @@ class Renamer
       unless File.exists? location
         FileUtils.mkdir_p location
         File.open("#{location}/tvshow.nfo", 'w') {|f| f.write("aid=#{info[:file][:aid]}")} if options[:create_nfo_files]
-        symlink(location, options[:adult_location], path) if options[:adult_location] && info[:anime][:is_18_restricted] == "1"
       end
     end  
   end  
@@ -60,7 +59,7 @@ class Renamer
   
   def update_symlinks_for(ainfo, folder, location)
     all_locations = [:movies, :incomplete_series, :complete_series, 
-      :incomplete_other, :complete_other].map {|k| options[:create_symlinks][k] }.compact
+      :incomplete_other, :complete_other, :adult_location].map {|k| options[:create_symlinks][k] }.compact
     correct_location = decide_symlink_location(ainfo)
     incorrect_locations = all_locations.reject{|a| a == correct_location }
     incorrect_locations.each do |l|
@@ -78,6 +77,7 @@ class Renamer
   
   def decide_symlink_location(ainfo)
     symlink_locations = options[:create_symlinks]
+    return symlink_locations[:adult_location] if ainfo[:is_18_restricted] == "1" 
     return symlink_locations[:movies] if ainfo[:type] == "Movie"
     type = ["Web", "TV Series", "OVA", "TV Special"].include?(ainfo[:type]) ? :series : :other
     status = ainfo[:ended] && ainfo[:completed] ? :complete : :incomplete

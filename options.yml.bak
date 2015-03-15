@@ -1,40 +1,40 @@
 ---
 :anidb:
-    # configuration details for the api     
-    :port: 9000
-    :host: api.anidb.net
-    :localport: 12387
-    :nat: true
-    :user: <your username>
-    :pass: <password>
+  # configuration details for the api     
+  :port: 9000
+  :host: api.anidb.net
+  :localport: 12387
+  :nat: true
+  :user: <your username>
+  :pass: <password>
 :scanner:
-    # the location where you keep your anime to be scanned
-    :basedir: < /path/to/anime
-    # list of file extensions to scan
-    :extensions: avi mpg mkv ogm mp4 flv wmv
-    # if this is false. Only the top level files of each directory in the basedir are scanned. 
-    # if this is true, all the files are picked up recursively 
-    :recursive: true
-    # set this to true to add all identified files to your mylist
-    :add_to_mylist: true
+  # the location where you keep your anime to be scanned
+  :basedir: < /path/to/anime
+  # list of file extensions to scan
+  :extensions: avi mpg mkv ogm mp4 flv wmv
+  # if this is false. Only the top level files of each directory in the basedir are scanned. 
+  # if this is true, all the files are picked up recursively 
+  :recursive: true
+  # set this to true to add all identified files to your mylist
+  :add_to_mylist: true
 :renamer:
-    # list of extensions for subtitle files. If a show is present with a subtitle, the subtitle is also copied
-    :subtitle_extensions: srt ass idx sub pdf ssa
-    # location to store anime.
-    :output_location: /path/to/IncompleteAnime
-    # location to store files that are duplicates.
-    :duplicate_location: /path/to/DuplicateAnime
-		# set this to a non null value if adult shows should be symlinked to a folder
+  # list of extensions for subtitle files. If a show is present with a subtitle, the subtitle is also copied
+  :subtitle_extensions: srt ass idx sub pdf ssa
+  # location to store anime.
+  :output_location: /path/to/IncompleteAnime
+  # location to store files that are duplicates.
+  :duplicate_location: /path/to/DuplicateAnime
+	# create symlinks to access anime by type and completeness factor. can be false, or a nested hash
+  :create_symlinks: 
+    :movies: /path/to/movies
+    :incomplete_series: /path/to/incomplete tv series, oav and web
+    :complete_series: /path/to/complete tv series, oav and web
+    :incomplete_other: /path/to/incomplete other, music video etc
+    :complete_other: /path/to/complete other, music video etc
+	# set this to a non null value if adult shows should be symlinked to a folder
 		:adult_location: /path/to/store
-		# create symlinks to access anime by type and completeness factor. can be false, or a nested hash
-    :create_symlinks: 
-        :movies: /path/to/movies
-        :incomplete_series: /path/to/incomplete tv series, oav and web
-        :complete_series: /path/to/complete tv series, oav and web
-        :incomplete_other: /path/to/incomplete other, music video etc
-        :complete_other: /path/to/complete other, music video etc
     # this is useful if you use xbmc. an nfo file is created in each folder to identify the anime.
-    :create_nfo_files: false
+  :create_nfo_files: false
 # set this to false if you want the base directory left alone. Otherwise this removes all directories that can be 
 # safely removed. i.e either they're empty or contain only empty directories
 :clean_up_empty_dirs: true
