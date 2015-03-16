@@ -20,7 +20,7 @@ describe 'renamer' do
 
   it 'does not touch files which are not identified' do
     renamer.process(video_file, nil)
-    Dir[File.expand_path('../scan_folder/*.*', __FILE__)].count.should == 2
+    expect(Dir[File.expand_path('../scan_folder/*.*', __FILE__)].count).to eq(2)
   end
 
   describe '#escape' do
@@ -29,18 +29,18 @@ describe 'renamer' do
         subject.escape(actual) == expected 
       end
       
-      failure_message_for_should do |actual|
+      failure_message do |actual|
           "expected that #{actual} would escape to #{expected} but it escaped to #{subject.escape(actual)}"
       end
     end
 
-    it { 'fate/stay'.should escape_to 'fate stay' }
-    it { 'macross: the movie'.should escape_to 'macross the movie' }
-    it { 'space :movie'.should escape_to 'space movie' }
-    it { '//hack root'.should escape_to 'hack root'}
-    it { 'hi there $$ man'.should escape_to 'hi there man' }
-    it { 'hello%%%romeo'.should escape_to "hello romeo" }
-    it { 'blaaah   blueeee    bleeeeeeh'.should escape_to 'blaaah blueeee bleeeeeeh'}
+    it { expect('fate/stay').to escape_to 'fate stay' }
+    it { expect('macross: the movie').to escape_to 'macross the movie' }
+    it { expect('space :movie').to escape_to 'space movie' }
+    it { expect('//hack root').to escape_to 'hack root'}
+    it { expect('hi there $$ man').to escape_to 'hi there man' }
+    it { expect('hello%%%romeo').to escape_to "hello romeo" }
+    it { expect('blaaah   blueeee    bleeeeeeh').to escape_to 'blaaah blueeee bleeeeeeh'}
   end  
 
   it 'moves and renames files using the rename_rules'
