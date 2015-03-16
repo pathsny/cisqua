@@ -24,6 +24,8 @@
   :output_location: /path/to/IncompleteAnime
   # location to store files that are duplicates.
   :duplicate_location: /path/to/DuplicateAnime
+	# set this to true if you want a symlink back to the source whwere the files were moved
+	:symlink_source: false
 	# create symlinks to access anime by type and completeness factor. can be false, or a nested hash
   :create_symlinks: 
     :movies: /path/to/movies

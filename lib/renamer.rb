@@ -16,7 +16,7 @@ class Renamer
     logger.debug "have to rename #{file} using #{path}/#{name}"
     location = create_location(path, info)
 
-    ([file] + sub_files(file)).map{|f| move_file(f, location, name)}
+    ([file] + sub_files(file)).map{|f| process_file(f, location, name)}
     update_symlinks_for info[:anime], path, location if options[:create_symlinks]
   rescue
     logger.warn "error naming #{file} from #{info.inspect} with #{$!}"
@@ -36,26 +36,37 @@ class Renamer
     sub_files = extensions.map{|e| "#{file.chomp(File.extname(file))}.#{e}"}.select{|sf| File.exists?(sf)}
   end  
 
-  def move_file(old_name, location, new_name_without_extension)
-    new_name = "#{new_name_without_extension}#{File.extname(old_name)}"
+  def process_file(old_path, location, new_name_without_extension)
+    new_name = "#{new_name_without_extension}#{File.extname(old_path)}"
     destination = "#{location}/#{new_name}"
 
-    move_duplicate_file(options[:duplicate_location], old_name, new_name) and return if File.exists?(destination) && destination != old_name
+    process_duplicate_file(options[:duplicate_location], old_path, new_name) and return if File.exists?(destination) && destination != old_path
 
-    FileUtils.mv old_name, destination
-    logger.info "moving #{old_name} to #{destination}"
-  end  
+    move_file old_path, destination
+    logger.info "moving #{old_path} to #{destination}"
+  end
 
-  def move_duplicate_file(location, old_name, new_name)
+  def process_duplicate_file(location, old_path, new_name)
     FileUtils.mkdir_p location
-    logger.info "cannot move #{old_name} to #{new_name}. Duplicate File already exists"
+    logger.info "cannot move #{old_path} to #{new_name}. Duplicate File already exists"
     prefix = ''
     while File.exists? "#{location}/#{new_name}#{prefix}"
       prefix = ".#{prefix[1..-1].to_i || 1}"
     end
-    FileUtils.mv old_name, "#{location}/#{new_name}#{prefix}"
+    move_file old_path, "#{location}/#{new_name}#{prefix}"
     true   
   end
+  
+  def move_file(old_path, new_path)
+    FileUtils.mv old_path, new_path
+    if options[:symlink_source]
+      relative = (Pathname.new new_path).relative_path_from (Pathname.new (File.dirname old_path))
+      File.symlink(relative, old_path)
+    end  
+  rescue Exception => e
+    logger.warn e.inspect
+    puts e
+  end  
   
   def update_symlinks_for(ainfo, folder, location)
     all_locations = [:movies, :incomplete_series, :complete_series, 
@@ -91,6 +102,7 @@ class Renamer
     File.symlink(relative, File.join(dest,name))
   rescue Exception => e
     logger.warn e.inspect
+    puts e
   end       
 
   def escape(name)
