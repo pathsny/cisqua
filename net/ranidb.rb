@@ -837,7 +837,7 @@ module Net
             tries += 1
           end
         end
-        break if found || tries > 2
+        break if found || tries > 4
       end
       if lr.empty?
         raise ServerOfflineError.new("AniDB server does not respond")

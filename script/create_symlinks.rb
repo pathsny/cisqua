@@ -16,6 +16,7 @@ abort "nothing to do" if folders.empty?
 renamer = Renamer.new(r_options)
 
 folders.each do |f|
+begin
   aid = File.read("#{f}/tvshow.nfo").match(/^aid=(\d+)$/)[1]
   axml = REXML::Document.new File.new("#{mylist_location}/anime/a#{aid}.xml")
   renamer.symlink(f, r_options[:adult_location], File.basename(f)) if r_options[:adult_location] && axml.elements["anime/seriesInfo/genres/genre[@id = '80']"]
@@ -25,6 +26,9 @@ folders.each do |f|
   :completed => a_attrs["status"] == 'complete'}
   renamer.update_symlinks_for ainfo, File.basename(f), f
   puts "#{f} has #{ainfo.inspect}"
+rescue
+   puts "error working with #{f}"
+end
 end
 
 syms = r_options[:create_symlinks]

@@ -56,7 +56,7 @@ class Anidb
 
   def maintain_rate_limit
     diff = Time.now - @now if @now
-    sleep 2 - diff if diff && diff < 2
+    sleep 3 - diff if diff && diff < 3
     @now = Time.now
   end  
-end        
+end
