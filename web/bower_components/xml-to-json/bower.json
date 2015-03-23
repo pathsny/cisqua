@@ -1,0 +1,22 @@
+{
+  "name": "xml-to-json",
+  "version": "0.2.2",
+  "main": [
+    "xml.js",
+    "xml.min.js",
+    "json2xml.js",
+    "json2xml.min.js",
+    "jquery.xml.js",
+    "jquery.xml.min.js"
+  ],
+  "ignore": [
+    "Gruntfile.js",
+    "package.json",
+    ".c9revisions"
+  ],
+  "dependencies": {
+  },
+  "devDependencies": {
+  },
+  "appPath": ""
+}

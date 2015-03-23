@@ -1,10 +1,40 @@
+GIT
+  remote: git@github.com:sinatra/sinatra.git
+  revision: 911d95a6b0e4671c7ecc4d1cbdb4eba65a178bfe
+  specs:
+    sinatra (1.4.5)
+      rack (~> 1.4)
+      rack-protection (~> 1.4)
+      tilt (>= 1.3, < 3)
+
 GEM
   remote: https://rubygems.org/
   specs:
+    curb (0.8.6)
+    daybreak (0.3.0)
     diff-lcs (1.2.5)
+    feedjira (1.6.0)
+      curb (~> 0.8)
+      loofah (~> 2.0)
+      sax-machine (~> 1.0)
+    json (1.8.2)
+    loofah (2.0.1)
+      nokogiri (>= 1.5.9)
     metaclass (0.0.4)
+    mini_portile (0.6.2)
     mocha (1.1.0)
       metaclass (~> 0.0.1)
+    nokogiri (1.6.6.2)
+      mini_portile (~> 0.6.0)
+    puma (2.11.1)
+      rack (>= 1.1, < 2.0)
+    rack (1.6.0)
+    rack-contrib (1.2.0)
+      rack (>= 0.9.1)
+    rack-protection (1.5.3)
+      rack
+    rack-proxy (0.5.17)
+      rack
     rspec (3.2.0)
       rspec-core (~> 3.2.0)
       rspec-expectations (~> 3.2.0)
@@ -18,10 +48,22 @@ GEM
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.2.0)
     rspec-support (3.2.2)
+    sax-machine (1.3.0)
+    shotgun (0.9.1)
+      rack (>= 1.0)
+    tilt (2.0.1)
 
 PLATFORMS
   ruby
 
 DEPENDENCIES
+  daybreak
+  feedjira
+  json
   mocha
+  puma
+  rack-contrib
+  rack-proxy (= 0.5.17)
   rspec
+  shotgun
+  sinatra!

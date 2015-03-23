@@ -1,4 +1,5 @@
-#!/opt/local/bin/ruby1.9
-location = File.expand_path('../console.rb', __FILE__)
+#!/usr/bin/env ruby
+name = ARGV[0]
+location = File.expand_path("../#{name}_console.rb", __FILE__)
 exec "ruby -S irb -r #{location}  --simple-prompt"
 

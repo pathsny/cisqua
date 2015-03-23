@@ -1,0 +1,44 @@
+{
+  "name": "knockout-jqueryui",
+  "description": "Knockout binding handlers for the jQuery UI widgets.",
+  "main": "dist/knockout-jqueryui.js",
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "Gruntfile.js",
+    "package.json",
+    "examples/",
+    "grunt/",
+    "lib/",
+    "spec/",
+    "src/"
+  ],
+  "keywords": [
+    "knockout",
+    "jquery ui"
+  ],
+  "authors": {
+    "name": "Vas Gabor <gvas.munka@gmail.com>"
+  },
+  "homepage": "https://gvas.github.io/knockout-jqueryui/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/gvas/knockout-jqueryui.git"
+  },
+  "dependencies": {
+    "jquery-ui": ">=1.8",
+    "knockout": ">=2.2"
+  },
+  "devDependencies": {},
+  "version": "2.2.2",
+  "_release": "2.2.2",
+  "_resolution": {
+    "type": "version",
+    "tag": "v2.2.2",
+    "commit": "3d35fb062d871809ac17acda1a899c3ac1f27d34"
+  },
+  "_source": "git://github.com/gvas/knockout-jqueryui.git",
+  "_target": "~2.2.2",
+  "_originalSource": "knockout-jqueryui",
+  "_direct": true
+}

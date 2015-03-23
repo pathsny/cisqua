@@ -1,0 +1,50 @@
+<!DOCTYPE html >
+<html>
+    <body>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title>ToDo</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width">
+        <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+        <link rel="icon" href="favicon.ico" type="image/x-icon">        
+        <link rel="stylesheet" href="bower_components/jquery-ui/themes/smoothness/jquery-ui.min.css">
+        <link rel="stylesheet" href="styles/styles.css">
+        <div id="container">
+            <section id="showforms" class="clearfix">
+                <div id="newshowform" class="floatleft fifty">
+                    <h2>Add a New Show</h2>
+                      <form id="addshow" data-bind="submit: addShow" autocomplete="off">
+                        <label for="show">Show Name: </label>
+                        <input type="text" id="show" 
+                          data-bind="autocomplete: { source: allShows, select: onSelectShow, minLength: 3, focus: onFocusShow }"/>
+                        <input type="submit">
+                      </form>
+                </div>
+            </section>
+            <section id="showtable">
+                <h2>Shows: <span></span></h2>
+                <table>
+                    <thead><tr>
+                        <th>Name</th>
+                        <th>Aid</th>
+                        <th>Delete</th>
+                    </tr></thead>
+                    <tbody data-bind="foreach: shows">
+                      <tr>
+                        <td data-bind="text: name"></td>
+                        <td data-bind="text: aid"></td>
+                        <td data-bind="click: $parent.destroyShow" class="destroyshow"><a>X</a></td>
+                    </tr>
+                </tbody>
+              </table>
+            </section>
+        </div>
+        <script src="bower_components/jquery/dist/jquery.min.js"></script>
+        <script src="bower_components/jquery-ui/jquery-ui.min.js"></script>
+        <script src="bower_components/knockout/dist/knockout.js"></script> 
+        <script src="bower_components/knockout-jqueryui/dist/knockout-jqueryui.min.js"></script>
+        <script src="bower_components/xml-to-json/xml.js"></script>
+        <script src="app.js"></script> 
+    </body>
+</html>
