@@ -2,7 +2,7 @@ ruby '2.1.5'
 
 source 'https://rubygems.org'
 
-gem 'sinatra', :git => 'git@github.com:sinatra/sinatra.git'
+gem 'sinatra', :git => 'https://github.com/sinatra/sinatra.git'
 gem 'json'
 gem 'daybreak'
 gem 'feedjira'
