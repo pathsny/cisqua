@@ -7,6 +7,8 @@ Dir.chdir(root_dir) {
   raise "could not run bundler" unless system "bundle install"
 }
 
-Dir.chdir(File.join(root_dir, 'web')) {
-  raise "could not run bower" unless system "bower install"
+if ARGV[0] == 'dev' {
+  Dir.chdir(File.join(root_dir, 'web')) {
+    raise "could not run bower" unless system "bower install"
+  }  
 }
