@@ -10,9 +10,18 @@ GIT
 GEM
   remote: https://rubygems.org/
   specs:
+    babel-source (4.7.16)
+    babel-transpiler (0.6.0)
+      babel-source (>= 4.0, < 5)
+      execjs (~> 2.0)
+    concurrent-ruby (0.8.0)
+      ref (~> 1.0, >= 1.0.5)
+    concurrent-ruby-ext (0.8.0)
+      concurrent-ruby (~> 0.8.0)
     curb (0.8.6)
     daybreak (0.3.0)
     diff-lcs (1.2.5)
+    execjs (2.4.0)
     feedjira (1.6.0)
       curb (~> 0.8)
       loofah (~> 2.0)
@@ -21,9 +30,11 @@ GEM
     loofah (2.0.1)
       nokogiri (>= 1.5.9)
     metaclass (0.0.4)
+    mime-types (2.4.3)
     mini_portile (0.6.2)
     mocha (1.1.0)
       metaclass (~> 0.0.1)
+    netrc (0.10.3)
     nokogiri (1.6.6.2)
       mini_portile (~> 0.6.0)
     puma (2.11.1)
@@ -35,6 +46,10 @@ GEM
       rack
     rack-proxy (0.5.17)
       rack
+    ref (1.0.5)
+    rest-client (1.7.3)
+      mime-types (>= 1.16, < 3.0)
+      netrc (~> 0.7)
     rspec (3.2.0)
       rspec-core (~> 3.2.0)
       rspec-expectations (~> 3.2.0)
@@ -51,19 +66,30 @@ GEM
     sax-machine (1.3.0)
     shotgun (0.9.1)
       rack (>= 1.0)
+    sprockets (3.0.0.beta.10)
+      rack (~> 1.0)
+    sprockets-es6 (0.6.0)
+      babel-transpiler
+      sprockets (~> 3.0.0.beta)
     tilt (2.0.1)
 
 PLATFORMS
   ruby
 
 DEPENDENCIES
+  concurrent-ruby-ext
   daybreak
   feedjira
   json
   mocha
+  nokogiri
   puma
+  rack
   rack-contrib
   rack-proxy (= 0.5.17)
+  rest-client
   rspec
   shotgun
   sinatra!
+  sprockets (~> 3.0.0.beta.10)
+  sprockets-es6

@@ -2,6 +2,8 @@
 require 'fileutils'
 root_dir = File.join(File.dirname(__FILE__), '..')
 FileUtils.mkdir_p(File.join(root_dir, 'data'))
+FileUtils.mkdir_p(File.join(root_dir, 'web', 'anidb'))
+FileUtils.mkdir_p(File.join(root_dir, 'web', 'anidb/lock'))
 
 Dir.chdir(root_dir) {
   raise "could not run bundler" unless system "bundle install"

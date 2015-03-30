@@ -8,8 +8,8 @@
         <meta name="viewport" content="width=device-width">
         <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
         <link rel="icon" href="favicon.ico" type="image/x-icon">        
-        <link rel="stylesheet" href="bower_components/jquery-ui/themes/smoothness/jquery-ui.min.css">
-        <link rel="stylesheet" href="styles/styles.css">
+        <link rel="stylesheet" href="assets/jquery-ui/themes/smoothness/jquery-ui.min.css">
+        <link rel="stylesheet" href="assets/styles.css">
         <div id="container">
             <section id="showforms" class="clearfix">
                 <div id="newshowform" class="floatleft fifty">
@@ -34,17 +34,29 @@
                       <tr>
                         <td data-bind="text: name"></td>
                         <td data-bind="text: aid"></td>
-                        <td data-bind="click: $parent.destroyShow" class="destroyshow"><a>X</a></td>
+                        <td data-bind="click: $root.destroyShow" class="destroyshow"><a>X</a></td>
                     </tr>
                 </tbody>
               </table>
             </section>
         </div>
-        <script src="bower_components/jquery/dist/jquery.min.js"></script>
-        <script src="bower_components/jquery-ui/jquery-ui.min.js"></script>
-        <script src="bower_components/knockout/dist/knockout.js"></script> 
-        <script src="bower_components/knockout-jqueryui/dist/knockout-jqueryui.min.js"></script>
-        <script src="bower_components/xml-to-json/xml.js"></script>
-        <script src="app.js"></script> 
+        <script src="assets/jquery/dist/jquery.min.js"></script>
+        <script src="assets/jquery-ui/jquery-ui.min.js"></script>
+        <script src="assets/knockout/dist/knockout.js"></script> 
+        <script src="assets/knockout-jqueryui/dist/knockout-jqueryui.min.js"></script>
+        <script src="assets/xml-to-json/xml.js"></script>
+        <script src="assets/handlebars/handlebars.js"></script>
+        <script id="autocomp-template" type="text/x-handlebars-template">
+            <li>
+                <div>
+                    <a><img src="anidb/thumb/{{aid}}.jpg"/><span>{{name}}</span></a>
+                 </div>
+                 {{#if type}}
+                    <div><span>{{type}}</span>, <span>{{count}} eps</span>
+                 {{/if}}      
+            </li>
+        </script>
+        <script src="assets/browser-polyfill.js"></script>
+        <script src="assets/app.js"></script> 
     </body>
 </html>

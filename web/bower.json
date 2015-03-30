@@ -22,6 +22,7 @@
     "jquery-ui": "~1.11.4",
     "knockout": "~3.3.0",
     "xml-to-json": "*",
-    "knockout-jqueryui": "~2.2.2"
+    "knockout-jqueryui": "~2.2.2",
+    "handlebars": "~3.0.0"
   }
 }

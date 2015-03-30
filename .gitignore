@@ -1,3 +1,5 @@
 options.yml
 anidb.log
 data
+.DS_Store
+anidb_cache
