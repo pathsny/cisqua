@@ -8,28 +8,41 @@ files = file_list(options[:scanner])
 
 scan_queue = Queue.new
 info_queue = Queue.new
+rename_queue = Queue.new
+
+def while_queue_has_items(queue)
+  item = queue.pop
+  until item == :end do
+    yield item
+    item = queue.pop
+  end  
+end  
 
 scanner = Thread.new do
-  files.each do |file| 
-    scan_queue << ed2k_file_hash(file).tap {|f, s, e| logger.debug "file #{f} has ed2k hash #{e}"}
+  while_queue_has_items(scan_queue) do |file|
+    info_queue << ed2k_file_hash(file).tap {|f, s, e| logger.debug "file #{f} has ed2k hash #{e}"}
   end
+  info_queue << :end
 end
 
 info_getter = Thread.new do
   anidb_api = Anidb.new options[:anidb]
-  files.each do
-    data = scan_queue.pop
+  while_queue_has_items(info_queue) do |data|
     info = anidb_api.process(*data)    
-    info_queue << [data.first, info]
+    rename_queue << [data.first, info]
   end
+  rename_queue << :end  
 end
 
 rename_worker = Thread.new do
   renamer = Renamer.new(options[:renamer])
-  files.each do
-    renamer.process(*info_queue.pop)
+  while_queue_has_items(rename_queue) do |file, data|
+    renamer.process(file, data)
   end  
 end
+
+files.each {|f| scan_queue << f }
+scan_queue << :end
 
 [scanner, info_getter, rename_worker].each(&:join)
 
