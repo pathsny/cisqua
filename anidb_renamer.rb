@@ -26,7 +26,8 @@ scanner = Thread.new do
 end
 
 info_getter = Thread.new do
-  anidb_api = Anidb.new options[:anidb]
+  anidb_api_klass = ARGV[0] == 'test_client' ? CachingAnidb : Anidb
+  anidb_api = anidb_api_klass.new(options[:anidb])
   while_queue_has_items(info_queue) do |data|
     info = anidb_api.process(*data)    
     rename_queue << [data.first, info]

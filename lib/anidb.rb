@@ -2,8 +2,7 @@ require File.expand_path('../../net/ranidb', __FILE__)
 
 class Anidb
   def initialize(options)
-    @client = Net::AniDBUDP.new(*([:host, :port, :localport, :user, :pass, :nat].map{|k| options[k]}))
-    @client.connect
+    @options = options
     @cache = LRUHash.new(25000)
   end
 
@@ -18,17 +17,24 @@ class Anidb
     end
   end
 
-  def update_mylist_with(info)
-    logger.debug "adding #{info.inspect} to mylist"
-    @client.mylist_add(info[:fid])
-  end  
-
   def method_missing(method, *args)
     maintain_rate_limit
+    @client ||= make_client
     @client.__send__(method, *args)
   end
 
   private
+  def make_client
+    params = [:host, :port, :localport, :user, :pass, :nat].map{|k| @options[k]} 
+    Net::AniDBUDP.new(*params).tap {|client| client.connect }
+  end  
+
+  def update_mylist_with(info)
+    logger.debug "adding #{info.inspect} to mylist"
+    mylist_add(info[:fid])
+  end  
+
+
   def retrieve_show_details(aid)
     @cache['anime_' + aid] ||= anime(aid)
   end
