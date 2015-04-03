@@ -3,13 +3,14 @@
 require 'socket'
 require 'openssl'
 require 'timeout'
+require_relative 'masks.rb'
 
 module Net
   PROTOVER = 3
   CLIENTNAME = 'anidbruby'
   CLIENTVER = 1
 
-  eval(File.read(File.dirname(__FILE__) + "/masks"))
+  # eval(File.read(File.dirname(__FILE__) + "/masks"))
 
   ANIME_AMASKS_ORDER.delete(:aid)
 
@@ -85,7 +86,8 @@ module Net
       end
 
       def to_s
-        "#{@code} : #{@text}" + (@lines.empty? ? '' : "(#{@lines.join(' / ')})")
+        lines_str = @lines.empty? ? '' : "(#{@lines.join(' / ')})"
+        "#{@code} : #{@text}#{lines_str}" 
       end
     end
 
@@ -226,8 +228,9 @@ module Net
       if @user.nil? || @pass.nil?
         raise ParameterError.new("Need username and password to connect")
       end
+      replies = nil
       @sid = nil
-      1.upto(3) do |x|
+      1.upto(3) do
         replies = raw_command("AUTH",
                               :user => @user,
                               :pass => @pass,
@@ -237,12 +240,12 @@ module Net
                               :nat => @nat ? 1 : 0,
                               :enc => 'UTF-8',
                               :imgserver => 0)
-        definitive = process_auth(replies)
+        process_auth(replies)
         break if @sid || @dead
       end
       if @sid.nil?
         @logger.proto "Authentication failed : #{replies.join("--")}"
-        @autheticated = false
+        @authenticated = false
         @dead = true
         raise ServerOfflineError.new("Authentication failed - unable to find SID")
       end
@@ -253,7 +256,7 @@ module Net
     # 208 UPTIME
     #   {int4 udpserver uptime in milliseconds}
     def uptime
-      replies = raw_command("UPTIME")
+      raw_command("UPTIME")
     end
 
     # FILE
@@ -442,7 +445,7 @@ module Net
     # 411 NO SUCH MYLIST ENTRY
     def mylist_add(fid, edit = false, viewed = 0, state = :hdd, source = nil, storage = nil)
       return unless(fid && fid.to_i != 0)
-      reply = mylist_add_any(:fid, [ fid ], edit, viewed, state, source, storage)
+      mylist_add_any(:fid, [ fid ], edit, viewed, state, source, storage)
     end
 
     # MYLISTADD
@@ -457,7 +460,7 @@ module Net
     #  [&edit={boolean edit}]
     def mylist_add_by_ed2k(size, ed2k, edit = false, viewed = 0, state = :hdd, source = nil, storage = nil)
       return unless(size && ed2k && size.to_i != 0 && ed2k.strip != '')
-      reply = mylist_add_any(:ed2k, [ size, ed2k ], edit, viewed, state, source, storage)
+      mylist_add_any(:ed2k, [ size, ed2k ], edit, viewed, state, source, storage)
     end
 
     # MYLISTDEL
@@ -497,7 +500,7 @@ module Net
       return unless(size && ed2k && size.to_i != 0 && ed2k.strip != '')
       reply = command('MYLISTDEL',
                       :size => size,
-                      :fid => fid)
+                      :ed2k => ed2k)
       if reply.code == 211
         reply.lines[0].to_i
       else
@@ -536,12 +539,12 @@ module Net
           @sid = find_sid(c[0])
           @authenticated = true
         else
-          c.reverse.each_with_index do |r, i|
+          c.reverse.each do |r|
             sid = find_sid(r)
             if sid
               lr = exchange("UPTIME s=#{sid};tag=radb#{@tag}", @tag)
               @tag += 1
-              if lr.find { |r| r.code == 208 }
+              if lr.find { |re| re.code == 208 }
                 @sid = sid
                 @authenticated = true
                 break
@@ -557,14 +560,14 @@ module Net
         begin
           m += FILE_FMASKS[k]
         rescue Exception => e
-          raise ParameterError.new("FILE file field #{k} unrecognized.")
+          raise ParameterError.new("FILE file field #{k} unrecognized. #{e.message}")
         end
       end
       amask = anime_fields.inject(0) do |m, k|
         begin
           m += FILE_AMASKS[k]
         rescue Exception => e
-          raise ParameterError.new("FILE anime field #{k} unrecognized.")
+          raise ParameterError.new("FILE anime field #{k} unrecognized. #{e.message}")
         end
       end
       reply = case type
@@ -613,7 +616,7 @@ module Net
         begin
           m += ANIME_AMASKS[k]
         rescue Exception => e
-          raise ParameterError.new("ANIME field #{k} unrecognized.")
+          raise ParameterError.new("ANIME field #{k} unrecognized. #{e.message}")
         end
       end
       reply = if type == :aid
@@ -781,7 +784,7 @@ module Net
         rescue ServerOfflineError,
                ClientBannedError => e
           @sid = nil
-          @autenticated = false
+          @authenticated = false
           @connected = false
           @dead = true
           @logger.proto e.message
@@ -809,9 +812,9 @@ module Net
       begin
         lr = exchange(p, @tag)
       rescue ServerOfflineError,
-             ClientBannedError => e
+             ClientBannedError
         @sid = nil
-        @autenticated = false
+        @authenticated = false
         @connected = false
         @dead = true
         lr = []
@@ -833,7 +836,7 @@ module Net
             r = Reply.new(msg)
             lr << r
             found = true # (r.code == 555 || r.tag.nil? || r.tag == tag)
-          rescue ServerTimeout => e
+          rescue ServerTimeout
             tries += 1
           end
         end
@@ -849,7 +852,7 @@ module Net
               r = Reply.new(msg)
               lr << r
             end
-          rescue ServerTimeout => e
+          rescue ServerTimeout
           end
         end
         lr.tap{|l| p l}
@@ -892,7 +895,7 @@ module Net
         raise ClientOutdatedError.new("Client version too old")
       when 504
         reason = r.text.sub(/^.*-/, '').strip
-        raise ClientBennedError.new("Client has been banned - #{reason}")
+        raise ClientBannedError.new("Client has been banned - #{reason}")
       when 506
         raise ClientSessionError.new("Wrong session key in reply to #{@last_command}")
       when 555
