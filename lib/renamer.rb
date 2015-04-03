@@ -98,6 +98,7 @@ class Renamer
     src_path = Pathname.new source
     dest_path = Pathname.new dest
     relative = src_path.relative_path_from dest_path
+    FileUtils.mkdir_p(dest_path) unless File.exist?(dest_path)
     File.symlink(relative, File.join(dest,name))
   rescue Exception => e
     logger.warn e.inspect
