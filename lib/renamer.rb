@@ -24,7 +24,7 @@ class Renamer
 
   def create_location(path, info)
     "#{options[:output_location]}/#{path}".tap do |location|
-      unless File.exists? location
+      unless File.exist? location
         FileUtils.mkdir_p location
         File.open("#{location}/tvshow.nfo", 'w') {|f| f.write("aid=#{info[:file][:aid]}")} if options[:create_nfo_files]
       end
@@ -33,15 +33,14 @@ class Renamer
 
   def sub_files(file)
     extensions = options[:subtitle_extensions].split
-    sub_files = extensions.map{|e| "#{file.chomp(File.extname(file))}.#{e}"}.select{|sf| File.exists?(sf)}
+    sub_files = extensions.map{|e| "#{file.chomp(File.extname(file))}.#{e}"}.select{|sf| File.exist?(sf)}
   end  
 
   def process_file(old_path, location, new_name_without_extension)
     new_name = "#{new_name_without_extension}#{File.extname(old_path)}"
     destination = "#{location}/#{new_name}"
 
-    process_duplicate_file(options[:duplicate_location], old_path, new_name) and return if File.exists?(destination) && destination != old_path
-
+    process_duplicate_file(options[:duplicate_location], old_path, new_name) and return if File.exist?(destination) && destination != old_path
     move_file old_path, destination
     logger.info "moving #{old_path} to #{destination}"
   end
@@ -50,7 +49,7 @@ class Renamer
     FileUtils.mkdir_p location
     logger.info "cannot move #{old_path} to #{new_name}. Duplicate File already exists"
     prefix = ''
-    while File.exists? "#{location}/#{new_name}#{prefix}"
+    while File.exist? "#{location}/#{new_name}#{prefix}"
       prefix = ".#{prefix[1..-1].to_i || 1}"
     end
     move_file old_path, "#{location}/#{new_name}#{prefix}"
