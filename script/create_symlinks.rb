@@ -13,7 +13,7 @@ first_folder = ARGV[1]
 folders = first_folder ? all_folders.drop_while {|k| File.basename(k) != first_folder} : all_folders
 abort "nothing to do" if folders.empty?
 
-renamer = Renamer.new(r_options)
+renamer = Renamer::Renamer.new(r_options)
 
 folders.each do |f|
 begin

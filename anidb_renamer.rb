@@ -38,7 +38,7 @@ info_getter = Thread.new do
 end
 
 rename_worker = Thread.new do
-  renamer = Renamer.new(options[:renamer])
+  renamer = Renamer::Renamer.new(options[:renamer])
   dups = []
   files.each do 
     work_item = rename_queue.pop

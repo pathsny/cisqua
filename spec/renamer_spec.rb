@@ -1,75 +1,30 @@
 require File.expand_path('../spec_helper', __FILE__)
 
-describe 'renamer' do
-  let (:info) { 1 }
-
-  before :each do
-    clean_folders
-    create_test_files
-    stub_rename_rules_to_return('foo - bar')
-  end
-
-  after :each do
-    clean_folders
-  end
-
-  let (:renamer) { Renamer.new(nil) }
-  subject {renamer}
-
-  let (:video_file) {File.expand_path('../scan_folder/test_anime.avi', __FILE__)}    
-
-  it 'does not touch files which are not identified' do
-    renamer.process(video_file, nil)
-    expect(Dir[File.expand_path('../scan_folder/*.*', __FILE__)].count).to eq(2)
-  end
-
-  describe '#escape' do
-    RSpec::Matchers.define :escape_to do |expected|
+describe Renamer do
+  describe Renamer::NameGenerator do
+    RSpec::Matchers.define :rename_to do |expected|
       match do |actual|
-        subject.escape(actual) == expected 
+        subject.generate_name_and_path(actual) == expected 
       end
       
       failure_message do |actual|
-          "expected that #{actual} would escape to #{expected} but it escaped to #{subject.escape(actual)}"
+          "expected that #{actual} would be renamed to to #{expected}," +
+          " but it was renamed to #{subject.generate_name_and_path(actual)}"
       end
     end
 
-    it { expect('fate/stay').to escape_to 'fate stay' }
-    it { expect('macross: the movie').to escape_to 'macross the movie' }
-    it { expect('space :movie').to escape_to 'space movie' }
-    it { expect('//hack root').to escape_to 'hack root'}
-    it { expect('hi there $$ man').to escape_to 'hi there man' }
-    it { expect('hello%%%romeo').to escape_to "hello romeo" }
-    it { expect('blaaah   blueeee    bleeeeeeh').to escape_to 'blaaah blueeee bleeeeeeh'}
-  end  
+    def make_path_and_name(s)
+      [s, s + ".mkv"]
+    end  
 
-  it 'moves and renames files using the rename_rules'
+    subject { Renamer::NameGenerator.new(method(:make_path_and_name))}
 
-  it 'escapes special characters'
-
-  it 'moves and renames subtitle files using the same rules'
-
-  it 'does not overwrite existing files'
-
-  it 'moves duplicate files to a duplicate directory'
-
-  it 'preserves multiple duplicates'
-
-
-  def clean_folders
-    FileUtils.rm_r(File.expand_path('../scan_folder/', __FILE__)) 
-  rescue
+    it { expect('fate/stay').to rename_to ['fate stay', 'fate stay.mkv'] }
+    it { expect('macross: the movie').to rename_to ['macross the movie', 'macross the movie.mkv'] }
+    it { expect('space :movie').to rename_to ['space movie', 'space movie.mkv'] }
+    it { expect('//hack root').to rename_to ['hack root', 'hack root.mkv']}
+    it { expect('hi there $$ man').to rename_to ['hi there man', 'hi there man.mkv'] }
+    it { expect('hello%%%romeo').to rename_to ["hello romeo", "hello romeo.mkv"] }
+    it { expect('blaaah   blueeee    bleeeeeeh').to rename_to ['blaaah blueeee bleeeeeeh', 'blaaah blueeee bleeeeeeh.mkv']}
   end
-
-  def create_test_files
-    FileUtils.mkdir(File.expand_path('../scan_folder/', __FILE__))
-    File.open(File.expand_path('../scan_folder/test_anime.avi', __FILE__), 'w') {|f| f.write('gibberish')}
-    File.open(File.expand_path('../scan_folder/test_anime.sub', __FILE__), 'w') {|f| f.write('subs')}
-  end
-
-  def stub_rename_rules_to_return(retval)
-    Object.stubs(:generate_name).with(1).returns(retval)
-  end
-
-
 end
