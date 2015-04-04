@@ -1,5 +1,6 @@
 require 'yaml'
 require 'thread'
+require_relative('work_item')
 require File.expand_path('../anidb', __FILE__)
 require File.expand_path('../caching_anidb', __FILE__)
 require File.expand_path('../file_list', __FILE__)

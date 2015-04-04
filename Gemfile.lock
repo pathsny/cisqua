@@ -26,6 +26,7 @@ GEM
       curb (~> 0.8)
       loofah (~> 2.0)
       sax-machine (~> 1.0)
+    invariant (0.2.0)
     json (1.8.2)
     loofah (2.0.1)
       nokogiri (>= 1.5.9)
@@ -80,6 +81,7 @@ DEPENDENCIES
   concurrent-ruby-ext
   daybreak
   feedjira
+  invariant
   json
   mocha
   nokogiri

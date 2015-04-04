@@ -9,7 +9,7 @@
   :pass: <password>
 :scanner:
   # the location where you keep your anime to be scanned
-  :basedir: < /path/to/anime
+  :basedir: /path/to/anime
   # list of file extensions to scan
   :extensions: avi mpg mkv ogm mp4 flv wmv
   # if this is false. Only the top level files of each directory in the basedir are scanned. 
@@ -24,6 +24,8 @@
   :output_location: /path/to/IncompleteAnime
   # location to store files that are duplicates.
   :duplicate_location: /path/to/DuplicateAnime
+  # location to store files that are unknown.
+  :unknown_location: /path/to/Unknown
 	# set this to true if you want a symlink back to the source whwere the files were moved
 	:symlink_source: false
 	# create symlinks to access anime by type and completeness factor. can be false, or a nested hash

@@ -11,39 +11,58 @@ info_queue = Queue.new
 rename_queue = Queue.new
 
 def while_queue_has_items(queue)
-  item = queue.pop
-  until item == :end do
+  until (item = queue.pop) == :end do
     yield item
-    item = queue.pop
   end  
+end
+
+def pipe_while_queue_has_items(source_queue, destination_queue)
+  while_queue_has_items(source_queue) do |source_item|
+    destination_queue << yield(source_item) 
+  end
+  destination_queue << :end  
 end  
 
 scanner = Thread.new do
-  while_queue_has_items(scan_queue) do |file|
-    info_queue << ed2k_file_hash(file).tap {|f, s, e| logger.debug "file #{f} has ed2k hash #{e}"}
+  pipe_while_queue_has_items(scan_queue, info_queue) do |file|
+    ed2k_file_hash(file).tap {|f, s, e| logger.debug "file #{f} has ed2k hash #{e}"}
   end
-  info_queue << :end
 end
 
 info_getter = Thread.new do
   anidb_api_klass = ARGV[0] == 'test_client' ? CachingAnidb : Anidb
   anidb_api = anidb_api_klass.new(options[:anidb])
-  while_queue_has_items(info_queue) do |data|
-    info = anidb_api.process(*data)    
-    rename_queue << [data.first, info]
+  pipe_while_queue_has_items(info_queue, rename_queue) do |data|
+    WorkItem.new(data.first, anidb_api.process(*data))
   end
-  rename_queue << :end  
 end
 
 rename_worker = Thread.new do
   renamer = Renamer.new(options[:renamer])
+  dups = []
+  files.each do 
+    work_item = rename_queue.pop
+    res = renamer.try_process(work_item)
+    case res.type
+    when :success
+      logger.info "#{work_item.file} was successfully processed to #{res.destination}"
+    when :unknown
+      logger.info "file #{work_item.file} is unknown"
+    when :duplicate
+      logger.info "#{work_item.file} is a duplicate of #{res.destination}"
+      dups << work_item
+    end      
+  end
+  scan_queue << :end
   while_queue_has_items(rename_queue) do |file, data|
-    renamer.process(file, data)
+    puts "oh noes what? #{file}, #{data}"
+  end
+  dups.each do |work_item|
+    renamer.process_duplicate(work_item)
   end  
 end
 
 files.each {|f| scan_queue << f }
-scan_queue << :end
 
 [scanner, info_getter, rename_worker].each(&:join)
 

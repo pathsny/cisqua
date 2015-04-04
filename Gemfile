@@ -14,6 +14,7 @@ gem 'sprockets', '~> 3.0.0.beta.10'
 gem 'sprockets-es6'
 gem 'nokogiri'
 gem 'concurrent-ruby-ext'
+gem 'invariant'
 
 
 group :test do

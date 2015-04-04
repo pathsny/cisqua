@@ -1,0 +1,1 @@
+WorkItem = Struct.new("WorkItem", :file, :info)
