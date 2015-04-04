@@ -47,7 +47,7 @@ rename_worker = Thread.new do
     when :success
       logger.info "#{work_item.file} was successfully processed to #{res.destination}"
     when :unknown
-      logger.info "file #{work_item.file} is unknown"
+      logger.info "file #{work_item.file} is unknown #{"and moved to #{res.destination}" if res.destination}"
     when :duplicate
       logger.info "#{work_item.file} is a duplicate of #{res.destination}"
       dups << work_item

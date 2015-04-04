@@ -4,27 +4,24 @@ require 'pathname'
 require 'invariant'
 
 class RenamerResponse
-  def initialize(type)
+  def initialize(type, destination)
     @type = type
+    @destination = destination
   end
   
-  attr_reader :type  
+  attr_reader :type, :destination  
 
   class << self
-    def unknown
-      new(:unknown)
+    def unknown(destination)
+      new(:unknown, destination)
     end
 
     def success(destination)
-      new(:success).tap do |inst|
-        inst.define_singleton_method(:destination) { destination }
-      end
+      new(:success, destination)
     end
     
     def duplicate(duplicate_of)
-      new(:duplicate).tap do |inst|
-        inst.define_singleton_method(:destination) { duplicate_of }
-      end  
+      new(:duplicate, duplicate_of)
     end      
   end  
 end  
@@ -38,7 +35,12 @@ class Renamer
 
   def try_process(work_item)
     file, info = work_item.file, work_item.info
-    return RenamerResponse.unknown unless info
+    unless info
+      ([file] + sub_files(file)).map do |f|
+        process_file_unambiguous(options[:unknown_location], f)
+      end if options[:unknown_location]   
+      return RenamerResponse.unknown(options[:unknown_location])
+    end  
     location, path, name = generate_location(info)
     duplicate_of = is_duplicate_file(file, location, name)
     if duplicate_of
@@ -48,7 +50,7 @@ class Renamer
     logger.debug "have to rename #{file} using #{path}/#{name}"
     create_location(location, info)
     ([file] + sub_files(file)).map do 
-      |f| process_file(f, location, name)
+      |f| process_file(location, f, name)
     end  
     update_symlinks_for info[:anime], path, location if options[:create_symlinks]
     RenamerResponse.success(generate_destination(file, location, name))
@@ -96,15 +98,6 @@ class Renamer
     File.exist?(destination) && destination != old_path
   end  
 
-  def process_file(old_path, location, name)
-    destination = generate_destination(old_path, location, name)
-    assert !is_duplicate_destination(old_path, destination), "file #{old_path} is duplicated at #{destination}"
-
-    # process_duplicate_file(options[:duplicate_location], old_path, new_name) and return if File.exist?(destination) && destination != old_path
-    move_file old_path, destination
-    logger.debug "moving #{old_path} to #{destination}"
-  end
-
   def generate_destination(old_path, location, new_name_without_extension)
     new_name = "#{new_name_without_extension}#{File.extname(old_path)}"
     File.join(location, new_name)
@@ -113,9 +106,11 @@ class Renamer
   # moves files to location using new_name. 
   # asserts that there is no existing file by that name
   # uses existing name if there is no new name
-  # def process_file(location, old_path, new_name)
-
-  # end
+  def process_file(location, old_path, new_name)
+    destination = generate_destination(old_path, location, new_name)
+    assert !is_duplicate_destination(old_path, destination), "file #{old_path} is duplicated at #{destination}"
+    move_file old_path, destination    
+  end
 
   # moves file to location using new_name. Adds suffixes if necessary to avoid
   # clashing with existing files.
