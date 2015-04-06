@@ -1,13 +1,14 @@
 require 'yaml'
 require 'thread'
-require_relative('work_item')
-require File.expand_path('../anidb', __FILE__)
-require File.expand_path('../caching_anidb', __FILE__)
-require File.expand_path('../file_list', __FILE__)
-require File.expand_path('../file_scanner', __FILE__)
-require File.expand_path('../renamer', __FILE__)
-require File.expand_path('../mylist_data', __FILE__)
-require File.expand_path('../../external/lru_hash', __FILE__)
+require 'multimap'
+require_relative 'work_item'
+require_relative 'anidb'
+require_relative 'caching_anidb'
+require_relative 'file_list'
+require_relative 'file_scanner'
+require_relative 'renamer'
+require_relative 'mylist_data'
+require_relative '../external/lru_hash'
 
 
 require 'logger'

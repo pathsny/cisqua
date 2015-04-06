@@ -15,6 +15,7 @@ gem 'sprockets-es6'
 gem 'nokogiri'
 gem 'concurrent-ruby-ext'
 gem 'invariant'
+gem 'multimap'
 
 
 group :test do
