@@ -15,7 +15,7 @@ module Net
   ANIME_AMASKS_ORDER.delete(:aid)
 
   DEFAULT_FILE_FFIELDS =  [ :aid, :eid, :gid, :length, :quality, :video_resolution,
-                            :source, :sub_language, :dub_language ]
+                            :source, :sub_language, :dub_language, :state ]
   DEFAULT_FILE_AFIELDS =  [ :type, :year, :highest_episode_number,
                             :english_name, :romaji_name, :epno, :ep_english_name,
                             :ep_romaji_name, :group_name, :group_short_name ]
@@ -48,6 +48,10 @@ module Net
     :theaters    => 14,
     :streamed    => 15,
     :other       => 100,
+  }
+
+  FILE_STATES = {
+
   }
   
   class AniDBUDP
@@ -605,6 +609,14 @@ module Net
             h[:anime][k] = lr.shift
           end
         end
+        if file_fields.include?(:state)
+          states = FILE_STATE_MASKS.select { |state, m| h[:file][:state].to_i & m != 0 }
+          STATE_PARTS.each do |state_part|
+            part_value = (states.keys & state_part[:keys]).first || state_part[:default]
+            part_value = state_part[:map][part_value] if state_part[:map]
+            h[:file][state_part[:name]] = part_value
+          end  
+        end  
         h
       else
         nil

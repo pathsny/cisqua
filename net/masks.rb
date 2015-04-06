@@ -83,6 +83,44 @@ module Net
     :dub_language, :sub_language, :length, :description, :aired_date, :anidb_file_name, 
   ]
 
+  FILE_STATE_MASKS = {
+    :crc_ok => 0x01,
+    :crc_err => 0x02,
+    :file_v2 => 0x04,
+    :file_v3 => 0x08,
+    :file_v4 => 0x10,
+    :file_v5 => 0x20,
+    :uncensored => 0x40,
+    :censored => 0x80
+  }
+
+  CRC_STATES = {
+    :name => :crc_status,
+    :default => :crc_unchecked, 
+    :keys => [:crc_ok, :crc_err]
+  }
+  
+  CENSORED_STATES = {
+    :name => :censored,
+    :default => :unknown,
+    :keys => [:uncensored, :censored]
+  }
+
+  VERSION_STATES = {
+    :name => :version,
+    :default => :file_v1,
+    :keys => [:file_v2, :file_v3, :file_v4, :file_v5],
+    :map => {
+      :file_v1 => 1,
+      :file_v2 => 2,
+      :file_v3 => 3,
+      :file_v4 => 4,
+      :file_v5 => 5
+    }
+  }
+
+  STATE_PARTS = [CRC_STATES, CENSORED_STATES, VERSION_STATES]
+
   ANIME_AMASKS = {
     :aid                    => 0x80000000000000,
     :dateflags             => 0x40000000000000,
