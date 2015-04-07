@@ -1,6 +1,3 @@
-require File.expand_path('../spec_helper', __FILE__)
-require File.expand_path('../../lib/mylist_data', __FILE__)
-
 describe MylistData do
   it 'provides a list of the normal episodes' do
     data = MylistData.new 12, :title=>"Binchou-tan", :unknown_ep_list=>"", :episodes=>"12", :hdd_ep_list=>"1-5,7,9,11", :deleted_ep_list=>"", :cd_ep_list=>"", :single_episode => false

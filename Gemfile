@@ -21,6 +21,7 @@ gem 'multimap'
 group :test do
   gem 'rspec'
   gem 'mocha'
+  gem 'faker'
 end
 
 group :development do
