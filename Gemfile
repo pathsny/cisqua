@@ -13,15 +13,15 @@ gem 'rest-client'
 gem 'sprockets', '~> 3.0.0.beta.10'
 gem 'sprockets-es6'
 gem 'nokogiri'
-gem 'concurrent-ruby-ext'
 gem 'invariant'
+gem 'concurrent-ruby-ext'
 gem 'multimap'
-
 
 group :test do
   gem 'rspec'
   gem 'mocha'
   gem 'faker'
+  gem 'fakefs'
 end
 
 group :development do

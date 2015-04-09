@@ -1,0 +1,34 @@
+---
+:file:
+  :aid: '10206'
+  :eid: '158404'
+  :gid: '11193'
+  :state: '1'
+  :quality: very high
+  :source: Blu-ray
+  :video_resolution: 1280x720
+  :dub_language: japanese
+  :sub_language: english
+  :length: '1424'
+  :crc_status: :crc_ok
+  :censored: :unknown
+  :version: 1
+:anime:
+  :highest_episode_number: '24'
+  :year: 2014-2014
+  :type: TV Series
+  :romaji_name: 'JoJo no Kimyou na Bouken: Stardust Crusaders'
+  :english_name: 'JoJo''s Bizarre Adventure: Stardust Crusaders'
+  :epno: '01'
+  :ep_english_name: The Man Possessed by an Evil Spirit
+  :ep_romaji_name: Akuryou ni Toritsukareta Otoko
+  :group_name: Some-Stuffs
+  :group_short_name: Some-stuffs
+  :dateflags: '0'
+  :episodes: '24'
+  :air_date: '1396656000'
+  :end_date: '1410566400'
+  :is_18_restricted: '0'
+  :ended: false
+  :completed: false
+:fid: 1478684

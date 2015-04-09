@@ -4,29 +4,6 @@ require 'pathname'
 require 'invariant'
 
 module Renamer
-  class Response
-    def initialize(type, destination)
-      @type = type
-      @destination = destination
-    end
-    
-    attr_reader :type, :destination  
-
-    class << self
-      def unknown(destination)
-        new(:unknown, destination)
-      end
-
-      def success(destination)
-        new(:success, destination)
-      end
-      
-      def duplicate(duplicate_of)
-        new(:duplicate, duplicate_of)
-      end      
-    end  
-  end  
-
   class Renamer
     def initialize(options)
       @options = options
@@ -37,44 +14,74 @@ module Renamer
     attr_reader :options
 
     def try_process(work_item)
-      file, info = work_item.file, work_item.info
-      unless info
-        response = @mover.process(options[:unknown_location], file,
+      unless work_item.info
+        response = @mover.process(work_item.file, options[:unknown_location],
           :unambiguous => true
         ) if options[:unknown_location]
-        assert(response.type == :success, "moving unkwown files should not fail")
+        assert(response.type == :success, "moving unknown files should not fail")
         return Response.unknown(response.destination)
       end
 
-      location, path, name = generate_location(info)
-      @mover.process(location, file, :new_name => name).tap do |response|
-        if response.type == :success
-          ensure_nfo(location, info)
-          update_symlinks_for(info[:anime], path, location) if options[:create_symlinks]
-        end
-      end
+      location, path, name = generate_location(work_item.info)
+      process_file(name, work_item, location, path)
     rescue
-      logger.warn "error naming #{file} from #{info.inspect} with #{$!}"
+      logger.warn "error naming #{work_item.file} from #{work_item.info.inspect} with #{$!}"
       raise
-    end
-
-    def process_duplicate(work_item)
-      assert options[:duplicate_location], "set duplicate_location to process duplicates"
-      path, name = @name_generator.generate_name_and_path(work_item.info)
-      @mover.process(options[:duplicate_location], work_item.file, 
-        :new_name => name, 
-        :unambiguous => true
-      )
     end
 
     # given a work_item indicating the existing file and given
     # a list of duplicates, processes all of them
     def process_duplicate_set(existing, duplicates)
-      result = Renamer::DuplicateResolver.resolve(existing, duplicates)
+      result = DuplicateResolver.resolve(existing, duplicates)
+      #get data shared by all files
+      location, path, name = generate_location(existing[:info])
+      junk = curried_method(:move_to_junk)[name]
+      dup = curried_method(:move_to_dup)[name]
+      result[:junk].each(&junk)
+      result[:dups].each(&dup)
 
-    end  
+      if !result[:keep_current]
+        resp = @mover.process(existing.file, options[:junk_duplicate_location],
+          :new_name => name,
+          :unambiguous => true,
+          :symlink_source => false,
+          :update_links_from => options[:fix_symlinks_root]
+        )
+        assert(resp.type == :success, "moving the existing file should not fail")
+        process_file(name, result[:selected], location, path).tap {|r|
+          assert(r.type == :success, "we just cleared the location")
+        }
+      end
+    end
 
     private
+    def curried_method(sym)
+      proc(&method(sym)).curry
+    end
+
+    def move_to_junk(name, work_item)
+      @mover.process(work_item.file, options[:junk_duplicate_location],
+        :new_name => name,
+        :unambiguous => true
+      )
+    end
+
+    def move_to_dup(name, work_item)
+      @mover.process(work_item.file, options[:duplicate_location],
+        :new_name => name,
+        :unambiguous => true
+      )
+    end
+
+    def process_file(name, work_item, location, path)
+      @mover.process(work_item.file, location, :new_name => name).tap do |response|
+        if response.type == :success
+          ensure_nfo(location, work_item.info)
+          update_symlinks_for(work_item.info[:anime], path, location) if options[:create_symlinks]
+        end
+      end
+    end  
+
     def generate_location(info)
       path, name = @name_generator.generate_name_and_path(info)
       [File.join(options[:output_location], path), path, name]
@@ -115,14 +122,10 @@ module Renamer
     end
     
     def symlink(source, dest, name)
-      src_path = Pathname.new source
-      dest_path = Pathname.new dest
-      relative = src_path.relative_path_from dest_path
-      FileUtils.mkdir_p(dest_path) unless File.exist?(dest_path)
-      File.symlink(relative, File.join(dest,name))
+      Symlinker.relative_with_name(source, dest, name)
     rescue Exception => e
       logger.warn e.inspect
       raise
-    end       
+    end
   end
 end

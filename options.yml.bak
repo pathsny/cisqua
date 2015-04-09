@@ -21,24 +21,28 @@
   # list of extensions for subtitle files. If a show is present with a subtitle, the subtitle is also copied
   :subtitle_extensions: srt ass idx sub pdf ssa
   # location to store anime.
-  :output_location: /path/to/IncompleteAnime
+  :output_location: /path/to/files
   # location to store files that are duplicates.
-  :duplicate_location: /path/to/DuplicateAnime
+  :duplicate_location: /path/to/duplicate
+  # location to store files that are duplicates that can be deleted.
+  :junk_duplicate_location: /path/to/duplicate_junk
   # location to store files that are unknown.
   :unknown_location: /path/to/Unknown
-	# set this to true if you want a symlink back to the source whwere the files were moved
-	:symlink_source: false
-	# create symlinks to access anime by type and completeness factor. can be false, or a nested hash
+  # set this to true if you want a symlink back to the source where the files were moved
+  :symlink_source: true
+  # when replacing an existing file, searches this folder for symlinks and updates them to the new location. Most likely same as basedir. 
+  :fix_symlinks_root: /path/to/anime
+  # create symlinks to access anime by type and completeness factor. can be false, or a nested hash
   :create_symlinks: 
     :movies: /path/to/movies
     :incomplete_series: /path/to/incomplete tv series, oav and web
     :complete_series: /path/to/complete tv series, oav and web
     :incomplete_other: /path/to/incomplete other, music video etc
     :complete_other: /path/to/complete other, music video etc
-	# set this to a non null value if adult shows should be symlinked to a folder
-		:adult_location: /path/to/store
+  # set this to a non null value if adult shows should be symlinked to a folder
+    :adult_location: /path/to/store
     # this is useful if you use xbmc. an nfo file is created in each folder to identify the anime.
-  :create_nfo_files: false
+  :create_nfo_files: true
 # set this to false if you want the base directory left alone. Otherwise this removes all directories that can be 
 # safely removed. i.e either they're empty or contain only empty directories
 :clean_up_empty_dirs: true

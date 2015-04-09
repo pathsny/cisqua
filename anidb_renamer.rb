@@ -39,26 +39,38 @@ end
 
 rename_worker = Thread.new do
   renamer = Renamer::Renamer.new(options[:renamer])
-  dups = []
+  dups = Multimap.new
+  success = {}
   files.each do 
     work_item = rename_queue.pop
     res = renamer.try_process(work_item)
     case res.type
     when :success
       logger.info "#{work_item.file} was successfully processed to #{res.destination}"
+      success[res.destination] = work_item
     when :unknown
       logger.info "file #{work_item.file} is unknown #{"and moved to #{res.destination}" if res.destination}"
     when :duplicate
       logger.info "#{work_item.file} is a duplicate of #{res.destination}"
-      dups << work_item
+      dups[res.destination] = work_item
     end      
   end
+  dups.each_association do |k, _|
+    # rescan the duplicates unless we have it in the success map
+    scan_queue << k unless success.has_key?(k)
+  end 
   scan_queue << :end
-  while_queue_has_items(rename_queue) do |file, data|
-    puts "oh noes what? #{file}, #{data}"
+
+  #resolve duplicates immideately for when we have all the info
+  dups.each_association do |k, items|
+    renamer.process_duplicate_set(
+      WorkItem.new(k, success[k].info), items
+    ) if success.has_key?(k)
   end
-  dups.each do |work_item|
-    renamer.process_duplicate(work_item)
+
+  #resolve duplicates as we get legacy info  
+  while_queue_has_items(rename_queue) do |work_item|
+    renamer.process_duplicate_set(work_item, dups[work_item.file])
   end  
 end
 

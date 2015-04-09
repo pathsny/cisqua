@@ -7,7 +7,7 @@ module Renamer
     # moves file to location. 
     # options can be configured to create a new_name at destination or 
     # symlink back to source.
-    def process(location, old_path, options = {})
+    def process(old_path, location, options = {})
       logger.debug "process #{old_path} to #{location} with #{options}"
       destination = generate_destination(old_path, location, options)
       if (is_duplicate_destination(old_path, destination))
@@ -50,11 +50,16 @@ module Renamer
       # moves a file from `old_path` to `new_path`.
       # Optionally generates a symlink back to old_path if specified with options
     def move_file(old_path, new_path, options)
-      FileUtils.mv old_path, new_path
-      if @options[:symlink_source] && old_path != new_path
-        relative = (Pathname.new new_path).relative_path_from (Pathname.new (File.dirname old_path))
-        File.symlink(relative, old_path)
-      end  
+      FileUtils.mv(old_path, new_path)
+      if @options.merge(options)[:symlink_source] && old_path != new_path
+        Symlinker.relative(new_path, old_path)
+      end
+      if options[:update_links_from]
+        symlink_for(old_path, options[:update_links_from]).each do |old_link|
+          FileUtils.rm(old_link)
+          Symlinker.relative(new_path, old_link)
+        end
+      end
     end  
   end    
 end

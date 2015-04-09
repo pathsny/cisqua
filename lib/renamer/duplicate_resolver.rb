@@ -1,5 +1,5 @@
 module Renamer
-class DuplicateResolver
+  class DuplicateResolver
     class << self
       def extract_clones(original, duplicates)
         clones_of_original, rest = duplicates.partition do |item| 
@@ -47,5 +47,5 @@ class DuplicateResolver
         item_1.quality <=> item_2.quality
       end
     end
-   end  
+  end  
 end
