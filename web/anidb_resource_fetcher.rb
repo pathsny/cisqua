@@ -22,7 +22,7 @@ class AnidbResourceFetcher
 
 
     private
-    @@fixed_pool_executor = Concurrent::FixedThreadPool.new(7)
+    @@fixed_pool_executor = Concurrent::FixedThreadPool.new(5)
 
     def get_file(name)
       file_path = File.join(Web_dir, 'anidb_cache', name)

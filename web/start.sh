@@ -1,0 +1,1 @@
+RACK_ENV='development' rerun --pattern "**/*.{rb,erb}" --ignore public/ main.rb

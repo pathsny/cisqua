@@ -5,14 +5,15 @@ require 'json'
 Data_Location = File.join(File.dirname(__FILE__), '..', 'data')
 
 class Show
-  def initialize(aid, name)
+  def initialize(aid, name, feed)
     @version = 1
-    @aid = aid
+    @id = aid
     @name = name
+    @feed = feed
   end  
   
   attr_accessor :name, :feed, :fetched_at, :auto_fetch, :created_at
-  attr_reader :version, :aid
+  attr_reader :version, :id
   
   class << self
     def make
@@ -32,9 +33,13 @@ class Show
       lock { |db| db.map {|k, v| v} }
     end
     
-    def get(aid)
-      lock { |db| db[aid].tap { |s| raise "invalid id" unless s } }
+    def get(id)
+      lock { |db| db[id].tap { |s| raise "invalid id" unless s } }
     end
+
+    def exists?(id)
+      lock { |db| db.has_key?(id) }
+    end  
   end
   
   def lock(&b)
@@ -42,18 +47,19 @@ class Show
   end  
   
   def save
-    lock {|db| db[aid] = self }
+    lock {|db| db[id] = self }
   end
   
   def destroy
-    lock {|db| db.delete self.aid }
+    lock {|db| db.delete self.id }
   end
   
   def to_json(*a)
     {
-      aid: aid,
+      id: id.to_i,
       name: name,
-      created_at: created_at
+      created_at: created_at,
+      feed: feed
     }.to_json(*a)
   end        
 end

@@ -1,62 +1,15 @@
 <!DOCTYPE html >
 <html>
     <body>
-        <meta charset="utf-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <meta charset="utf-8"/>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
         <title>ToDo</title>
-        <meta name="description" content="">
-        <meta name="viewport" content="width=device-width">
-        <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
-        <link rel="icon" href="favicon.ico" type="image/x-icon">        
-        <link rel="stylesheet" href="assets/jquery-ui/themes/smoothness/jquery-ui.min.css">
-        <link rel="stylesheet" href="assets/styles.css">
-        <div id="container">
-            <section id="showforms" class="clearfix">
-                <div id="newshowform" class="floatleft fifty">
-                    <h2>Add a New Show</h2>
-                      <form id="addshow" data-bind="submit: addShow" autocomplete="off">
-                        <label for="show">Show Name: </label>
-                        <input type="text" id="show" 
-                          data-bind="autocomplete: { source: allShows, select: onSelectShow, minLength: 3, focus: onFocusShow }"/>
-                        <input type="submit">
-                      </form>
-                </div>
-            </section>
-            <section id="showtable">
-                <h2>Shows: <span></span></h2>
-                <table>
-                    <thead><tr>
-                        <th>Name</th>
-                        <th>Aid</th>
-                        <th>Delete</th>
-                    </tr></thead>
-                    <tbody data-bind="foreach: shows">
-                      <tr>
-                        <td data-bind="text: name"></td>
-                        <td data-bind="text: aid"></td>
-                        <td data-bind="click: $root.destroyShow" class="destroyshow"><a>X</a></td>
-                    </tr>
-                </tbody>
-              </table>
-            </section>
+        <meta name="description" content=""/>
+        <meta name="viewport" content="width=device-width"/>
+        <link rel="shortcut icon" href="favicon.ico" type="image/x-icon"/>
+        <link rel="icon" href="favicon.ico" type="image/x-icon"/>        
+        <div id="app">
         </div>
-        <script src="assets/jquery/dist/jquery.min.js"></script>
-        <script src="assets/jquery-ui/jquery-ui.min.js"></script>
-        <script src="assets/knockout/dist/knockout.js"></script> 
-        <script src="assets/knockout-jqueryui/dist/knockout-jqueryui.min.js"></script>
-        <script src="assets/xml-to-json/xml.js"></script>
-        <script src="assets/handlebars/handlebars.js"></script>
-        <script id="autocomp-template" type="text/x-handlebars-template">
-            <li>
-                <div>
-                    <a><img src="anidb/thumb/{{aid}}.jpg"/><span>{{name}}</span></a>
-                 </div>
-                 {{#if type}}
-                    <div><span>{{type}}</span>, <span>{{count}} eps</span>
-                 {{/if}}      
-            </li>
-        </script>
-        <script src="assets/browser-polyfill.js"></script>
-        <script src="assets/app.js"></script> 
+        <script src="bundle.js" type="text/javascript"></script>
     </body>
 </html>

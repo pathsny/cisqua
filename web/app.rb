@@ -5,9 +5,9 @@ require 'bundler/setup'
 require 'sinatra/base'
 require 'tilt/erb'
 
-# require 'rack/streaming_proxy'
-
 class App < Sinatra::Application
+
+  set :static_cache_control, [:no_cache, :must_revalidate, max_age: 0]
 
   before do
       content_type 'application/json'
@@ -15,7 +15,11 @@ class App < Sinatra::Application
 
   get "/" do
     content_type 'html'
-    erb :index
+    erb :index, :locals => {:production => self.class.production?}
+  end
+
+  get "/shows/:id" do
+    Show.exists?(params[:id]) ? Show.get(params[:id]) : not_found
   end
 
   get "/shows" do
@@ -23,7 +27,7 @@ class App < Sinatra::Application
   end
 
   post "/shows/new" do
-    @show = Show.new(params[:aid], params[:name])
+    @show = Show.new(params[:id], params[:name], params[:feed])
     @show.created_at = DateTime.now
     @show.save.to_json
   end
@@ -34,8 +38,8 @@ class App < Sinatra::Application
   #   show.save.to_json
   # end
 
-  delete "/shows/:aid" do
-    @show = Show.get params[:aid]
+  delete "/shows/:id" do
+    @show = Show.get params[:id]
     @show.destroy.to_json
   end
 
