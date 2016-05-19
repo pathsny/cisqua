@@ -1,5 +1,7 @@
+# identify duplicate folders with the same show
+
 require File.expand_path('../../lib/libs', __FILE__)
-options = YAML.load_file(File.expand_path('../../options.yml', __FILE__))
+options = YAML.load_file(File.expand_path('../../data/options.yml', __FILE__))
 require 'rexml/document'
 r_options = options[:renamer]
 

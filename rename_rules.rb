@@ -1,4 +1,4 @@
-#  this method should return a path where files should be stored inside the destination directory and 
+# this method should return a path where files should be stored inside the destination directory and 
 # the name that an identified file should take.
 # As a sample, the given file uses the romanji name of the anime as the folder
 # and the file is written as anime_name - episode <number> [groupname] and movie files are stored as

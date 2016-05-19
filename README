@@ -1,13 +1,28 @@
+# ANIDB RUBY
+
 This is a very simple anidb client, made mostly for my needs. It's been built by scavenging a much more featurefull client that you can find here http://www.lacave.net/~fred/projets/ranidb/.
 
-This client, every time it runs, scans all the files in a given folder, identifies them and renames them however you want. Additionally it adds the files to your mylist. If you use xbmc, you can also use it to generate nfo files that work well with the anidb scraper.
+# RENAMER
 
-To use it, first download this repository using git or by downloading the archive. Copy options.yml.bak to options.yml and then edit the file to choose what you want the client to do. There are comments letting you know what's possible.
+This is a script that when run, scans all the files in a folder
 
-To change the renaming rules, you will have to edit rename_rules.rb. There are comments to help you along.
+* renames them with any custom pattern you would like
+* builds symlinks to allow you to identify series, movies etc
+* adds them files to your anidb myslist
+* generates nfo files for xbmc integration
 
-Finally you can run it as "ruby anidb_renamer.rb"
+Run this using ```ruby anidb_renamer.rb```
 
-____________________________________________________________________________________________________________________
+# WEB INTERFACE
 
+There is also a web interface that allows you to follow shows and automatically download them from torrents. Kinda like sickbeard
+
+# INSTALLATION
+
+* Install ruby, node.js, npm
+* download this repository using git or by downloading the archive. 
+* run scripts/setup.rb
+* modify data/options.yml to add your username and other details
+
+# OTHER SCRIPTS
 There is another top level script called nfoize. This is to create nfo files in your anime folders for XBMC. To run this just say "ruby nfoize.rb <anime_folder> <location to keep the processed folders>".  The script assumes that in the anime folder you have one folder per anime and each of these has files. It uses the anidb api, so you'll have to edit the options.yml

@@ -92,7 +92,7 @@ require 'fakefs/spec_helpers'
 require_relative '../lib/libs'
 create_logger('/dev/null')
 
-OPTIONS_BAK = YAML.load_file(File.expand_path('../../options.yml.bak', __FILE__))
+OPTIONS_BAK = YAML.load_file(File.expand_path('../../script/helpers/options.yml.bak', __FILE__))
 DUMMY_INFO = YAML.load_file(File.expand_path('../dummy_info.yml', __FILE__))
 
 def write_file(name, content)

@@ -1,5 +1,8 @@
 #!/usr/bin/env ruby
+# console for debugging. 
+#    anidb loads a console with the udp client
+#    data loads a console with the database 
 name = ARGV[0]
-location = File.expand_path("../#{name}_console.rb", __FILE__)
+location = File.expand_path("../helpers/#{name}_console.rb", __FILE__)
 exec "ruby -S irb -r #{location}  --simple-prompt"
 

@@ -25,9 +25,9 @@ class AnidbResourceFetcher
     @@fixed_pool_executor = Concurrent::FixedThreadPool.new(5)
 
     def get_file(name)
-      file_path = File.join(Web_dir, 'anidb_cache', name)
+      file_path = File.join(Web_dir, '../data/http_anime_info_cache', name)
       return file_path if File.exist?(file_path)
-      lock_path = File.join(Web_dir, 'anidb_cache', 'lock', name) 
+      lock_path = File.join(Web_dir, '../data/http_anime_info_cache', 'lock', name) 
       begin
         lock_file = File.open(lock_path, File::RDWR|File::CREAT)
         lock_file.flock(File::LOCK_EX)

@@ -1,3 +1,5 @@
+# identifies duplicate files and unknown files 
+
 require File.expand_path('../../lib/libs', __FILE__)
 options = YAML.load_file(File.expand_path('../../options.yml', __FILE__))
 require 'rexml/document'

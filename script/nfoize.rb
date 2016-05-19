@@ -1,10 +1,12 @@
+# Build nfo files for existing shows for kodi/xbmc scraper integration
+
 require 'rubygems'
 require 'fileutils'
-require File.expand_path('../lib/libs', __FILE__)
+require File.expand_path('../../lib/libs', __FILE__)
 
 abort "nfoize <source_path> <destination_path>" unless ARGV.length == 2
 
-options = YAML.load_file(File.expand_path('../options.yml', __FILE__))
+options = YAML.load_file(File.expand_path('../../data/options.yml', __FILE__))
 
 destination = ARGV[1]
 puts "moving done to #{destination}"

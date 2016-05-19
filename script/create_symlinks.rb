@@ -1,7 +1,8 @@
 #works on a series of files and creates the symlinks that would be created normally. assumes the nfo files exist with
 #the anidb ids of anime. the argument passed in is the first folder to start from (to allow resuming)
+
 require File.expand_path('../../lib/libs', __FILE__)
-options = YAML.load_file(File.expand_path('../../options.yml', __FILE__))
+options = YAML.load_file(File.expand_path('../../data/options.yml', __FILE__))
 require 'rexml/document'
 r_options = options[:renamer]
 

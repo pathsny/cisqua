@@ -2,7 +2,7 @@ require 'daybreak'
 require 'date'
 require 'json'
 
-Data_Location = File.join(File.dirname(__FILE__), '..', 'data')
+Data_Location = File.join(File.dirname(__FILE__), '../../data')
 
 class Show
   def initialize(aid, name, feed)
@@ -20,7 +20,11 @@ class Show
       db = Daybreak::DB.new(File.join(Data_Location, 'shows.db')).tap do |db| 
         at_exit { db.close }
       end
-    end  
+    end
+
+    def close
+      @db && @db.close
+    end   
     
     def lock
       @db ||= make
@@ -63,3 +67,8 @@ class Show
     }.to_json(*a)
   end        
 end
+
+at_exit {
+  puts "closing database"
+  Show.close
+}

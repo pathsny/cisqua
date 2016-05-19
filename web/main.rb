@@ -1,12 +1,18 @@
 require 'yaml'
-Options = YAML.load_file(File.join(File.absolute_path(File.dirname(__FILE__)), '..', 'options.yml'))[:web]
+Options = YAML.load_file(File.join(
+  File.absolute_path(File.dirname(__FILE__)), 
+  '..',
+  'data', 
+  'options.yml'
+))[:web]
 Web_dir = File.absolute_path(File.dirname(__FILE__))
 
 require 'rack'
 require 'rack/contrib'
 require 'rack/handler/puma'
 require_relative 'app.rb'
-ENV['RACK_ENV'] = 'deployment' unless ENV['RACK_ENV']
+ENV['RACK_ENV'] = ENV['RACK_ENV'] || Options[:environment] || 'production'
+puts "the env is #{ENV['RACK_ENV']}"
 
 app = Rack::Builder.new do
   use Rack::CommonLogger
