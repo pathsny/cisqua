@@ -1,1 +1,1 @@
-rerun --pattern "**/*.{rb,erb}" --ignore public/ main.rb
+bundle exec rerun --pattern "**/*.{rb,erb}" --ignore public/ main.rb

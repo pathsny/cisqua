@@ -24,6 +24,8 @@ end
 
 group :development do
   gem 'rerun', '0.10.0'
+  gem 'capistrano'
+  gem 'capistrano-rsync-bladrak'
+  gem 'capistrano-bundler'
+  gem 'capistrano3-puma'
 end  
-
-gem 'rack-proxy', '0.5.17'

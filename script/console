@@ -4,5 +4,6 @@
 #    data loads a console with the database 
 name = ARGV[0]
 location = File.expand_path("../helpers/#{name}_console.rb", __FILE__)
+raise "#{name} is not a supported console type" unless File.exist?(location)
 exec "ruby -S irb -r #{location}  --simple-prompt"
 
