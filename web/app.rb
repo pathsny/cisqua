@@ -17,14 +17,16 @@ class App < Sinatra::Application
   end  
 
   set :static_cache_control, [:no_cache, :must_revalidate, max_age: 0]
+  set :public_folder, 'public'
 
   before do
     content_type 'application/json'
   end
 
   get "/" do
-    content_type 'html'
-    erb :index, :locals => {:production => self.class.production?}
+    redirect '/index.html'
+    # content_type 'html'
+    # erb :index, :locals => {:production => self.class.production?}
   end
 
   get "/shows/:id" do
