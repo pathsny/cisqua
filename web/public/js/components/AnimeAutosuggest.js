@@ -5,9 +5,9 @@ import Autosuggest from 'react-autosuggest';
 import xml from 'xml-to-json/xml.js'
 import _ from 'lodash'
 import invariant from 'invariant'
-import theme from '../styles/Autosuggest.css'
+import theme from '../../styles/Autosuggest.css'
 
-import {asArray, getAnidbTitle} from './anidb_utils.js'
+import {asArray, getAnidbTitle} from '../utils/anidb_utils.js'
 
 const fixedInputProps = {
   placeholder: 'Show Name',
@@ -39,11 +39,11 @@ export default class AnimeAutosuggest extends Component {
 
   componentWillReceiveProps(nextProps) {
     invariant( // only the user can select an anime;
-      nextProps.lastSelectionByUser || 
-      nextProps.selectedAnime === null,
+      nextProps.value.lastSelectionByUser || 
+      nextProps.value.anime === null,
       `invalid props being sent ${nextProps}`
     );
-    if (!nextProps.lastSelectionByUser && this.props.selectedAnime !== null) {
+    if (!nextProps.value.lastSelectionByUser && this.props.value.anime !== null) {
       // this condition implies that we are clearing the selection
       this.setState(initialState);
     }
@@ -98,7 +98,7 @@ export default class AnimeAutosuggest extends Component {
   }
 
   _onSuggestionSelected(event, {suggestion}) {
-    this.props.onAnimeSelection(suggestion)
+    this.props.onChange(suggestion)
     event.preventDefault();
   }
 
@@ -125,9 +125,11 @@ export default class AnimeAutosuggest extends Component {
 // that means we cleared the component)
 
 AnimeAutosuggest.propTypes = {
-  selectedAnime: PropTypes.shape({
-    '@aid': PropTypes.string.isRequired
-  }),
-  onAnimeSelection: PropTypes.func.isRequired,
-  lastSelectionByUser: PropTypes.bool.isRequired,
+  value: PropTypes.shape({
+    anime: PropTypes.shape({
+      '@aid': PropTypes.string.isRequired
+    }),
+    lastSelectionByUser: PropTypes.bool.isRequired,
+  }).isRequired,
+  onChange: PropTypes.func.isRequired,
 }

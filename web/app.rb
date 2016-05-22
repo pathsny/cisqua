@@ -25,8 +25,6 @@ class App < Sinatra::Application
 
   get "/" do
     redirect '/index.html'
-    # content_type 'html'
-    # erb :index, :locals => {:production => self.class.production?}
   end
 
   get "/shows/:id" do
@@ -47,11 +45,6 @@ class App < Sinatra::Application
   #   @show = Show.get params[:id]
   #   @show.aid = params[:aid]
   #   show.save.to_json
-  # end
-
-  # delete "/shows/:id" do
-  #   @show = Show.get params[:id]
-  #   @show.destroy.to_json
   # end
 
   get "/anidb/:aid.xml" do

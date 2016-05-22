@@ -32,8 +32,8 @@ class AnidbResourceFetcher
         lock_file = File.open(lock_path, File::RDWR|File::CREAT)
         lock_file.flock(File::LOCK_EX)
         return file_path if File.exist?(file_path)
+        data = yield
         file = File.open(file_path, 'wb') do |output|
-          data = yield
           output.write data
         end
         return file_path  
