@@ -98,7 +98,10 @@ export default class AnimeAutosuggest extends Component {
   }
 
   _onSuggestionSelected(event, {suggestion}) {
-    this.props.onChange(suggestion)
+    this.props.onChange(event, {
+      anime: suggestion,
+      lastSelectionByUser: true,
+    })
     event.preventDefault();
   }
 

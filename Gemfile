@@ -14,6 +14,7 @@ gem 'nokogiri'
 gem 'invariant'
 gem 'concurrent-ruby-ext'
 gem 'multimap'
+gem 'veto'
 
 group :test do
   gem 'rspec'

@@ -36,9 +36,12 @@ class App < Sinatra::Application
   end
 
   post "/shows/new" do
-    @show = Show.new(params[:id], params[:name], params[:feed])
-    @show.created_at = DateTime.now
-    @show.save.to_json
+    begin
+      @show = Show.new(params[:id], params[:name], params[:feed], params[:auto_fetch])
+      @show.save.to_json
+    rescue
+      [400, @show.errors.to_json]
+    end  
   end
 
   # put "/shows/:id" do

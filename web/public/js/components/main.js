@@ -74,13 +74,18 @@ MainPresentation.contextTypes = {
   muiTheme: PropTypes.object.isRequired,
 }
 
+
+const mapStateToProps = (state) => ({
+  fetchingList: state.app.fetching.list
+})
+
+const mapDispatchToProps = (dispatch) => ({
+  onRefresh: () => dispatch(fetchShows())
+})
+
 const Main = connect(
-  (state) => ({
-    fetchingList: state.fetching.list
-  }),
-  (dispatch) => ({
-    onRefresh: () => dispatch(fetchShows())
-  })
+  mapStateToProps,
+  mapDispatchToProps,
 )(MainPresentation)
 
 export default Main

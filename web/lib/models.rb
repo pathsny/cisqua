@@ -1,19 +1,24 @@
 require 'daybreak'
 require 'date'
 require 'json'
+require_relative 'show_validator'
 
 Data_Location = File.join(File.dirname(__FILE__), '../../data')
 
 class Show
-  def initialize(aid, name, feed)
+  include Veto.model(ShowValidator.new)
+
+  def initialize(id, name, feed, auto_fetch)
     @version = 1
-    @id = aid
+    @id = id
     @name = name
     @feed = feed
+    @auto_fetch = auto_fetch
+    @is_new = true
   end  
   
-  attr_accessor :name, :feed, :fetched_at, :auto_fetch, :created_at
-  attr_reader :version, :id
+  attr_accessor :name, :feed, :auto_fetch, :errors
+  attr_reader :version, :id, :created_at, :updated_at
   
   class << self
     def make
@@ -22,8 +27,13 @@ class Show
       end
     end
 
+    def closed?
+      return true unless @db
+      @db.closed?
+    end  
+
     def close
-      @db && @db.close
+      @db && @db.flush.close
     end   
     
     def lock
@@ -51,9 +61,25 @@ class Show
   end  
   
   def save
-    lock {|db| db[id] = self }
+    validate!
+    lock do |db|
+      db[id] = self.clone.tap {|c| 
+        c.send(:remove_instance_variable, :@is_new)
+        c.instance_variable_set(:@created_at, DateTime.now) if is_new
+        c.instance_variable_set(:@updated_at, DateTime.now)
+      } 
+    end  
   end
-  
+
+  def has_instance_in_db?
+    return false unless self.id
+    self.class.exists?(self.id)
+  end  
+
+  def is_new?
+    @is_new
+  end
+
   def destroy
     lock {|db| db.delete self.id }
   end
@@ -63,12 +89,16 @@ class Show
       id: id.to_i,
       name: name,
       created_at: created_at,
-      feed: feed
+      feed: feed,
+      auto_fetch: auto_fetch
     }.to_json(*a)
   end        
 end
 
-at_exit {
+at_exit do
   puts "closing database"
-  Show.close
-}
+  unless Show.closed?
+    thr = Thread.new { Show.close }
+    thr.join
+  end  
+end
