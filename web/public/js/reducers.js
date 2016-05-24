@@ -1,6 +1,7 @@
 'use strict';
 
-import { ADD_SHOW, FETCH_SHOWS, ADD_SHOW_DIALOG } from './actions'
+import { ADD_SHOW, FETCH_SHOWS, ADD_SHOW_DIALOG, FETCH_SUGGESTIONS } from './actions'
+
 import update from 'react-addons-update'
 import typeToReducer from 'type-to-reducer'
 import { combineReducers } from 'redux'
@@ -8,7 +9,9 @@ import {reducer as formReducer} from 'redux-form';
 import invariant from 'invariant'
 import _ from 'lodash'
 
-const initialState = {
+import {getAnidbTitle} from './utils/anidb_utils'
+
+const initialAppState = {
   fetching: {
     list: false,
   },
@@ -49,9 +52,44 @@ const appReducer = typeToReducer({
       });
     },
   }
-}, initialState)
+}, initialAppState)
+
+const initialAutosuggestState = {
+  fetching: {},
+  suggestions: {},
+}
+
+const autosuggestReducer = typeToReducer({
+  [FETCH_SUGGESTIONS]: {
+    PENDING: (state, action) => {
+      const hint = action.meta.hint
+      return update(state, {
+        fetching: {$merge: {[hint]: hint}}
+      });
+    },
+    REJECTED: (state, action) => {
+      const hint = action.meta.hint
+      return update(state, {
+        fetching: {$set: _.omit(state.fetching, [hint])}
+      })
+    },
+    FULFILLED: (state, action) => {
+      const hint = action.meta.hint
+      const suggestions = action.payload.map(
+        s => update(s, {$merge: {name: getAnidbTitle(s)}}) 
+      );
+      return update(state, {
+        fetching: {$set: _.omit(state.fetching, [hint])},
+        suggestions: {$merge: {[hint]: suggestions}}
+      })
+      return state;
+    },  
+  }
+}, initialAutosuggestState)
+
 
 export default combineReducers({
   app: appReducer,
-  form: formReducer
+  form: formReducer,
+  autosuggest: autosuggestReducer,
 })

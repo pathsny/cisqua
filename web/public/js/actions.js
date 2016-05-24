@@ -2,6 +2,9 @@
 
 import { createAction } from 'redux-actions'
 import ExtendableError from 'es6-error';
+import xml from 'xml-to-json/xml.js'
+
+import {asArray} from './utils/anidb_utils.js'
 
 /*
  * action types
@@ -68,30 +71,69 @@ function fetchShowsSmart() {
  * Add new Show
  */
 
-async function addShowToServer(id, name, feed, auto_fetch) {
-  const formData = new FormData()
-  formData.append('id', id)
-  formData.append('name', name)
-  formData.append('feed', feed)
-  formData.append('auto_fetch', auto_fetch)
-  return await processJSONResponse(fetch('/shows/new', {
-    method: 'POST',
-    body: formData,
-  }))
-}
-
 const addShow = createAction(ADD_SHOW);
+
+function addShowToServer(id, name, feed, auto_fetch) {
+  return (dispatch) => (async function(){
+    const formData = new FormData()
+    formData.append('id', id)
+    formData.append('name', name)
+    formData.append('feed', feed)
+    formData.append('auto_fetch', auto_fetch)
+    const result = await processJSONResponse(fetch('/shows/new', {
+      method: 'POST',
+      body: formData,
+    }))
+    dispatch(addShow(result))
+  })()
+}
 
 const addShowDialog = createAction(ADD_SHOW_DIALOG);
 
 /*
- * action creators
+ * Fetch Suggestions for Autosuggest
+ */
+
+async function fetchSuggestionsFromAnidb(hint) {
+  const query = hint.trim().replace(/[\s]+/g, ' ').split(' ').
+    map(w => `%2B${w}*`).join(' ');
+  const url = 'http://anisearch.outrance.pl/?task=search&query=' + query;
+  const response = await fetch(url)
+  const text = await response.text();
+  const xmlData = xml.xmlToJSON(text);
+  return asArray(xmlData.animetitles.anime);
+}
+
+const fetchSuggestionsAction = createAction(
+  FETCH_SUGGESTIONS,
+  (hint) => ({promise: fetchSuggestionsFromAnidb(hint)}),
+  (hint) => ({hint: hint}),
+)
+
+const debouncedFetchSuggestions = _.debounce(
+  (dispatch, hint)  => dispatch(fetchSuggestionsAction(hint)),
+  300,
+);
+
+function fetchSuggestionsFromAnidbSmart(hint) {
+  return (dispatch, getState) => {
+    const state = getState();
+    if (!(
+      _.has(state.autosuggest.fetching, hint) ||
+      _.has(state.autosuggest.suggestions, hint)
+    )) {
+      debouncedFetchSuggestions(dispatch, hint)
+    }
+  }
+}
+
+/*
+ * exported action creators
  */
 
 export { 
   fetchShowsSmart, 
-  // fetchSuggestionsFromAnidbSmart, 
-  addShow, 
+  fetchSuggestionsFromAnidbSmart, 
   addShowDialog,
   addShowToServer,
 }

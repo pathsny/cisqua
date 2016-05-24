@@ -11,18 +11,17 @@ import Toggle from 'material-ui/Toggle';
 import _ from 'lodash'
 
 import AnimeAutosuggest from './AnimeAutosuggest.js'
-import {getAnidbTitle} from '../utils/anidb_utils.js'
-import {addShow, addShowToServer, addShowDialog, JSONResponseCarryingError} from '../actions.js'
+import {addShowToServer, addShowDialog, JSONResponseCarryingError} from '../actions.js'
 
 async function onSubmit(values, dispatch) {
   try {
-    const result = await addShowToServer(
-      _.parseInt(values.anime.anime['@aid']),
-      getAnidbTitle(values.anime.anime),
+    const anime = values.anime.suggestion
+    dispatch(addShowToServer(
+      _.parseInt(anime['@aid']),
+      anime.name,
       values.feed,
       values.auto_fetch,  
-    );
-    dispatch(addShow(result));
+    ));
   } catch (e) {
     if (e instanceof JSONResponseCarryingError) {
       const errorJSON = e.payload
@@ -43,7 +42,7 @@ const validate = values => {
   if (!values.feed) {
     errors.feed = 'Feed Required'
   }
-  if (!values.anime.anime) {
+  if (!values.anime.suggestion) {
     errors.feed = 'Anime Required'
   }
   return errors

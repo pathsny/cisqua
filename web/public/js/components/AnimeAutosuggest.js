@@ -2,12 +2,12 @@
 
 import React, { PropTypes, Component } from 'react';
 import Autosuggest from 'react-autosuggest';
-import xml from 'xml-to-json/xml.js'
 import _ from 'lodash'
 import invariant from 'invariant'
+import { connect } from 'react-redux'
 import theme from '../../styles/Autosuggest.css'
 
-import {asArray, getAnidbTitle} from '../utils/anidb_utils.js'
+import {fetchSuggestionsFromAnidbSmart} from '../actions'
 
 const fixedInputProps = {
   placeholder: 'Show Name',
@@ -18,23 +18,18 @@ const fixedInputProps = {
 const initialState = {
   value: '', 
   suggestions: [],
-  isLoading: false,
 };
 
-export default class AnimeAutosuggest extends Component {
+export default class AnimeAutosuggestPresentation extends Component {
   constructor(props) {
     super(props)
     this.state = initialState;
     this._onChange = this._onChange.bind(this);
     this._onSuggestionsUpdateRequested = this._onSuggestionsUpdateRequested.bind(this);
-    this._renderSuggestion = this._renderSuggestion.bind(this);
-    this._suggestionValue = this._suggestionValue.bind(this);
     this._onSuggestionSelected = this._onSuggestionSelected.bind(this);
     this._shouldSuggest = this._shouldSuggest.bind(this);
-    this._updateSuggestions = _.debounce(
-      this._updateSuggestions.bind(this),
-      300,
-    );
+    this._renderSuggestion = this._renderSuggestion.bind(this);
+    this._suggestionValue = this._suggestionValue.bind(this);
   }
 
   componentWillReceiveProps(nextProps) {
@@ -43,6 +38,11 @@ export default class AnimeAutosuggest extends Component {
       nextProps.value.anime === null,
       `invalid props being sent ${nextProps}`
     );
+    if (_.has(nextProps.suggestionMap, this.state.value)) {
+      this.setState({
+        suggestions: nextProps.suggestionMap[this.state.value],
+      });
+    }
     if (!nextProps.value.lastSelectionByUser && this.props.value.anime !== null) {
       // this condition implies that we are clearing the selection
       this.setState(initialState);
@@ -59,63 +59,38 @@ export default class AnimeAutosuggest extends Component {
 
   _onSuggestionsUpdateRequested({ value }) {
     if (this._shouldSuggest(value)) {
-      this._updateSuggestions(value);  
-      this.setState({
-        isLoading: true,
-      });
-    } else {
-      this.setState({isLoading: false});
+      this.props.fetchSuggestions(value)
     }
   }
 
-  async _updateSuggestions(value) {
-    const query = value.trim().replace(/[\s]+/g, ' ').split(' ').
-      map(w => `%2B${w}*`).join(' ');
-    const url = 'http://anisearch.outrance.pl/?task=search&query=' + query;
-    const response = await fetch(url)
-    const text = await response.text();
-    if (!this.state.isLoading) {
-      return // we took too long to load suggestions, but now the user isnt waiting
-      // either the user cleared the text, or has made a selection
-    }
-    const xmlData = xml.xmlToJSON(text);
-    const animes = asArray(xmlData.animetitles.anime);
-    if (this.state.value === value) {
-      // we fetched what the user asked for
-      this.setState({suggestions: animes, isLoading: false});  
-    } else {
-      // these selections are stale, we can display them though as long as there is a spinner
-      this.setState({suggestions: animes, isLoading: true});  
-    }
+  _suggestionValue(suggestion) {
+    return suggestion.text
   }
 
-  _renderSuggestion(anime) {
-    return getAnidbTitle(anime);
-  }
-
-  _suggestionValue(anime) {
-    return anime !== '' ? getAnidbTitle(anime) : '';
-  }
-
-  _onSuggestionSelected(event, {suggestion}) {
+  _onSuggestionSelected(event, {suggestion: {value}}) {
     this.props.onChange(event, {
-      anime: suggestion,
+      suggestion: value,
       lastSelectionByUser: true,
     })
     event.preventDefault();
   }
 
+  _renderSuggestion(suggestion) {
+    return suggestion.text
+  }
+
   render() {
-    const { value, suggestions, isLoading } = this.state;
+    const { value, suggestions } = this.state;
+    const isLoading = _.has(this.state.hintsBeingFetched, this.state.value)
     const status = (isLoading ? 'Loading...' : 'Type to load suggestions');
     const inputProps = { ...fixedInputProps, value, onChange: this._onChange}; 
     return (
       <Autosuggest
-        suggestions={suggestions}
+        suggestions={suggestions.map(s => ({text: s.name, value: s}))}
         onSuggestionsUpdateRequested={this._onSuggestionsUpdateRequested}
         getSuggestionValue={this._suggestionValue}
-        renderSuggestion={this._renderSuggestion}
         inputProps={inputProps}
+        renderSuggestion={this._renderSuggestion}
         shouldRenderSuggestions={this._shouldSuggest}
         onSuggestionSelected={this._onSuggestionSelected}
         theme={theme}
@@ -127,7 +102,7 @@ export default class AnimeAutosuggest extends Component {
 //(if selectedAnime is null and was not done by the user
 // that means we cleared the component)
 
-AnimeAutosuggest.propTypes = {
+AnimeAutosuggestPresentation.propTypes = {
   value: PropTypes.shape({
     anime: PropTypes.shape({
       '@aid': PropTypes.string.isRequired
@@ -135,4 +110,27 @@ AnimeAutosuggest.propTypes = {
     lastSelectionByUser: PropTypes.bool.isRequired,
   }).isRequired,
   onChange: PropTypes.func.isRequired,
+  suggestionMap: PropTypes.objectOf(
+    PropTypes.array.isRequired
+  ).isRequired,
+  hintsBeingFetched: PropTypes.objectOf(
+    PropTypes.string.isRequired
+  ).isRequired,
+  fetchSuggestions: PropTypes.func.isRequired,
 }
+
+const mapStateToProps = (state) => ({
+  suggestionMap: state.autosuggest.suggestions,
+  hintsBeingFetched: state.autosuggest.fetching,
+});
+
+const mapDispatchToProps = (dispatch) => ({
+  fetchSuggestions: (hint) => dispatch(fetchSuggestionsFromAnidbSmart(hint)) 
+})
+
+const AnimeAutosuggest = connect(
+  mapStateToProps,
+  mapDispatchToProps,
+)(AnimeAutosuggestPresentation)
+
+export default AnimeAutosuggest
