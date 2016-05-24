@@ -1,6 +1,6 @@
 require 'json'
 require_relative 'lib/constants'
-require_relative 'lib/models.rb'
+require_relative 'model/all_models.rb'
 require_relative 'lib/anidb_resource_fetcher.rb'
 require 'bundler/setup'
 require 'sinatra/base'

@@ -46,6 +46,7 @@ export async function addShowToServer(id, name, feed, auto_fetch) {
   formData.append('id', id)
   formData.append('name', name)
   formData.append('feed', feed)
+  formData.append('auto_fetch', auto_fetch)
   return await processJSONResponse(fetch('/shows/new', {
     method: 'POST',
     body: formData,
