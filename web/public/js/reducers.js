@@ -75,7 +75,7 @@ const autosuggestReducer = typeToReducer({
     },
     FULFILLED: (state, action) => {
       const hint = action.meta.hint
-      const suggestions = action.payload.map(
+      const suggestions = _.take(action.payload, 10).map(
         s => update(s, {$merge: {name: getAnidbTitle(s)}}) 
       );
       return update(state, {

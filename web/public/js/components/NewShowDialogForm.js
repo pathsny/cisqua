@@ -11,25 +11,27 @@ import Toggle from 'material-ui/Toggle';
 import _ from 'lodash'
 
 import AnimeAutosuggest from './AnimeAutosuggest.js'
-import {addShowToServer, addShowDialog, JSONResponseCarryingError} from '../actions.js'
+import {addShowToServer, addShowDialog, JSONResponseCarryingError, addShow} from '../actions.js'
 
 async function onSubmit(values, dispatch) {
   try {
     const anime = values.anime.suggestion
-    dispatch(addShowToServer(
+    result = await addShowToServer(
       _.parseInt(anime['@aid']),
       anime.name,
       values.feed,
       values.auto_fetch,  
-    ));
+    );
+    return dispatch(addShow(result))
   } catch (e) {
     if (e instanceof JSONResponseCarryingError) {
       const errorJSON = e.payload
       let resultJson = {}
       for (let k of _.keys(errorJSON)) {
-        const key = ['id', 'name'].includes(k) ? 'feed' : k
+        const key = ['id', 'name'].includes(k) ? 'anime' : k
         resultJson[key] = errorJSON[k][0] 
       }
+      console.log('the json Im throwing is', resultJson);
       throw new SubmissionError(resultJson)
     } else {
       throw e
@@ -43,42 +45,36 @@ const validate = values => {
     errors.feed = 'Feed Required'
   }
   if (!values.anime.suggestion) {
-    errors.feed = 'Anime Required'
+    errors.anime = 'Anime Required'
   }
   return errors
 }
 
 const initialValues = {
   anime: {
-    anime: null,
-    lastSelectionByUser: false,
+    suggestion: null,
+    searchText: '',
   },
   feed: '',
   auto_fetch: true,
 }
 
 class NewShowDialogFormPresentation extends Component {
-  _getStyle() {
-    return {
-      feed: {
-        width: '400px'
-      },
-      toggle: {
-        float: 'right',
-        maxWidth: '500px'
-      },
-      autosuggest: {
-        width: '400px'
-      }
-    }
-  }
-
   _getActions() {
     return [
+      <Field name="auto_fetch" component={ auto_fetch =>
+        <Toggle
+          form="addShowForm"
+          label="Auto Fetch"
+          labelPosition="left"
+          toggled={auto_fetch.value}
+          onToggle={(event, toggled) => auto_fetch.onChange(toggled)}
+        />
+      }/>,
       <FlatButton
         type="button"
         label="Cancel"
-        primary={true}
+        secondary={true}
         onTouchTap={this.props.onRequestClose}
       />,
       <FlatButton
@@ -92,42 +88,33 @@ class NewShowDialogFormPresentation extends Component {
   }
 
   render() {
-    const style = this._getStyle();
     return (
       <Dialog
         title="Add a New Show"
         actions={this._getActions()}
-        modal={true}
+        onRequestClose={this.props.onRequestClose}
         open={true}>
         <form onSubmit={this.props.handleSubmit} id="addShowForm">
-          <div style={style.autosuggest}>
-            <Field name="anime" component={ props =>
-              <AnimeAutosuggest
-                value={props.value}
-                onChange={(event, newValue) => props.onChange(newValue)}
-              />
-            }/>
-          </div>
-          <div style={style.toggle}>
-            <Field name="auto_fetch" component={ props =>
-              <Toggle
-                label="Auto Fetch"
-                labelPosition="right"
-                toggled={props.value}
-                onToggle={(event, toggled) => props.onChange(toggled)}
-              />
-            }/>
-          </div>
-          <div>
-            <Field name="feed" component={ feed => 
-              <TextField
-                floatingLabelText="Feed URL"
-                style={style.feed}
-                errorText = {feed.touched && feed.error}
-                {...feed}
-              />
-            }/>
-          </div>
+          <Field name="anime" component={ anime => 
+            <AnimeAutosuggest
+              floatingLabelText="Show Name"
+              autoFocus={true}
+              errorText = {anime.touched && anime.error}
+              {...Object.assign({}, anime, {
+                onChange: (_e, newValue) => anime.onChange(newValue),
+                onBlur: (_e, f) => anime.onBlur(anime.value),
+              })}
+              fullWidth={true}
+            />
+          }/>
+          <Field name="feed" component={ feed => 
+            <TextField
+              floatingLabelText="Feed URL"
+              errorText = {feed.touched && feed.error}
+              {...feed}
+              fullWidth={true}
+            />
+          }/>
         </form>    
       </Dialog>
     );

@@ -73,19 +73,16 @@ function fetchShowsSmart() {
 
 const addShow = createAction(ADD_SHOW);
 
-function addShowToServer(id, name, feed, auto_fetch) {
-  return (dispatch) => (async function(){
-    const formData = new FormData()
-    formData.append('id', id)
-    formData.append('name', name)
-    formData.append('feed', feed)
-    formData.append('auto_fetch', auto_fetch)
-    const result = await processJSONResponse(fetch('/shows/new', {
-      method: 'POST',
-      body: formData,
-    }))
-    dispatch(addShow(result))
-  })()
+async function addShowToServer(id, name, feed, auto_fetch) {
+  const formData = new FormData()
+  formData.append('id', id)
+  formData.append('name', name)
+  formData.append('feed', feed)
+  formData.append('auto_fetch', auto_fetch)
+  const result = await processJSONResponse(fetch('/shows/new', {
+    method: 'POST',
+    body: formData,
+  }))
 }
 
 const addShowDialog = createAction(ADD_SHOW_DIALOG);
@@ -136,4 +133,5 @@ export {
   fetchSuggestionsFromAnidbSmart, 
   addShowDialog,
   addShowToServer,
+  addShow,
 }

@@ -1,22 +1,14 @@
 'use strict';
 
 import React, { PropTypes, Component } from 'react';
-import Autosuggest from 'react-autosuggest';
 import _ from 'lodash'
 import invariant from 'invariant'
 import { connect } from 'react-redux'
-import theme from '../../styles/Autosuggest.css'
+import AutoComplete from 'material-ui/AutoComplete';
 
 import {fetchSuggestionsFromAnidbSmart} from '../actions'
 
-const fixedInputProps = {
-  placeholder: 'Show Name',
-  type: 'search',
-  name: 's',
-};
-
 const initialState = {
-  value: '', 
   suggestions: [],
 };
 
@@ -25,75 +17,64 @@ export default class AnimeAutosuggestPresentation extends Component {
     super(props)
     this.state = initialState;
     this._onChange = this._onChange.bind(this);
-    this._onSuggestionsUpdateRequested = this._onSuggestionsUpdateRequested.bind(this);
     this._onSuggestionSelected = this._onSuggestionSelected.bind(this);
     this._shouldSuggest = this._shouldSuggest.bind(this);
-    this._renderSuggestion = this._renderSuggestion.bind(this);
-    this._suggestionValue = this._suggestionValue.bind(this);
   }
 
   componentWillReceiveProps(nextProps) {
+    const {value: {suggestion, searchText}, suggestionMap} = nextProps
     invariant( // only the user can select an anime;
-      nextProps.value.lastSelectionByUser || 
-      nextProps.value.anime === null,
-      `invalid props being sent ${nextProps}`
+      !suggestion || suggestion.name === searchText,
+      `invalid props being sent ${searchText} does not match ${suggestion && suggestion.name}` 
     );
-    if (_.has(nextProps.suggestionMap, this.state.value)) {
-      this.setState({
-        suggestions: nextProps.suggestionMap[this.state.value],
-      });
+    if (suggestion) {
+      return; // there is a valid suggestion and it matches the text.
     }
-    if (!nextProps.value.lastSelectionByUser && this.props.value.anime !== null) {
-      // this condition implies that we are clearing the selection
-      this.setState(initialState);
-    }
-  }
-
-  _onChange(event, { newValue }) {
-    this.setState({value: newValue});
-  }
-
-  _shouldSuggest(value) {
-    return value.trim().length >= 2;
-  }
-
-  _onSuggestionsUpdateRequested({ value }) {
-    if (this._shouldSuggest(value)) {
-      this.props.fetchSuggestions(value)
+    if (!this._shouldSuggest(searchText)) {
+      this.setState(initialState)
+    } else {
+      if (_.has(suggestionMap, searchText)) {
+        this.setState({suggestions: suggestionMap[searchText]})
+      } else {
+        this.props.fetchSuggestions(searchText)
+      }
     }
   }
 
-  _suggestionValue(suggestion) {
-    return suggestion.text
+  _onChange(newSearchText) {
+    const {suggestion, searchText} = this.props.value
+    const newSuggestion = (suggestion && suggestion.name === newSearchText) ?
+      suggestion :
+      _.find(this.state.suggestions, s => s.name === newSearchText) // might be null
+    this.props.onChange(null, {searchText: newSearchText, suggestion: newSuggestion});
   }
 
-  _onSuggestionSelected(event, {suggestion: {value}}) {
-    this.props.onChange(event, {
-      suggestion: value,
-      lastSelectionByUser: true,
+  _shouldSuggest(searchText) {
+    return searchText.trim().length >= 2;
+  }
+
+  _onSuggestionSelected(name, index) {
+    this.props.onChange(null, {
+      // note there is a small chance of a race condition, 
+      // if the selection is made before we render, but after setting state
+      // or if between the user selecting and this callback firing, state is changed
+      suggestion: this.state.suggestions[index],
+      searchText: name,
     })
-    event.preventDefault();
-  }
-
-  _renderSuggestion(suggestion) {
-    return suggestion.text
   }
 
   render() {
-    const { value, suggestions } = this.state;
-    const isLoading = _.has(this.state.hintsBeingFetched, this.state.value)
+    const isLoading = _.has(this.state.hintsBeingFetched, this.props.searchText)
     const status = (isLoading ? 'Loading...' : 'Type to load suggestions');
-    const inputProps = { ...fixedInputProps, value, onChange: this._onChange}; 
     return (
-      <Autosuggest
-        suggestions={suggestions.map(s => ({text: s.name, value: s}))}
-        onSuggestionsUpdateRequested={this._onSuggestionsUpdateRequested}
-        getSuggestionValue={this._suggestionValue}
-        inputProps={inputProps}
-        renderSuggestion={this._renderSuggestion}
-        shouldRenderSuggestions={this._shouldSuggest}
-        onSuggestionSelected={this._onSuggestionSelected}
-        theme={theme}
+      <AutoComplete
+        dataSource={this.state.suggestions.map(s => s.name)}
+        filter={AutoComplete.noFilter} // fuzzyFilter works for us, but has not been released yet
+        onNewRequest={this._onSuggestionSelected}
+        onUpdateInput={this._onChange}
+        searchText={this.props.searchText}
+        openOnFocus={true}
+        {..._.omit(this.props, ['value', 'onChange', 'suggestionMap', 'hintsBeingFetched'])}
       />
     );  
   }
@@ -104,10 +85,11 @@ export default class AnimeAutosuggestPresentation extends Component {
 
 AnimeAutosuggestPresentation.propTypes = {
   value: PropTypes.shape({
-    anime: PropTypes.shape({
-      '@aid': PropTypes.string.isRequired
+    suggestion: PropTypes.shape({
+      '@aid': PropTypes.string.isRequired,
+      name: PropTypes.string.isRequired,
     }),
-    lastSelectionByUser: PropTypes.bool.isRequired,
+    searchText: PropTypes.string.isRequired,
   }).isRequired,
   onChange: PropTypes.func.isRequired,
   suggestionMap: PropTypes.objectOf(
