@@ -10,9 +10,10 @@ import ExtendableError from 'es6-error';
 export const ADD_SHOW = 'ADD_SHOW'
 export const FETCH_SHOWS = 'FETCH_SHOWS'
 export const ADD_SHOW_DIALOG = 'ADD_SHOW_DIALOG'
+export const FETCH_SUGGESTIONS = 'FETCH_SUGGESTIONS'
 
 /*
- * async operations
+ * Utilties
  */
 
 export class JSONResponseCarryingError extends ExtendableError {
@@ -37,11 +38,37 @@ async function processJSONResponse(responsePromise) {
   throw new JSONResponseCarryingError(response.statusText, errorJSON) 
 }
 
+/*
+ * async operations
+ */
+
+/*
+ * fetch Show List
+ */
+
 async function fetchShowsFromServer() {
   return await processJSONResponse(fetch('/shows'))
 }
 
-export async function addShowToServer(id, name, feed, auto_fetch) {
+const fetchShowsAction = createAction(
+  FETCH_SHOWS,
+  () => ({promise: fetchShowsFromServer()}),
+)
+
+function fetchShowsSmart() {
+  return (dispatch, getState) => {
+    const state = getState();
+    if (!state.app.fetching.list) {
+      dispatch(fetchShowsAction());
+    }
+  }
+}
+
+/*
+ * Add new Show
+ */
+
+async function addShowToServer(id, name, feed, auto_fetch) {
   const formData = new FormData()
   formData.append('id', id)
   formData.append('name', name)
@@ -53,15 +80,18 @@ export async function addShowToServer(id, name, feed, auto_fetch) {
   }))
 }
 
+const addShow = createAction(ADD_SHOW);
+
+const addShowDialog = createAction(ADD_SHOW_DIALOG);
+
 /*
  * action creators
  */
 
-export const addShow = createAction(ADD_SHOW);
-
-export const addShowDialog = createAction(ADD_SHOW_DIALOG);
-
-export const fetchShows = createAction(
-  FETCH_SHOWS,
-  () => ({promise: fetchShowsFromServer()}),
-)
+export { 
+  fetchShowsSmart, 
+  // fetchSuggestionsFromAnidbSmart, 
+  addShow, 
+  addShowDialog,
+  addShowToServer,
+}

@@ -6,7 +6,7 @@ import IconButton from 'material-ui/IconButton';
 import Refresh from 'material-ui/svg-icons/navigation/refresh'
 import CircularProgress from 'material-ui/CircularProgress';
 import { connect } from 'react-redux'
-import { fetchShows } from '../actions'
+import { fetchShowsSmart } from '../actions'
 import ShowContainer from './ShowContainer'
 
 class MainPresentation extends Component {
@@ -16,7 +16,7 @@ class MainPresentation extends Component {
   }
 
   _onRefresh() {
-    this.props.onRefresh(fetchShows())
+    this.props.onRefresh()
   }
 
   _renderRightIcon() {
@@ -80,7 +80,7 @@ const mapStateToProps = (state) => ({
 })
 
 const mapDispatchToProps = (dispatch) => ({
-  onRefresh: () => dispatch(fetchShows())
+  onRefresh: () => dispatch(fetchShowsSmart())
 })
 
 const Main = connect(

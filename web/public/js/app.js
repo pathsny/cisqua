@@ -9,7 +9,7 @@ import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 
 import '../styles/main.css'
 
-import { fetchShows } from './actions' 
+import { fetchShowsSmart } from './actions' 
 import Main from './components/main'
 import store from './store'
 
@@ -19,7 +19,7 @@ if (process.env.NODE_ENV === `development`) {
 
 // Needed by Material UI
 injectTapEventPlugin();
-store.dispatch(fetchShows());
+store.dispatch(fetchShowsSmart());
 
 render(
   <Provider store={store}>
