@@ -100,10 +100,9 @@ class NewShowDialogFormPresentation extends Component {
               floatingLabelText="Show Name"
               autoFocus={true}
               errorText = {anime.touched && anime.error}
-              {...Object.assign({}, anime, {
-                onChange: (_e, newValue) => anime.onChange(newValue),
-                onBlur: (_e, f) => anime.onBlur(anime.value),
-              })}
+              {...anime}
+              onChange={(_e, newValue) => anime.onChange(newValue)}
+              onBlur={(_e, f) => anime.onBlur(anime.value)}
               fullWidth={true}
             />
           }/>

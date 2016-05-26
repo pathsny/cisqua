@@ -16,8 +16,9 @@ class App < Sinatra::Application
     # use Rack::CommonLogger, logger
   end  
 
+  set :root, File.dirname(__FILE__)
   set :static_cache_control, [:no_cache, :must_revalidate, max_age: 0]
-  set :public_folder, 'public'
+  # set :public_folder, 'public'
 
   before do
     content_type 'application/json'

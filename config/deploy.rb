@@ -15,6 +15,8 @@ set :scm, :rsync
 set :rsync_options, %w[
   --recursive --delete --delete-excluded 
   --include /web/public/build/
+  --include /web/public/index.html
+  --include /web/public/favicon.ico
   --exclude .git*
   --exclude /data
   --exclude /config
