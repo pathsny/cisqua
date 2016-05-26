@@ -9,6 +9,8 @@ import { connect } from 'react-redux'
 import { fetchShowsSmart } from '../actions'
 import ShowContainer from './ShowContainer'
 
+import '../../styles/main.css'
+
 class MainPresentation extends Component {
   constructor(props) {
     super(props)

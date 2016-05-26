@@ -7,8 +7,6 @@ import injectTapEventPlugin from 'react-tap-event-plugin';
 import getMuiTheme from 'material-ui/styles/getMuiTheme';
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 
-import '../styles/main.css'
-
 import { fetchShowsSmart } from './actions' 
 import Main from './components/main'
 import store from './store'
