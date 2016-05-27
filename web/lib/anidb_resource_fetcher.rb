@@ -1,6 +1,8 @@
 require 'rest_client'
 require 'nokogiri'
-require 'concurrent'
+require 'slowweb'
+
+SlowWeb.limit('anidb.net', 1, 2)
 
 class AnidbResourceFetcher
   class << self
@@ -22,8 +24,6 @@ class AnidbResourceFetcher
 
 
     private
-    @@fixed_pool_executor = Concurrent::FixedThreadPool.new(5)
-
     def get_file(name)
       file_path = File.join(Web_dir, '../data/http_anime_info_cache', name)
       return file_path if File.exist?(file_path)
@@ -50,12 +50,7 @@ class AnidbResourceFetcher
     end
 
     def download_data(aid)
-      response = Concurrent::Future.execute(:executor => @@fixed_pool_executor) {
-        RestClient.get "http://api.anidb.net:9001/httpapi?client=misakatron&clientver=1&protover=1&request=anime&aid=#{aid}" 
-      }
-      response.wait
-      raise response.reason if response.rejected? 
-      response.value
-    end  
+      RestClient.get "http://api.anidb.net:9001/httpapi?client=misakatron&clientver=1&protover=1&request=anime&aid=#{aid}" 
+    end
   end  
 end  

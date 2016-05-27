@@ -18,7 +18,7 @@ class Show extends Component {
       <Card>
         <CardHeader
           title={this.props.anime.name}
-          // avatar={this._avatarURL()}
+          avatar={this._avatarURL()}
         >
         </CardHeader>
       </Card>

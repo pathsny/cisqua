@@ -16,6 +16,7 @@ gem 'concurrent-ruby'
 gem 'concurrent-ruby-ext'
 gem 'multimap'
 gem 'veto'
+gem 'slowweb'
 
 group :test do
   gem 'rspec'
