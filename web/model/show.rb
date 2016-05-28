@@ -13,12 +13,12 @@ class ShowValidator
   validates :feed, :presence => true
   validates :auto_fetch, :presence => true
 
-  validate :show_must_be_unique, :if => :is_new?
+  validate :show_must_be_unique, :if => :new_record?
 
   validate :feed_must_be_valid
 
-  def is_new?(entity)
-    entity.is_new?
+  def new_record?(entity)
+    entity.new_record?
   end  
 
   def show_must_be_unique(entity)
@@ -40,12 +40,12 @@ class Show
   configure_model(
     :version => 1, 
     :validator => ShowValidator,
-    :marshal_fields => [:id, :name, :feed, :auto_fetch, :created_at, :updated_at]
+    :marshal_fields => [:id, :name, :feed, :auto_fetch]
   )
 
   def initialize(id, name, feed, auto_fetch)
     super()
-    @id = id
+    @id = id.to_i
     @name = name
     @feed = feed
     @auto_fetch = auto_fetch
@@ -53,7 +53,7 @@ class Show
 
   def to_json(*a)
     {
-      id: id.to_i,
+      id: id,
       name: name,
       created_at: created_at,
       feed: feed,

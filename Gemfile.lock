@@ -99,6 +99,7 @@ GEM
       net-scp (>= 1.1.2)
       net-ssh (>= 2.8.0)
     tilt (2.0.4)
+    timecop (0.8.1)
     timers (4.0.1)
       hitimes
     veto (1.0.1)
@@ -130,4 +131,5 @@ DEPENDENCIES
   rspec
   sinatra
   slowweb
+  timecop
   veto

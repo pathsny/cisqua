@@ -23,6 +23,7 @@ group :test do
   gem 'mocha'
   gem 'faker'
   gem 'fakefs'
+  gem 'timecop'
 end
 
 group :development do

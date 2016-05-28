@@ -33,8 +33,6 @@ module Model
   
   module ClassMethods
     private
-    attr_reader :current_version
-
     def is_key_of_model?(k) #bool
       k.start_with?(@model_key)
     end
@@ -43,17 +41,20 @@ module Model
       @model_key + id.to_s
     end  
 
-    def configure_model(options) # marshal
+    def configure_model(options)
       self.instance_variable_set(:@current_version, options[:version])
       self.include(Veto.model(options[:validator].new))
 
-      var_list = options[:marshal_fields].map {|f| "@#{f}"}.join(',')
+      symbol_list = [:version, :created_at, :updated_at].concat(options[:marshal_fields])
+      var_list = symbol_list.map {|f| "@#{f}"}.join(',')
 
       self.class_eval("def marshal_dump; [#{var_list}]; end")
-      self.class_eval("def marshal_load(dump); #{var_list} = dump; @is_new = false; end")
+      self.class_eval("def marshal_load(dump); #{var_list} = dump; @new_record = false; end")
     end  
 
     public 
+    attr_reader :current_version
+
     def all
       ModelDB.get_db do |db| 
         db.select {|k, v| is_key_of_model?(k) }.map{|k, v| v} 
@@ -84,15 +85,15 @@ module Model
 
   public
 
-  attr_reader :created_at, :updated_at    
+  attr_reader :created_at, :updated_at, :version    
 
   def initialize
-    @is_new = true
+    @new_record = true
     @version = current_version
   end
 
-  def is_new?
-    @is_new
+  def new_record?
+    @new_record
   end
 
   def has_instance_in_db?
@@ -103,14 +104,14 @@ module Model
   def save
     validate!
     ModelDB.get_db do |db|
-      @created_at = DateTime.now if self.is_new?
-      @is_new = false
+      @created_at = DateTime.now if self.new_record?
+      @new_record = false
       @updated_at = DateTime.now
       db[make_key(id)] = self
     end
   end
 
-  def destroy
+  def destroy!
     ModelDB.get_db do |db|
       db.delete(make_key(self.id))
     end  
