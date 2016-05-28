@@ -38,7 +38,7 @@ class App < Sinatra::Application
 
   post "/shows/new" do
     begin
-      @show = Show.new(params[:id], params[:name], params[:feed], params[:auto_fetch])
+      @show = Show.new(params[:id], params[:name], params[:feed_url], params[:auto_fetch])
       @show.save.to_json
     rescue
       [400, @show.errors.to_json]

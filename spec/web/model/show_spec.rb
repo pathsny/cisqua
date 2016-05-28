@@ -92,10 +92,10 @@ describe Show do
       expect(Show.get(10)).to be_valid
     end  
 
-    it "is invalid if the feed cannot be parsed" do
+    it "is invalid if the feed_url cannot be parsed" do
       FeedProcessor.unstub(:is_valid?)
       expect(new_show).to_not be_valid
-      expect(new_show.errors).to be_eql({:feed => ["Invalid feed url"]})
+      expect(new_show.errors).to be_eql({:feed_url => ["Invalid feed url"]})
     end  
   end
 
@@ -163,7 +163,7 @@ describe Show do
         show.updated_at,
         show.id,
         show.name,
-        show.feed,
+        show.feed_url,
         show.auto_fetch,
       ]);
     end
@@ -171,7 +171,7 @@ describe Show do
     it "can unmarshal itself and create a record that is not new" do
       show = Show.send(:allocate)
       show.marshal_load(new_show.marshal_dump)
-      imp_values = [:version, :id, :name, :feed, :auto_fetch, :created_at, :updated_at]
+      imp_values = [:version, :id, :name, :feed_url, :auto_fetch, :created_at, :updated_at]
       expect(imp_values.map{|v| show.send(v)}).to eq(
         imp_values.map{|v| new_show.send(v)}
       )

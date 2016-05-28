@@ -19,7 +19,7 @@ async function onSubmit(values, dispatch) {
     const result = await addShowToServer(
       _.parseInt(anime['@aid']),
       anime.name,
-      values.feed,
+      values.feed_url,
       values.auto_fetch,  
     );
     console.log("this suceeeded ", result);
@@ -42,8 +42,8 @@ async function onSubmit(values, dispatch) {
 
 const validate = values => {
   const errors = {}
-  if (!values.feed) {
-    errors.feed = 'Feed Required'
+  if (!values.feed_url) {
+    errors.feed_url = 'Feed URL Required'
   }
   if (!values.anime.suggestion) {
     errors.anime = 'Anime Required'
@@ -56,7 +56,7 @@ const initialValues = {
     suggestion: null,
     searchText: '',
   },
-  feed: '',
+  feed_url: '',
   auto_fetch: true,
 }
 
@@ -107,11 +107,11 @@ class NewShowDialogFormPresentation extends Component {
               fullWidth={true}
             />
           }/>
-          <Field name="feed" component={ feed => 
+          <Field name="feed_url" component={ feed_url => 
             <TextField
               floatingLabelText="Feed URL"
-              errorText = {feed.touched && feed.error}
-              {...feed}
+              errorText = {feed_url.touched && feed_url.error}
+              {...feed_url}
               fullWidth={true}
             />
           }/>

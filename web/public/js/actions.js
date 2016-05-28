@@ -73,11 +73,11 @@ function fetchShowsSmart() {
 
 const addShow = createAction(ADD_SHOW);
 
-async function addShowToServer(id, name, feed, auto_fetch) {
+async function addShowToServer(id, name, feed_url, auto_fetch) {
   const formData = new FormData()
   formData.append('id', id)
   formData.append('name', name)
-  formData.append('feed', feed)
+  formData.append('feed_url', feed_url)
   formData.append('auto_fetch', auto_fetch)
   return await processJSONResponse(fetch('/shows/new', {
     method: 'POST',
