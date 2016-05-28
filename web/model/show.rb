@@ -2,7 +2,7 @@ require_relative 'model'
 require 'forwardable'
 require 'veto'
 require 'json'
-require_relative '../lib/feed'
+require_relative '../lib/feed_processor'
 
 
 class ShowValidator
@@ -26,7 +26,7 @@ class ShowValidator
   end
   
   def feed_must_be_valid(entity)
-    errors.add(:feed, "Invalid feed url") unless Feed.is_valid?(entity.feed)
+    errors.add(:feed, "Invalid feed url") unless FeedProcessor.is_valid?(entity.feed)
   end   
 end
 

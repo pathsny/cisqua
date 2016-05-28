@@ -31,7 +31,6 @@ async function onSubmit(values, dispatch) {
         const key = ['id', 'name'].includes(k) ? 'anime' : k
         resultJson[key] = errorJSON[k][0] 
       }
-      console.log('the json Im throwing is', resultJson);
       throw new SubmissionError(resultJson)
     } else {
       throw e
