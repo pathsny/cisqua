@@ -38,7 +38,7 @@ class ShowContainerPresentation extends Component {
     }
     return (
       <NewShowDialogForm 
-        onRequestClose={() => {console.log("called"); this.props.onAddDialogStateChange(false)}}
+        onRequestClose={() => this.props.onAddDialogStateChange(false)}
       />
     );
   } 

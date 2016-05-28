@@ -16,14 +16,16 @@ import {addShowToServer, addShowDialog, JSONResponseCarryingError, addShow} from
 async function onSubmit(values, dispatch) {
   try {
     const anime = values.anime.suggestion
-    result = await addShowToServer(
+    const result = await addShowToServer(
       _.parseInt(anime['@aid']),
       anime.name,
       values.feed,
       values.auto_fetch,  
     );
+    console.log("this suceeeded ", result);
     return dispatch(addShow(result))
   } catch (e) {
+    console.log("this failed ", e);
     if (e instanceof JSONResponseCarryingError) {
       const errorJSON = e.payload
       let resultJson = {}
