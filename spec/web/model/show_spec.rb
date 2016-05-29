@@ -3,17 +3,20 @@ require_from_root 'web/model/show'
 describe Show do
   let(:db) do {} end  
 
-  let (:new_show) { Show.new(15, "Escaflowne", "http://foo.bar/esca", false) }
-  let (:duplicate_show) { show = Show.new(25, "foo", "bar", false) }
+  let (:new_show) { Show.create(15, "Escaflowne", "http://foo.bar/esca", false) }
+  let (:duplicate_show) { show = Show.create(25, "foo", "bar", false) }
   
   before :each do
-    db_var = db
-    ModelDB.define_singleton_method(:get_db) { |&b| b.call(db_var) }
+    spec_this = self
+    ModelDB.define_singleton_method(:get_db) { |name, &b|
+      spec_this.expect(name).to spec_this.eq('shows') 
+      b.call(spec_this.db) 
+    }
     FeedProcessor.stubs(:is_valid?).returns(true)
-    Show.new(10, "Jojo", "http://foo.bar/jojo", true).save
-    Show.new(12, "Akira", "http://foo.bar/akira", true).save
-    Show.new(17, "Gits", "http://foo.bar/gits", true).save
-    Show.new(25, "Snk", "http://foo.bar/snk", true).save
+    Show.create(10, "Jojo", "http://foo.bar/jojo", true).save
+    Show.create(12, "Akira", "http://foo.bar/akira", true).save
+    Show.create(17, "Gits", "http://foo.bar/gits", true).save
+    Show.create(25, "Snk", "http://foo.bar/snk", true).save
   end
 
   context :all do

@@ -1,26 +1,29 @@
 require 'daybreak'
+require 'concurrent'
 
 class ModelDB
-  class << self
-    def create_db
-      data_location = File.join(File.dirname(__FILE__), '../../data')
-      Daybreak::DB.new(File.join(data_location, 'shows.db')). tap do |db|
-        at_exit do 
-          puts "closing database"
-          unless db.closed?
-            thr = Thread.new { db.flush.close }
-            thr.join
-          end      
-        end
-      end
-    end  
+  @dbs = Concurrent::Map.new
+  Kernel.at_exit { close_dbs }
 
-    def get_db
-      @db ||= create_db
-      @db.lock {
-        yield @db
+  Data_location = File.join(File.dirname(__FILE__), '../../data/db')
+
+  class << self
+    def get_db(name)
+      db = @dbs.compute_if_absent(name) {
+        Daybreak::DB.new(File.join(Data_location, name + '.db'))
       }
+      db.synchronize {
+        yield db
+      }        
     end
+
+    def close_dbs
+      puts "closing databases"
+      thr = Thread.new do
+        @dbs.values.each {|db| db.flush.close unless db.closed? }
+      end
+      thr.join
+    end  
   end
 end      
 
@@ -56,21 +59,25 @@ module Model
     attr_reader :current_version
 
     def all
-      ModelDB.get_db do |db| 
+      ModelDB.get_db('shows') do |db| 
         db.select {|k, v| is_key_of_model?(k) }.map{|k, v| v} 
       end  
     end
     
     def get(id)
-      ModelDB.get_db do |db|
+      ModelDB.get_db('shows') do |db|
         db[make_key(id)].tap { |s| raise "invalid id" unless s }
       end  
     end
 
     def exists?(id)
-      ModelDB.get_db do |db|
+      ModelDB.get_db('shows') do |db|
         db.has_key?(make_key(id))
       end  
+    end  
+
+    def create(*args)
+      self.new(*args)
     end  
   end
 
@@ -103,7 +110,7 @@ module Model
 
   def save
     validate!
-    ModelDB.get_db do |db|
+    ModelDB.get_db('shows') do |db|
       @created_at = DateTime.now if self.new_record?
       @new_record = false
       @updated_at = DateTime.now
@@ -112,7 +119,7 @@ module Model
   end
 
   def destroy!
-    ModelDB.get_db do |db|
+    ModelDB.get_db('shows') do |db|
       db.delete(make_key(self.id))
     end  
   end
