@@ -22,10 +22,8 @@ async function onSubmit(values, dispatch) {
       values.feed_url,
       values.auto_fetch,  
     );
-    console.log("this suceeeded ", result);
     return dispatch(addShow(result))
   } catch (e) {
-    console.log("this failed ", e);
     if (e instanceof JSONResponseCarryingError) {
       const errorJSON = e.payload
       let resultJson = {}
