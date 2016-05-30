@@ -3,6 +3,7 @@ require 'forwardable'
 require 'veto'
 require 'json'
 require_relative '../lib/feed_processor'
+require 'invariant'
 
 
 class ShowValidator
@@ -30,34 +31,54 @@ class ShowValidator
   end   
 end
 
-class Show
-  include Model
+class ShowInstance < Model::Base
 
-  attr_reader :id, :name, :feed_url, :auto_fetch  
-
-  # note changing the order of marshal fields, or adding a field will require 
-  # changing the model version and creating a migration
+  # note changing the order of fields, or adding a field will require 
+  # changing the model version and creating a migration, if the field is serialized
+  # to disk
   configure_model(
+    :type => :show,
     :version => 1, 
     :validator => ShowValidator,
-    :marshal_fields => [:id, :name, :feed_url, :auto_fetch]
+    :fields => [{
+      :name => :id,
+      :serialize_to_ui => true,
+      :mutable => false,
+    },{
+      :name => :name,
+      :serialize_to_ui => true,
+      :mutable => false,
+    },{
+      :name => :feed_url,
+      :serialize_to_ui => true,
+      :mutable => false,
+      :description => 'url for rss feed',
+    },{
+      :name => :auto_fetch,
+      :serialize_to_ui => true,
+      :mutable => true,
+      :description => 
+        'flag indicating that we should automatically download new episodes'\
+         ' as they are ready',
+    },{
+      :name => :last_checked_at,
+      :serialize_to_ui => true,
+      :mutable => true,
+      :default => nil,
+      :description => 'timestamp at which we last checked the feed for new items',
+    }]
   )
 
   def initialize(id, name, feed_url, auto_fetch)
     super()
-    @id = id.to_i
+    @id = id
     @name = name
     @feed_url = feed_url
-    @auto_fetch = auto_fetch
+    @auto_fetch = auto_fetch.is_a?(String) ? auto_fetch == 'true' : auto_fetch
   end
 
-  def to_json(*a)
-    {
-      id: id,
-      name: name,
-      created_at: created_at,
-      feed_url: feed_url,
-      auto_fetch: auto_fetch
-    }.to_json(*a)
-  end
-end  
+  def on_save(was_new, dirty_fields)
+  end  
+end
+
+Show = Model.get_collection(:show, 'shows')  

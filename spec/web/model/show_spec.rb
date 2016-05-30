@@ -5,10 +5,13 @@ describe Show do
 
   let (:new_show) { Show.create(15, "Escaflowne", "http://foo.bar/esca", false) }
   let (:duplicate_show) { show = Show.create(25, "foo", "bar", false) }
+
+  before(:all) { Model::ModelDB = stub() }
+  after(:all) { Model.send(:remove_const, :ModelDB) }
   
   before :each do
     spec_this = self
-    ModelDB.define_singleton_method(:get_db) { |name, &b|
+    Model::ModelDB.define_singleton_method(:get_db) { |name, &b|
       spec_this.expect(name).to spec_this.eq('shows') 
       b.call(spec_this.db) 
     }
@@ -50,8 +53,12 @@ describe Show do
     expect(Show.exists?(12)).to be(true)
     expect(Show.exists?(15)).to be(false)
   end
+
+  it "cannot be created with new" do
+    expect {ShowInstance.new}.to raise_error
+  end
   
-  context :new do
+  context :create do
     it "is new" do
       expect(new_show).to be_new_record
     end
@@ -62,8 +69,8 @@ describe Show do
     end
 
     it "has a version which is current" do
-      expect(new_show.version).to eq(Show.current_version)
-    end  
+      expect(new_show.version).to eq(ShowInstance.current_version)
+    end
   end
 
   context :has_instance_in_db? do
@@ -141,7 +148,49 @@ describe Show do
       end  
       expect(new_show.created_at).to eq(DateTime.parse("2016-05-28 10:09:22"))
       expect(new_show.updated_at).to eq(DateTime.parse("2016-06-15 19:32:00"))
-    end 
+    end
+
+    it "calls on_save with was_new being true and all fields when newly created" do
+      new_show.expects(:on_save).with(true, {})
+      new_show.last_checked_at = DateTime.now
+      new_show.save
+    end
+
+    it "calls on_save with was_new being false if saved again" do
+      new_show.expects(:on_save).with(true, {})
+      new_show.save
+      new_show.expects(:on_save).with(false, {})
+      new_show.save
+    end
+
+    it "calls on_save with the old values of dirty fields if saved again" do
+      new_show.expects(:on_save).with(true, {})
+      new_show.save
+
+      new_show.auto_fetch = true
+      new_show.expects(:on_save).with(false, {auto_fetch: false})
+      new_show.save
+
+      new_show.auto_fetch = true
+      new_show.last_checked_at = DateTime.parse("2016-06-15 19:32:00")
+      new_show.expects(:on_save).with(false, {last_checked_at: nil})
+      new_show.save
+
+      new_show.auto_fetch = false
+      new_show.last_checked_at = DateTime.parse("2016-05-28 10:09:22")
+      new_show.expects(:on_save).with(false, {
+        auto_fetch: true,
+        last_checked_at: DateTime.parse("2016-06-15 19:32:00"),
+      })
+      new_show.save
+    end  
+
+    it "calls on_save with was_new being false if retrieved from db" do
+      show = Show.get(10)
+      show.auto_fetch = false
+      show.expects(:on_save).with(false, {auto_fetch: true})
+      show.save
+    end  
   end
 
   context :destroy! do
@@ -154,6 +203,12 @@ describe Show do
     it "returns the record" do
       show = Show.get(12)
       expect(show.destroy!).to be(show)
+    end
+
+    it "calls on_destroy" do
+      show = Show.get(10)
+      show.expects(:on_destroy)
+      show.destroy!
     end  
   end
 
@@ -161,24 +216,33 @@ describe Show do
     it "only marshals required fields" do
       show = Show.get(10)
       expect(show.marshal_dump).to eq([
-        show.version, 
+        show.version,
+        'shows', 
         show.created_at,
         show.updated_at,
         show.id,
         show.name,
         show.feed_url,
         show.auto_fetch,
+        show.last_checked_at,
       ]);
     end
 
     it "can unmarshal itself and create a record that is not new" do
-      show = Show.send(:allocate)
+      show = ShowInstance.send(:allocate)
       show.marshal_load(new_show.marshal_dump)
       imp_values = [:version, :id, :name, :feed_url, :auto_fetch, :created_at, :updated_at]
       expect(imp_values.map{|v| show.send(v)}).to eq(
         imp_values.map{|v| new_show.send(v)}
       )
       expect(show).to_not be_new_record
+    end  
+  end
+
+  context :collection do
+    it "deletes the db if destroy! is called on the collection" do
+      Model::ModelDB.expects(:destroy).with('shows')
+      Show.destroy!
     end  
   end  
 end     

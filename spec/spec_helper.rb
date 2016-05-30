@@ -13,7 +13,10 @@ require 'faker'
 require 'fakefs/spec_helpers'
 require 'date'
 require 'timecop'
+require_relative '../web/model/model' 
 require_relative '../lib/libs'
+
+Model.send(:remove_const, :ModelDB)
 
 def require_from_root(p)
   require_relative File.join('..', p)

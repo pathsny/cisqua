@@ -7,17 +7,29 @@ class FeedItemValidator
   include Veto.validator
 end  
 
-class FeedItem
-  include Model
-
+class FeedItem < Model::Base
   attr_reader :id, :url, :downloaded
 
   # note changing the order of marshal fields, or adding a field will require 
   # changing the model version and creating a migration
   configure_model(
+    :type => :feed_item,
     :version => 1, 
     :validator => FeedItemValidator,
-    :marshal_fields => [:id, :url, :downloaded]
+    :fields => [{
+      :name => :id,
+      :serialize_to_ui => true,
+      :mutable => false
+    },{
+      :name => :url,
+      :serialize_to_ui => true,
+      :mutable => false
+    },{
+      :name => :downloaded,
+      :serialize_to_ui => true,
+      :mutable => true
+    }]
+
   )
 
   def initialize(id, url, downloaded)
@@ -26,8 +38,5 @@ class FeedItem
     @url = url
     @downloaded = downloaded
   end
-
-  def to_json(*a)
-  end  
 end 
 

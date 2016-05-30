@@ -67,16 +67,18 @@ set :puma_rackup, -> { File.join(current_path, 'web', 'config.ru') }
 
 namespace :deploy do
 
+  def ensure_dir(dir_path)
+    unless test(dir_path)
+      execute "mkdir -p #{dir_path}"
+    end
+  end     
+
+
   after :check, :create_directories do
     on roles(:app) do
-      http_cache_dir = File.join(shared_path, "data/http_anime_info_cache")
-      udp_cache_dir = File.join(shared_path, "data/udp_anime_info_cache/lock")
-      unless test(http_cache_dir)
-        execute "mkdir -p #{http_cache_dir}"
-      end  
-      unless test(udp_cache_dir)
-        execute "mkdir -p #{udp_cache_dir}"
-      end  
+      ensure_dir File.join(shared_path, "data/db")
+      ensure_dir File.join(shared_path, "data/http_anime_info_cache")
+      ensure_dir File.join(shared_path, "data/udp_anime_info_cache/lock")
     end
   end  
 
