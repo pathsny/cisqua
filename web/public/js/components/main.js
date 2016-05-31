@@ -6,9 +6,11 @@ import IconButton from 'material-ui/IconButton';
 import Refresh from 'material-ui/svg-icons/navigation/refresh'
 import CircularProgress from 'material-ui/CircularProgress';
 import { connect } from 'react-redux'
-import { fetchShows } from '../actions'
 import ShowContainer from './ShowContainer'
+import Snackbar from 'material-ui/Snackbar';
+import _ from 'lodash'
 
+import { fetchShows, dismissSnackbar } from '../actions'
 import '../../styles/main.css'
 
 class MainPresentation extends Component {
@@ -53,6 +55,17 @@ class MainPresentation extends Component {
     }
   }
 
+  _renderSnackBar() {
+    return (
+      <Snackbar
+        open={!!this.props.snackbarPayload}
+        message={_.get(this.props.snackbarPayload, 'message') || ''}
+        onRequestClose={this.props.dismissSnackbar}
+        autoHideDuration={2000}
+      />
+    );
+  }
+
   render() {
     const style = this._getStyle();
     return (
@@ -61,12 +74,13 @@ class MainPresentation extends Component {
           title="Cisqua"
           iconElementRight={this._renderRightIcon()}
           showMenuIconButton={false}
-      />
-      <div style={style.root}>
-        <div style={style.content}>
-          <ShowContainer/>
+        />
+        <div style={style.root}>
+          <div style={style.content}>
+            <ShowContainer/>
+          </div>
         </div>
-      </div> 
+        {this._renderSnackBar()}
       </div>
     );  
   }
@@ -78,11 +92,13 @@ MainPresentation.contextTypes = {
 
 
 const mapStateToProps = (state) => ({
-  fetchingList: state.app.fetching.list
+  fetchingList: state.app.fetching.list,
+  snackbarPayload: _.first(state.snackbarPayloads),
 })
 
 const mapDispatchToProps = (dispatch) => ({
-  onRefresh: () => dispatch(fetchShows())
+  onRefresh: () => dispatch(fetchShows()),
+  dismissSnackbar: () => dispatch(dismissSnackbar()),
 })
 
 const Main = connect(
@@ -91,5 +107,3 @@ const Main = connect(
 )(MainPresentation)
 
 export default Main
-
-

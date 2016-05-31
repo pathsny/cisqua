@@ -11,21 +11,20 @@ import Toggle from 'material-ui/Toggle';
 import _ from 'lodash'
 
 import AnimeAutosuggest from './AnimeAutosuggest.js'
-import {addShowToServer, addShowDialog, JSONResponseCarryingError, addShow} from '../actions.js'
+import {addShowDialog, JSONResponseCarryingError, addShow} from '../actions.js'
 
 async function onSubmit(values, dispatch) {
   try {
     const anime = values.anime.suggestion
-    const result = await addShowToServer(
+    await dispatch(addShow(
       _.parseInt(anime['@aid']),
       anime.name,
       values.feed_url,
       values.auto_fetch,  
-    );
-    return dispatch(addShow(result))
+    ));
   } catch (e) {
-    if (e instanceof JSONResponseCarryingError) {
-      const errorJSON = e.payload
+    if (e.reason instanceof JSONResponseCarryingError) {
+      const errorJSON = e.reason.payload
       let resultJson = {}
       for (let k of _.keys(errorJSON)) {
         const key = ['id', 'name'].includes(k) ? 'anime' : k

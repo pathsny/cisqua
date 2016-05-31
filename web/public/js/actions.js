@@ -14,6 +14,7 @@ export const ADD_SHOW = 'ADD_SHOW'
 export const FETCH_SHOWS = 'FETCH_SHOWS'
 export const ADD_SHOW_DIALOG = 'ADD_SHOW_DIALOG'
 export const FETCH_SUGGESTIONS = 'FETCH_SUGGESTIONS'
+export const DISMISS_SNACKBAR = 'DISMISS_SNACKBAR'
 
 /*
  * Utilties
@@ -26,19 +27,35 @@ export class JSONResponseCarryingError extends ExtendableError {
   }
 }
 
+class GenericServerError extends ExtendableError {
+  constructor(statusText, details) {
+    super(statusText)
+    this.payload = details
+  }
+}
+
+async function processResponseError(response) {
+  let error;
+  try {
+    const errorText = await response.text();
+    const errorJSON = _.attempt(t => JSON.parse(t), errorText)
+    if (_.isError(errorJSON)) {
+      error = new GenericServerError(response.statusText, errorText)
+    } else {
+      error = new JSONResponseCarryingError(response.statusText, errorJSON)   
+    }
+  } catch (e) {
+    error = new GenericServerError(response.statusText)
+  }
+  throw error
+}
+
 async function processJSONResponse(responsePromise) {
   const response = await responsePromise
   if (response.ok) {
     return await response.json()
   }
-  let errorJSON;
-  try {
-    // if the bad response has json, throw the json. It contains useful info 
-    errorJSON = await response.json();
-  } catch (e) {
-    throw new Error(response.statusText)  
-  }
-  throw new JSONResponseCarryingError(response.statusText, errorJSON) 
+  await processResponseError(response)
 }
 
 function thunkCreationUtil(fn) {
@@ -67,6 +84,7 @@ function createAsyncAction(
  */
 
 export const addShowDialog = createAction(ADD_SHOW_DIALOG);
+export const dismissSnackbar = createAction(DISMISS_SNACKBAR)
 
 /*
  * async operations
@@ -92,19 +110,20 @@ export const fetchShows = createAsyncAction(
  * Add new Show
  */
 
-export const addShow = createAction(ADD_SHOW);
-
-export async function addShowToServer(id, name, feed_url, auto_fetch) {
-  const formData = new FormData()
-  formData.append('id', id)
-  formData.append('name', name)
-  formData.append('feed_url', feed_url)
-  formData.append('auto_fetch', auto_fetch)
-  return await processJSONResponse(fetch('/shows/new', {
-    method: 'POST',
-    body: formData,
-  }))
-}
+export const addShow = createAsyncAction(
+  ADD_SHOW,
+  async function(id, name, feed_url, auto_fetch) {
+    const formData = new FormData()
+    formData.append('id', id)
+    formData.append('name', name)
+    formData.append('feed_url', feed_url)
+    formData.append('auto_fetch', auto_fetch)
+    return await processJSONResponse(fetch('/shows/new', {
+      method: 'POST',
+      body: formData,
+    }))
+  },
+)
 
 /*
  * Fetch Suggestions for Autosuggest
