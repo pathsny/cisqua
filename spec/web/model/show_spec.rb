@@ -16,6 +16,7 @@ describe Show do
       b.call(spec_this.db) 
     }
     FeedProcessor.stubs(:is_valid?).returns(true)
+    FeedProcessor.stubs(:update_show).returns(Concurrent.succeeded_future(true))
     Show.create(10, "Jojo", "http://foo.bar/jojo", true).save
     Show.create(12, "Akira", "http://foo.bar/akira", true).save
     Show.create(17, "Gits", "http://foo.bar/gits", true).save
@@ -117,12 +118,9 @@ describe Show do
       expect(duplicate_show.updated_at).to be_nil
     end
 
-    it "returns the record" do
-      expect(new_show.save).to be(new_show)
-    end  
-
     it "creates a record which is not new" do
-      expect(new_show.save).to_not be_new_record
+      new_show.save
+      expect(new_show).to_not be_new_record
     end
 
     it "sets created_at and updated_at when saving a new record" do
@@ -190,19 +188,28 @@ describe Show do
       show.auto_fetch = false
       show.expects(:on_save).with(false, {auto_fetch: true})
       show.save
+    end
+
+    it "returns a future which is the future returned by the feed_processor when new" do
+      f = Concurrent.succeeded_future(true)
+      FeedProcessor.stubs(:update_show).returns(f)
+      expect(new_show.save).to be(f)
+    end  
+
+    it "returns a succeeded_future when not new" do
+      Show.get(10).save.then {}
     end  
   end
 
   context :destroy! do
+    before :each do
+      Model::ModelDB.expects(:destroy).with(12)
+    end  
+
     it "removes a record from the db" do
       Show.get(12).destroy!
       expect(Show.exists?(12)).to be(false)
       expect(Show.all.map(&:id)).to_not include(12)
-    end
-
-    it "returns the record" do
-      show = Show.get(12)
-      expect(show.destroy!).to be(show)
     end
 
     it "calls on_destroy" do
@@ -210,6 +217,11 @@ describe Show do
       show.expects(:on_destroy)
       show.destroy!
     end  
+
+    it "returns a future indicating that everything is done" do
+      show = Show.get(12)
+      show.destroy!.then {}
+    end
   end
 
   context :marshal do
@@ -225,6 +237,7 @@ describe Show do
         show.feed_url,
         show.auto_fetch,
         show.last_checked_at,
+        show.latest_feed_item_added_at,
       ]);
     end
 

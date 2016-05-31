@@ -52,4 +52,5 @@
   :bind: 0.0.0.0
   # set this to production when using it, development for hacking on it
   :environment: production
+  :concurrent_rss_threads: 8
       

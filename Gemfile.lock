@@ -21,6 +21,8 @@ GEM
     celluloid (0.16.0)
       timers (~> 4.0.0)
     concurrent-ruby (1.0.2)
+    concurrent-ruby-edge (0.2.2)
+      concurrent-ruby (~> 1.0.2)
     concurrent-ruby-ext (1.0.2)
       concurrent-ruby (~> 1.0.2)
     daybreak (0.3.0)
@@ -113,6 +115,7 @@ DEPENDENCIES
   capistrano-rsync-bladrak
   capistrano3-puma
   concurrent-ruby
+  concurrent-ruby-edge
   concurrent-ruby-ext
   daybreak
   fakefs

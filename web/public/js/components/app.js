@@ -7,7 +7,7 @@ import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import {HotKeys} from 'react-hotkeys';
 
 import Main from './main'
-import { fetchShows } from '../actions' 
+import ShowFetcher from './show_fetcher'
 import store from '../store'
 
 if (process.env.NODE_ENV === `development`) {
@@ -20,15 +20,14 @@ const keyEventsMap = {
   'escape': 'escape',
 };  
 
-store.dispatch(fetchShows());
-
 export default class App extends Component {
   render() {
     return (
       <Provider store={store}>
         <MuiThemeProvider muiTheme={getMuiTheme()}>
-          <HotKeys keyMap={keyEventsMap}>
-            <Main/>
+          <HotKeys keyMap={keyEventsMap} >
+            <ShowFetcher />
+            <Main autoFocus={true}/>
           </HotKeys>  
         </MuiThemeProvider> 
       </Provider>

@@ -1,4 +1,5 @@
 require_relative 'model'
+require_relative 'feed_item'
 require 'forwardable'
 require 'veto'
 require 'json'
@@ -61,11 +62,23 @@ class ShowInstance < Model::Base
         'flag indicating that we should automatically download new episodes'\
          ' as they are ready',
     },{
+      :name => :is_updating_feed_items,
+      :custom_impl => true,
+      :serialize_to_ui => true,
+      :description => 'flag indicating that we are currently refreshing the'\
+        ' feed items for this show',
+    },{
       :name => :last_checked_at,
       :serialize_to_ui => true,
       :mutable => true,
       :default => nil,
       :description => 'timestamp at which we last checked the feed for new items',
+    },{
+      :name => :latest_feed_item_added_at,
+      :serialize_to_ui => true,
+      :mutable => true,
+      :default => nil,
+      :description => 'timestamp at which we last added a feed item',
     }]
   )
 
@@ -78,7 +91,34 @@ class ShowInstance < Model::Base
   end
 
   def on_save(was_new, dirty_fields)
+    result = super
+    was_new ? FeedProcessor.update_show(id) : result
+  end
+    
+  def feed
+    assert(!self.new_record?, "feeds should not be fetched for unsaved shows")
+    Model.get_collection(:feed_item, self.id)
+  end
+
+  def is_updating_feed_items
+    FeedProcessor.is_updating_show_feed_items?(self.id)
+  end
+
+  def to_hash_for_json_with_feed_items
+    self.to_hash_for_json.merge(
+      feed_items: feed.all
+    )
   end  
+
+  def to_json_with_feed_items(*a)
+    self.to_hash_for_json_with_feed_items.to_json(*a)
+  end
+
+  def on_destroy
+    result = super
+    feed.destroy!
+    result
+  end    
 end
 
 Show = Model.get_collection(:show, 'shows')  

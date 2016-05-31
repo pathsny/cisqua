@@ -1,22 +1,29 @@
-RSpec.configure do |config|
-  config.expect_with :rspec do |expectations|
-    expectations.include_chain_clauses_in_custom_matcher_descriptions = true
-  end
-
-  config.mock_with :mocha
-
-end
-
 require 'mocha/api'
 require 'rspec'
 require 'faker'
 require 'fakefs/spec_helpers'
 require 'date'
 require 'timecop'
+require 'feedjira'
 require_relative '../web/model/model' 
 require_relative '../lib/libs'
 
-Model.send(:remove_const, :ModelDB)
+
+def prevent_realworld_effects
+  Model.send(:remove_const, :ModelDB)
+  Feedjira.send(:remove_const, :Feed)
+end  
+
+RSpec.configure do |config|
+  config.expect_with :rspec do |expectations|
+    expectations.include_chain_clauses_in_custom_matcher_descriptions = true
+  end
+
+  config.mock_with :mocha
+  prevent_realworld_effects
+
+end
+
 
 def require_from_root(p)
   require_relative File.join('..', p)

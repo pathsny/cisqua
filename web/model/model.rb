@@ -1,5 +1,5 @@
 require 'daybreak'
-require 'concurrent'
+require 'concurrent-edge'
 
 module Model
   class ModelDB
@@ -228,23 +228,24 @@ module Model
       @new_record = false
       @updated_at = DateTime.now
       collection.send(:save, self.id, self)
-      on_save(was_new, was_new ? {} : @dirty_fields.select do|k, v|
+      result = on_save(was_new, was_new ? {} : @dirty_fields.select do|k, v|
         v != self.send(k) 
       end)
       @dirty_fields = {}
-      self
+      result
     end
 
     def on_save(was_new, dirty_fields)
+      Concurrent.succeeded_future(true) 
     end  
 
     def destroy!
       collection::send(:delete, self.id)
       on_destroy
-      self
     end
 
     def on_destroy
+      Concurrent.succeeded_future(true)
     end  
 
     def collection

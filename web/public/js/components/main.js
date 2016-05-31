@@ -9,11 +9,13 @@ import { connect } from 'react-redux'
 import ShowContainer from './ShowContainer'
 import Snackbar from 'material-ui/Snackbar';
 import {HotKeys} from 'react-hotkeys';
+import MoreVertIcon from 'material-ui/svg-icons/navigation/more-vert';
+import MenuItem from 'material-ui/MenuItem';
+import IconMenu from 'material-ui/IconMenu';
 import _ from 'lodash'
 
-import { fetchShows, dismissSnackbar } from '../actions'
+import { fetchShows, dismissSnackbar, addShowDialog, checkAllFeeds } from '../actions'
 import '../../styles/main.css'
-import {addShowDialog} from '../actions.js'
 import NewShowDialogFormWrapper from './NewShowDialogForm'
 
 const {NewShowDialogForm} = NewShowDialogFormWrapper 
@@ -21,30 +23,27 @@ const {NewShowDialogForm} = NewShowDialogFormWrapper
 class MainPresentation extends Component {
   constructor(props) {
     super(props)
-    this._onRefresh = this._onRefresh.bind(this)
     this._onAddShowKey = this._onAddShowKey.bind(this)
   }
 
-  _onRefresh() {
-    this.props.onRefresh()
-  }
-
   _renderRightIcon() {
-    if (this.props.fetchingList) {
-      return (
-        <CircularProgress 
-          color={this.context.muiTheme.palette.alternateTextColor} 
-          size={0.25} 
-        />
-      );
-    } 
     return (
-      <IconButton 
-        tooltip="refresh" 
-        onTouchTap={this._onRefresh}>
-        <Refresh/>
-      </IconButton>
-    );
+      <IconMenu 
+        iconButtonElement={<IconButton><MoreVertIcon /></IconButton>}
+        targetOrigin={{horizontal: 'right', vertical: 'top'}}
+        anchorOrigin={{horizontal: 'right', vertical: 'top'}}
+      >
+        <MenuItem 
+          primaryText="Refresh Shows"
+          disabled={this.props.fetchingList}
+          onTouchTap={this.props.onRefresh}
+        />
+        <MenuItem
+          primaryText="Check All Feeds"
+          onTouchTap={this.props.onCheckAllFeeds}
+        /> 
+      </IconMenu>
+    )
   }
 
   _getStyle() {
@@ -58,6 +57,10 @@ class MainPresentation extends Component {
         margin: spacing.desktopGutter,
         width: 1200,
       },
+      appBar: {
+        position: 'fixed',
+        top: 0,
+      }
     }
   }
 
@@ -96,6 +99,7 @@ class MainPresentation extends Component {
           title="Cisqua"
           iconElementRight={this._renderRightIcon()}
           showMenuIconButton={false}
+          style={style.appBar}
         />
         <div style={style.root}>
           <div style={style.content}>
@@ -154,6 +158,7 @@ const mapDispatchToProps = (dispatch) => ({
   onRefresh: () => dispatch(fetchShows()),
   dismissSnackbar: () => dispatch(dismissSnackbar()),
   onAddDialogStateChange: (newValue) => dispatch(addShowDialog(newValue)),
+  onCheckAllFeeds: () => dispatch(checkAllFeeds()),
 })
 
 const Main = connect(

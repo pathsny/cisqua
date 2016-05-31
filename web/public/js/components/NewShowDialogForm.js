@@ -75,7 +75,7 @@ class NewShowDialogFormPresentation extends Component {
         secondary={true}
         onTouchTap={this.props.onRequestClose}
       />,
-      <FlatButton
+      <RaisedButton
         type="submit"
         label="Submit"
         form="addShowForm"

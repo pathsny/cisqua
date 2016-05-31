@@ -114,7 +114,6 @@ ShowContainerPresentation.contextTypes = {
   noDialogsOpen: PropTypes.bool.isRequired,
 }
 
-
 const mapStateToProps = (state) => ({
   shows: state.app.showList.map(id => state.app.showsByID[id]),
   dialogsOpen: state.app.dialogsOpen,
@@ -123,7 +122,6 @@ const mapStateToProps = (state) => ({
 const mapDispatchToProps = (dispatch) => ({
   onAddDialogStateChange: (newValue) => dispatch(addShowDialog(newValue)),
 })
-
 
 const ShowContainer = connect(
   mapStateToProps,
