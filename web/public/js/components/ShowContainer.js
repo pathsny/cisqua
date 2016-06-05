@@ -7,6 +7,7 @@ import {Toolbar, ToolbarGroup, ToolbarSeparator, ToolbarTitle} from 'material-ui
 import RaisedButton from 'material-ui/RaisedButton';
 import TextField from 'material-ui/TextField';
 import Dialog from 'material-ui/Dialog';
+import {HotKeys} from 'react-hotkeys';
 
 import {ShowPropType} from './proptypes.js'
 import Show from './Show'
@@ -15,11 +16,17 @@ import {addShowDialog} from '../actions.js'
 
 const {NewShowDialogForm} = NewShowDialogFormWrapper
 
+const InitialState = {
+  filterText: '',
+}
+
 class ShowContainerPresentation extends Component {
   constructor(props) {
     super(props)
-    this.state = {filterText: ''}
+    this.state = InitialState;
     this._handleFilterChange = this._handleFilterChange.bind(this)
+    this._onFilterShows = this._onFilterShows.bind(this)
+    this._onStopFilteringShowsMaybe = this._onStopFilteringShowsMaybe.bind(this)
   }
 
   _handleFilterChange(event) {
@@ -34,30 +41,42 @@ class ShowContainerPresentation extends Component {
     );  
   }
 
-  _renderNewShowDialog() {
-    if (!this.props.addDialogOpen) {
-      return;
+  _onFilterShows(event) {
+    event.preventDefault();
+    this.refs.filterField.focus()
+    return false;
+  }
+
+  _onStopFilteringShowsMaybe(event) {
+    if (event.keyCode === 27) {
+      this.setState({filterText: ''});
+      this.refs.filterField.blur();
     }
-    return (
-      <NewShowDialogForm 
-        onRequestClose={() => this.props.onAddDialogStateChange(false)}
-      />
-    );
-  } 
+  }
 
   _renderControlSection() {
+    const handlers = {
+      'filterShows': this._onFilterShows,
+    };
     return (
       <Toolbar>
         <ToolbarGroup float="left">
-          <TextField 
-            hintText="Filter"
-            fullWidth={true}
-            onChange={this._handleFilterChange}
-            value={this.state.filterText}
-          />
+          <HotKeys 
+            handlers={handlers} 
+            focused={this.context.noDialogsOpen}
+            attach={window}
+          >
+            <TextField
+              ref="filterField" 
+              hintText="Filter"
+              fullWidth={true}
+              onChange={this._handleFilterChange}
+              value={this.state.filterText}
+              onKeyDown={this._onStopFilteringShowsMaybe}
+            />
+          </HotKeys>  
         </ToolbarGroup>
         <ToolbarGroup float="right" lastChild={true}>
-          {this._renderNewShowDialog()}
           <RaisedButton 
             label="Add New Show" 
             primary={true}
@@ -88,17 +107,23 @@ class ShowContainerPresentation extends Component {
 ShowContainerPresentation.propTypes = {
   shows: PropTypes.arrayOf(ShowPropType.isRequired).isRequired,
   onAddDialogStateChange: PropTypes.func.isRequired,
-  addDialogOpen: PropTypes.bool.isRequired,
+  dialogsOpen: PropTypes.object.isRequired,
 }
+
+ShowContainerPresentation.contextTypes = {
+  noDialogsOpen: PropTypes.bool.isRequired,
+}
+
 
 const mapStateToProps = (state) => ({
   shows: state.app.showList.map(id => state.app.showsByID[id]),
-  addDialogOpen: state.app.dialogsOpen.addShow,
+  dialogsOpen: state.app.dialogsOpen,
 })
 
 const mapDispatchToProps = (dispatch) => ({
-  onAddDialogStateChange: (newValue) => dispatch(addShowDialog(newValue)) 
+  onAddDialogStateChange: (newValue) => dispatch(addShowDialog(newValue)),
 })
+
 
 const ShowContainer = connect(
   mapStateToProps,
