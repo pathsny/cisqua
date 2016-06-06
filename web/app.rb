@@ -18,7 +18,6 @@ class App < Sinatra::Application
 
   set :root, File.dirname(__FILE__)
   set :static_cache_control, [:no_cache, :must_revalidate, max_age: 0]
-  # set :public_folder, 'public'
 
   before do
     content_type 'application/json'
@@ -29,7 +28,7 @@ class App < Sinatra::Application
   end
 
   get "/shows/:id" do
-    Show.exists?(params[:id]) ? Show.get(params[:id]) : not_found
+    Show.exists?(params[:id]) ? Show.get(params[:id]).to_json : not_found
   end
 
   get "/shows" do
@@ -38,10 +37,11 @@ class App < Sinatra::Application
 
   post "/shows/new" do
     begin
-      @show = Show.create(params[:id], params[:name], params[:feed_url], params[:auto_fetch])
-      @show.save.to_json
-    rescue
-      [400, @show.errors.to_json]
+      show = Show.create(*[:id, :name, :feed_url, :auto_fetch].map{|sym|params[sym]})
+      show.save
+      redirect "/shows/#{params[:id]}"
+    rescue Veto::InvalidEntity => e
+      [400, show.errors.to_json]
     end  
   end
 
