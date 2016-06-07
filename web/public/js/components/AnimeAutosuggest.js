@@ -6,7 +6,7 @@ import invariant from 'invariant'
 import { connect } from 'react-redux'
 import AutoComplete from 'material-ui/AutoComplete';
 
-import {fetchSuggestionsFromAnidbSmart} from '../actions'
+import {fetchSuggestionsFromAnidb} from '../actions'
 
 const initialState = {
   suggestions: [],
@@ -107,7 +107,7 @@ const mapStateToProps = (state) => ({
 });
 
 const mapDispatchToProps = (dispatch) => ({
-  fetchSuggestions: (hint) => dispatch(fetchSuggestionsFromAnidbSmart(hint)) 
+  fetchSuggestions: (hint) => dispatch(fetchSuggestionsFromAnidb(hint)) 
 })
 
 const AnimeAutosuggest = connect(

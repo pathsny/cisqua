@@ -7,7 +7,7 @@ import injectTapEventPlugin from 'react-tap-event-plugin';
 import getMuiTheme from 'material-ui/styles/getMuiTheme';
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 
-import { fetchShowsSmart } from './actions' 
+import { fetchShows } from './actions' 
 import Main from './components/main'
 import store from './store'
 
@@ -17,7 +17,7 @@ if (process.env.NODE_ENV === `development`) {
 
 // Needed by Material UI
 injectTapEventPlugin();
-store.dispatch(fetchShowsSmart());
+store.dispatch(fetchShows());
 
 render(
   <Provider store={store}>

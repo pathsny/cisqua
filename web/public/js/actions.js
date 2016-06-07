@@ -41,6 +41,33 @@ async function processJSONResponse(responsePromise) {
   throw new JSONResponseCarryingError(response.statusText, errorJSON) 
 }
 
+function thunkCreationUtil(fn) {
+  return (actionCreator) => ((...args) => (
+    (dispatch, getState) => fn(actionCreator, dispatch, getState, ...args)
+  ));
+}
+
+
+function createAsyncAction(
+  actionName,
+  asyncFn,
+  thunkFn = _.identity,
+  metadataFn,
+) {
+  const actionCreator = createAction(
+    actionName,
+    (...args) => ({promise: asyncFn(...args)}),
+    metadataFn,
+  );
+  return thunkFn(actionCreator);
+}
+
+/*
+ * sync operations
+ */
+
+export const addShowDialog = createAction(ADD_SHOW_DIALOG);
+
 /*
  * async operations
  */
@@ -49,31 +76,25 @@ async function processJSONResponse(responsePromise) {
  * fetch Show List
  */
 
-async function fetchShowsFromServer() {
-  return await processJSONResponse(fetch('/shows'))
-}
-
-const fetchShowsAction = createAction(
+export const fetchShows = createAsyncAction(
   FETCH_SHOWS,
-  () => ({promise: fetchShowsFromServer()}),
-)
-
-function fetchShowsSmart() {
-  return (dispatch, getState) => {
-    const state = getState();
-    if (!state.app.fetching.list) {
-      dispatch(fetchShowsAction());
+  async function() {
+    return await processJSONResponse(fetch('/shows')) 
+  },
+  thunkCreationUtil((actionCreator, dispatch, getState) => {
+    if (!getState().app.fetching.list) {
+      dispatch(actionCreator());
     }
-  }
-}
+  }),  
+);
 
 /*
  * Add new Show
  */
 
-const addShow = createAction(ADD_SHOW);
+export const addShow = createAction(ADD_SHOW);
 
-async function addShowToServer(id, name, feed_url, auto_fetch) {
+export async function addShowToServer(id, name, feed_url, auto_fetch) {
   const formData = new FormData()
   formData.append('id', id)
   formData.append('name', name)
@@ -85,53 +106,38 @@ async function addShowToServer(id, name, feed_url, auto_fetch) {
   }))
 }
 
-const addShowDialog = createAction(ADD_SHOW_DIALOG);
-
 /*
  * Fetch Suggestions for Autosuggest
  */
 
-async function fetchSuggestionsFromAnidb(hint) {
-  const query = hint.trim().replace(/[\s]+/g, ' ').split(' ').
-    map(w => `%2B${w}*`).join(' ');
-  const url = 'http://anisearch.outrance.pl/?task=search&query=' + query;
-  const response = await fetch(url)
-  const text = await response.text();
-  const xmlData = xml.xmlToJSON(text);
-  return asArray(xmlData.animetitles.anime);
-}
 
-const fetchSuggestionsAction = createAction(
+export const fetchSuggestionsFromAnidb = createAsyncAction(
   FETCH_SUGGESTIONS,
-  (hint) => ({promise: fetchSuggestionsFromAnidb(hint)}),
+  async function(hint) {
+    const query = hint.trim().replace(/[\s]+/g, ' ').split(' ').
+      map(w => `%2B${w}*`).join(' ');
+    const url = 'http://anisearch.outrance.pl/?task=search&query=' + query;
+    const response = await fetch(url)
+    const text = await response.text();
+    const xmlData = xml.xmlToJSON(text);
+    return asArray(xmlData.animetitles.anime);
+  },
+  (actionCreator) => {
+    const debouncedActionCreator = _.debounce(
+      (dispatch, hint) => dispatch(actionCreator(hint)),
+      300,
+    );
+    return (hint) => {
+      return (dispatch, getState) => {
+        const state = getState();
+        if (!(
+          _.has(state.autosuggest.fetching, hint) ||
+          _.has(state.autosuggest.suggestions, hint)
+        )) {
+          debouncedActionCreator(dispatch, hint)
+        }
+      }  
+    };
+  },
   (hint) => ({hint: hint}),
-)
-
-const debouncedFetchSuggestions = _.debounce(
-  (dispatch, hint)  => dispatch(fetchSuggestionsAction(hint)),
-  300,
-);
-
-function fetchSuggestionsFromAnidbSmart(hint) {
-  return (dispatch, getState) => {
-    const state = getState();
-    if (!(
-      _.has(state.autosuggest.fetching, hint) ||
-      _.has(state.autosuggest.suggestions, hint)
-    )) {
-      debouncedFetchSuggestions(dispatch, hint)
-    }
-  }
-}
-
-/*
- * exported action creators
- */
-
-export { 
-  fetchShowsSmart, 
-  fetchSuggestionsFromAnidbSmart, 
-  addShowDialog,
-  addShowToServer,
-  addShow,
-}
+);  
