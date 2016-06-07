@@ -24,6 +24,13 @@ function prepareStore() {
       window.devToolsExtension ? window.devToolsExtension() : f => f,
     ),
   )
+
+  if (module.hot) {
+    module.hot.accept('./reducers', () => {
+      store.replaceReducer(require('./reducers').default);
+    });
+  }
+
   return store;
 }
 

@@ -5,9 +5,15 @@ var BUILD_DIR = path.resolve(__dirname, 'build');
 var APP_DIR = path.resolve(__dirname, 'js');
 
 var config = {
-  entry: ['babel-polyfill', APP_DIR + '/app.js'],
+  entry: [
+    'webpack-dev-server/client?http://0.0.0.0:9494',
+    'webpack/hot/only-dev-server', 
+    'babel-polyfill', 
+    APP_DIR + '/index.js'
+  ],
   output: {
     path: BUILD_DIR,
+    publicPath: "http://0.0.0.0:9494/build/",
     filename: 'bundle.js'
   },
   module : {
@@ -15,7 +21,7 @@ var config = {
       {
         test : /\.jsx?/,
         include : APP_DIR,
-        loader : 'babel'
+        loaders : ['react-hot', 'babel']
       },
       { 
         test: /\.css$/, 
@@ -23,7 +29,8 @@ var config = {
       }
     ]
   },
-  plugins: [  
+  plugins: [
+    new webpack.HotModuleReplacementPlugin(),  
     new webpack.ProvidePlugin({
       Promise: 'imports?this=>global!exports?global.Promise!es6-promise',
       fetch: 'imports?this=>global!exports?global.fetch!whatwg-fetch'

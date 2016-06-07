@@ -125,9 +125,11 @@ NewShowDialogFormPresentation.propTypes = {
   pristine: PropTypes.bool.isRequired,
 }
 
-export default reduxForm({
-  form: 'addShow',
-  validate,
-  onSubmit,
-  initialValues,
-})(NewShowDialogFormPresentation)
+export default {
+  NewShowDialogForm: reduxForm({
+    form: 'addShow',
+    validate,
+    onSubmit,
+    initialValues,
+  })(NewShowDialogFormPresentation)
+}  

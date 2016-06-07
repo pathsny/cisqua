@@ -10,8 +10,10 @@ import Dialog from 'material-ui/Dialog';
 
 import {ShowPropType} from './proptypes.js'
 import Show from './Show'
-import NewShowDialogForm from './NewShowDialogForm'
+import NewShowDialogFormWrapper from './NewShowDialogForm'
 import {addShowDialog} from '../actions.js'
+
+const {NewShowDialogForm} = NewShowDialogFormWrapper
 
 class ShowContainerPresentation extends Component {
   constructor(props) {
