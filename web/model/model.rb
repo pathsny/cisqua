@@ -1,5 +1,6 @@
 require 'daybreak'
 require 'concurrent-edge'
+require_relative '../../lib/loggers.rb'
 
 module Model
   class ModelDB
@@ -14,6 +15,7 @@ module Model
     class << self
       def get_db(db_name)
         db = @dbs.compute_if_absent(db_name) {
+          Loggers::DB.debug { "opening db #{db_name}" }
           Daybreak::DB.new(File.join(Data_location, db_name + '.db'))
         }
         db.synchronize {
@@ -22,6 +24,7 @@ module Model
       end
 
       def destroy(db_name)
+        Loggers::DB.debug { "destroying database #{db_name}" }
         db = @dbs[db_name]
         @dbs.delete(db_name)
         return unless db
@@ -30,7 +33,7 @@ module Model
       end  
 
       def close_dbs
-        puts "closing databases"
+        Loggers::DB.debug { "closing databases" }
         thr = Thread.new do
           @dbs.values.each {|db| db.flush.close unless db.closed? }
         end
@@ -236,6 +239,8 @@ module Model
     end
 
     def on_save(was_new, dirty_fields)
+      Loggers::DB.debug { "saved #{was_new ? 'new' : 'existing'} object of "\
+        "type #{@db_name} and id #{id}" }
       Concurrent.succeeded_future(true) 
     end  
 
@@ -245,6 +250,7 @@ module Model
     end
 
     def on_destroy
+      Loggers::DB.debug { "destroyed object of type #{@db_name} and id #{id}"}
       Concurrent.succeeded_future(true)
     end  
 

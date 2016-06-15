@@ -18,6 +18,7 @@ gem 'concurrent-ruby-edge'
 gem 'multimap'
 gem 'veto'
 gem 'slowweb'
+gem 'logging'
 
 group :test do
   gem 'rspec'

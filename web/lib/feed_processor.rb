@@ -4,6 +4,7 @@ require 'concurrent-edge'
 require_relative '../model/show'
 require_relative '../model/feed_item'
 require_relative './constants'
+require_relative '../../lib/loggers.rb'
 
 class FeedProcessor
   @executor = Concurrent::ThreadPoolExecutor.new(
@@ -35,21 +36,27 @@ class FeedProcessor
     end
 
     def update_all_shows
+      Loggers::FeedProcessor.debug "update all shows start"
       res = @is_updating_feed_items.make_true
       return unless res # someone has already started this process
       futures = Show.all.map {|s| FeedProcessor.update_show(s.id) }
+      Loggers::FeedProcessor.debug "update all shows requested"
       Concurrent.zip(*futures).on_completion {
         @is_updating_feed_items.make_false
+        Loggers::FeedProcessor.debug "update all shows completed"
       } 
     end  
 
     def update_show(id)
+      Loggers::FeedProcessor.debug { "update show start #{id} : #{ Show.get(id).name rescue '<ERROR>' }" }
       return @is_updating_show_feed_items.compute_if_absent(id) do
         Concurrent.future(@executor) {
           update_show_impl(id)
         }.then(:io) {
+          Loggers::FeedProcessor.debug { "update show complete #{id} : #{ Show.get(id).name rescue '<ERROR>' }" }
           @is_updating_show_feed_items.delete(id) 
         }.rescue(:io) { |reason|
+          Loggers::FeedProcessor.warn { "could not update show #{id} : #{ Show.get(id).name rescue '<ERROR>' } because #{reason}" }
           @is_updating_show_feed_items.delete(id) 
         }
       end
@@ -74,6 +81,7 @@ class FeedProcessor
           entry.summary,
         ).save
       end
+      Loggers::FeedProcessor.debug { "found #{new_entries.length} new entries for  : #{ Show.get(id).name rescue '<ERROR>' }" }
       show.last_checked_at = DateTime.now
       show.latest_feed_item_added_at = DateTime.now unless new_entries.empty?
       show.save

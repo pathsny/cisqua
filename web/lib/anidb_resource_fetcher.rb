@@ -1,6 +1,7 @@
 require 'rest_client'
 require 'nokogiri'
 require 'slowweb'
+require_relative '../../lib/loggers.rb'
 
 SlowWeb.limit('anidb.net', 1, 2)
 
@@ -8,7 +9,11 @@ class AnidbResourceFetcher
   class << self
     def data(aid)
       get_file "#{aid}.xml" do 
-        download_data(aid).tap { |res| raise "Banned from anidb" if res == "<error>Banned</error>" }
+        download_data(aid).tap { |res| 
+          Loggers::AnidbResourceFetcher.warn(
+            "Banned from Anidb"
+          ) if res == "<error>Banned</error>" 
+        }
       end  
     end
 
@@ -44,12 +49,14 @@ class AnidbResourceFetcher
 
     def get_thumb_file(aid)
       get_file("#{aid}-thumb.jpg") do
+        Loggers::AnidbResourceFetcher.debug { "getting thumb for #{aid}" }
         pic_file = yield
         RestClient.get "http://img7.anidb.net/pics/anime/thumbs/50x65/#{pic_file}-thumb.jpg"  
       end      
     end
 
     def download_data(aid)
+      Loggers::AnidbResourceFetcher.debug { "getting data for #{aid}" }
       RestClient.get "http://api.anidb.net:9001/httpapi?client=misakatron&clientver=1&protover=1&request=anime&aid=#{aid}" 
     end
   end  

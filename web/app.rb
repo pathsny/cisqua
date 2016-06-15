@@ -3,19 +3,36 @@ require_relative 'lib/constants'
 require_relative 'model/all_models.rb'
 require_relative 'lib/anidb_resource_fetcher.rb'
 require_relative 'lib/feed_processor'
+require_relative '../lib/loggers.rb'
+require_relative '../lib/concurrent_logger.rb'
 require 'bundler/setup'
 require 'sinatra/base'
 require 'tilt/erb'
 
-require 'logger'
+def Logging.make_sinatra_logger
+  Loggers::Web.tap do |l|
+    def l.write(resp)
+      offset = resp.index('"')
+      self.info resp.slice(offset, resp.length - offset)
+    end  
+  end
+end
+
+class ErrorLogger
+  class << self
+    def puts(msg)
+      Loggers::Web.error msg
+    end
+  end    
+end
 
 class App < Sinatra::Application
   configure do
-    enable :logging
-    # logfile = File.expand_path('../../data/anidb.log', __FILE__)
-    # logger = Logger.new(logfile).tap {|l| l.level = $DEBUG ? Logger::DEBUG : Logger::INFO}
-    # use Rack::CommonLogger, logger
-  end  
+    disable :logging
+    use Rack::CommonLogger, Logging.make_sinatra_logger
+  end
+
+  before { env["rack.errors"] =  ErrorLogger }  
 
   set :root, File.dirname(__FILE__)
   set :static_cache_control, [:no_cache, :must_revalidate, max_age: 0]
@@ -26,6 +43,13 @@ class App < Sinatra::Application
 
   get "/" do
     redirect '/index.html'
+  end
+
+  get "/shows" do
+    {
+      is_updating_feed_items: FeedProcessor.is_updating_feed_items?, 
+      shows: Show.all,
+    }.to_json
   end
 
   get "/shows/with_feed_items" do
@@ -43,13 +67,6 @@ class App < Sinatra::Application
     Show.exists?(params[:id]) ? 
       Show.get(params[:id]).to_json_with_feed_items : 
       not_found
-  end
-
-  get "/shows" do
-    {
-      is_updating_feed_items: FeedProcessor.is_updating_feed_items?, 
-      shows: Show.all,
-    }.to_json
   end
 
   post "/shows/new" do

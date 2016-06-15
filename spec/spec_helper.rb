@@ -5,9 +5,10 @@ require 'fakefs/spec_helpers'
 require 'date'
 require 'timecop'
 require 'feedjira'
+
 require_relative '../web/model/model' 
 require_relative '../lib/libs'
-
+require 'rspec/logging_helper'
 
 def prevent_realworld_effects
   Model.send(:remove_const, :ModelDB)
@@ -19,17 +20,18 @@ RSpec.configure do |config|
     expectations.include_chain_clauses_in_custom_matcher_descriptions = true
   end
 
-  config.mock_with :mocha
-  prevent_realworld_effects
+  include RSpec::LoggingHelper
 
+  config.mock_with :mocha
+  config.capture_log_messages
+
+  prevent_realworld_effects
 end
 
 
 def require_from_root(p)
   require_relative File.join('..', p)
 end  
-
-create_logger('/dev/null')
 
 OPTIONS_BAK = YAML.load_file(File.expand_path('../../script/helpers/options.yml.bak', __FILE__))
 DUMMY_INFO = YAML.load_file(File.expand_path('../dummy_info.yml', __FILE__))
