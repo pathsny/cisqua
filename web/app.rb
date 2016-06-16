@@ -42,7 +42,13 @@ class App < Sinatra::Application
   end
 
   get "/" do
-    redirect '/index.html'
+    content_type 'text/html'
+    erb :index
+  end
+
+  get "/logs" do
+    content_type 'text/html'
+    erb :index
   end
 
   get "/shows" do

@@ -25,6 +25,11 @@ class ShowFetcherPresentation extends Component {
     this.props.onFetchShows();
   }
 
+  componentWillUnmount() {
+    this._clearAllTimers();
+    this.setState(InitialState);
+  }
+
   componentWillReceiveProps(nextProps) {
     if (nextProps.fetchingList) {
       // everything is updating anyway
