@@ -19,6 +19,7 @@ gem 'multimap'
 gem 'veto'
 gem 'slowweb'
 gem 'logging'
+gem 'faye-websocket'
 
 group :test do
   gem 'rspec'

@@ -39,6 +39,7 @@ class App < Sinatra::Application
 
   before do
     content_type 'application/json'
+    env["rack.errors"] =  ErrorLogger
   end
 
   get "/" do

@@ -1,8 +1,6 @@
 require 'logging'
 
-# Logging.logger.root.level = $DEBUG ? :debug : :info
-Logging.logger.root.level = :debug
-
+Logging.logger.root.level = :info
 
 default_scheme = Logging::ColorScheme[:default]
 
@@ -27,10 +25,14 @@ Logging.appenders.file('logfile',
   :layout => Logging.layouts.pattern({}),
 )
 
+parseable_logfile = File.expand_path('../../log/anidb_json.log', __FILE__)
+
 Logging.appenders.file('parseable_logfile',
-  :filename => File.expand_path('../../log/anidb_json.log', __FILE__),
-  :layout => Logging.layouts.json
+  :filename => parseable_logfile,
+  :layout => Logging.layouts.json(:items => %w[timestamp level logger message pid]),
 )
+
+Logging.define_singleton_method(:parseable_logfile) { parseable_logfile }
 
 Logging.logger.root.add_appenders 'stdout', 'logfile', 'parseable_logfile'
 
@@ -40,4 +42,5 @@ module Loggers
   FeedProcessor = Logging.logger['FeedProcessor']
   DB = Logging.logger['DB']
   Concurrent = Logging.logger['Concurrent']
+  LogTailer = Logging.logger['LogTailer'] 
 end

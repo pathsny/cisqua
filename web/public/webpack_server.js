@@ -7,7 +7,13 @@ new WebpackDevServer(webpack(config), {
   hot: true,
   historyApiFallback: true,
   proxy: {
-    "*": "http://localhost:9393"
+    '/log_tailer': {
+      target: "http://localhost:9393",
+      ws: true,
+    },
+    '**': {
+      target: "http://localhost:9393",
+    },
   },
 }).listen(9494, 'localhost', function (err, result) {
   if (err) {
