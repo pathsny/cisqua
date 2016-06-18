@@ -10,6 +10,11 @@ import {
   DISMISS_SNACKBAR,
   CHECK_ALL_FEEDS, 
   CHECK_FEED,
+
+  TAILING_LOGS_START,
+  TAILING_LOGS_STOP, 
+  TAILING_LOGS_ERROR,
+  TAILING_LOGS_LOG,
   JSONResponseCarryingError,
 } from './actions'
 
@@ -189,7 +194,7 @@ const autosuggest = typeToReducer({
   }
 }, initialAutosuggestState)
 
-const rejectedActionRegex = /(.*)_REJECTED/
+const rejectedActionRegex = /(.*)_REJECTED|(TAILING_LOGS)_ERROR/
 
 function snackbarPayloads(state = [], action) {
   if (action.type === DISMISS_SNACKBAR) {
@@ -199,7 +204,9 @@ function snackbarPayloads(state = [], action) {
   if (!match || action.payload instanceof JSONResponseCarryingError) {
     return state;
   }
-  const message = `Error attempting ${match[1]}. ${action.payload.message}`;  
+  const failedAction = match[1] || match[2]
+  const failedReason = _.get(action, 'payload.message', '')
+  const message = `Error attempting ${failedAction}. ${failedReason}`;  
   const lastPayload = _.last(state)
   if (!lastPayload || lastPayload.message !== message) {
     return _.concat(state, [{message}])
@@ -207,4 +214,19 @@ function snackbarPayloads(state = [], action) {
   return state
 }
 
-export default combineReducers({app, form, autosuggest, snackbarPayloads})
+const MAX_LOGS = 1000
+
+const logs = typeToReducer({
+  [TAILING_LOGS_START]: (state, action) => action.payload,
+  [TAILING_LOGS_LOG]: (state, action) => {
+    return _.concat(_.takeRight(state, MAX_LOGS), action.payload)
+  } 
+}, [])
+
+export default combineReducers({
+  app, 
+  form, 
+  autosuggest, 
+  snackbarPayloads,
+  logs,
+})

@@ -3,6 +3,7 @@
 import { createAction } from 'redux-actions'
 import ExtendableError from 'es6-error';
 import xml from 'xml-to-json/xml.js'
+import ReconnectingWebSocket from 'reconnectingwebsocket'
 
 import {asArray} from './utils/anidb_utils.js'
 
@@ -19,6 +20,11 @@ export const FETCH_SUGGESTIONS = 'FETCH_SUGGESTIONS'
 export const DISMISS_SNACKBAR = 'DISMISS_SNACKBAR'
 export const CHECK_ALL_FEEDS = 'CHECK_ALL_FEEDS'
 export const CHECK_FEED = 'CHECK_FEED'
+
+export const TAILING_LOGS_START = 'TAILING_LOGS_START'
+export const TAILING_LOGS_STOP = 'TAILING_LOGS_STOP'
+export const TAILING_LOGS_ERROR =  'TAILING_LOGS_ERROR'
+export const TAILING_LOGS_LOG =  'TAILING_LOGS_LOG'
 
 /*
  * Utilties
@@ -224,3 +230,39 @@ export const checkFeed = createAsyncAction(
   },
 );
 
+/*
+ * Logs
+ */
+
+export const {startTailingLogs, stopTailingLogs} = (function() {
+  let wsclient;
+  const uri = `ws://${window.document.location.host}/log_tailer`
+
+  const tailingLogsStart = createAction(TAILING_LOGS_START)
+  const tailingLogsStop = createAction(TAILING_LOGS_STOP)
+  const tailingLogsError = createAction(TAILING_LOGS_ERROR)
+  const tailingLogsLog = createAction(TAILING_LOGS_LOG)
+
+  return {
+    startTailingLogs() {
+      return dispatch => {
+        wsclient && wsclient.close()
+        wsclient = new ReconnectingWebSocket(uri)
+        wsclient.onerror = () => dispatch(tailingLogsError())
+        wsclient.onclose = () => dispatch(tailingLogsStop())
+        wsclient.onmessage = (m) => {
+          const logs = JSON.parse(m.data)
+          if (_.isArray(logs)) {
+            dispatch(tailingLogsStart(logs.map(l => JSON.parse(l))))
+          } else {
+            dispatch(tailingLogsLog(logs))
+          }
+        }
+      }
+    },
+    stopTailingLogs() {
+      console.log('did this happen', wsclient)
+      wsclient && wsclient.close()
+    },
+  };
+})()

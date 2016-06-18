@@ -1,7 +1,7 @@
 require 'json'
 require_relative 'lib/constants'
 require_relative 'model/all_models.rb'
-require_relative 'lib/anidb_resource_fetcher.rb'
+require_relative 'lib/anidb_http.rb'
 require_relative 'lib/feed_processor'
 require_relative '../lib/loggers.rb'
 require_relative '../lib/concurrent_logger.rb'
@@ -110,12 +110,12 @@ class App < Sinatra::Application
 
   get "/anidb/:aid.xml" do
     content_type 'application/xml'
-    send_file AnidbResourceFetcher.data(params[:aid])
+    send_file AnidbHTTP.data(params[:aid])
   end
 
   get "/anidb/thumb/:aid.jpg" do
     content_type 'image/jpeg'
-    send_file AnidbResourceFetcher.thumb(params[:aid])
+    send_file AnidbHTTP.thumb(params[:aid])
   end
 
   post "/force/check_feeds" do

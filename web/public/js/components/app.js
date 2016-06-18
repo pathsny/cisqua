@@ -16,7 +16,6 @@ import ActionBugReport from 'material-ui/svg-icons/action/bug-report';
 
 import { IndexLink, Link } from 'react-router'
 
-
 import getMuiTheme from 'material-ui/styles/getMuiTheme';
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 

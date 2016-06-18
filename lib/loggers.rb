@@ -38,7 +38,7 @@ Logging.logger.root.add_appenders 'stdout', 'logfile', 'parseable_logfile'
 
 module Loggers
   Web = Logging.logger['Web']
-  AnidbResourceFetcher = Logging.logger['AnidbResourceFetcher']
+  AnidbHTTP = Logging.logger['AnidbHTTP']
   FeedProcessor = Logging.logger['FeedProcessor']
   DB = Logging.logger['DB']
   Concurrent = Logging.logger['Concurrent']
