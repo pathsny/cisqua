@@ -1,13 +1,16 @@
 require 'json'
-require_relative 'lib/constants'
-require_relative 'model/all_models.rb'
-require_relative 'lib/anidb_http.rb'
-require_relative 'lib/feed_processor'
-require_relative '../lib/loggers.rb'
-require_relative '../lib/concurrent_logger.rb'
+require 'uri'
 require 'bundler/setup'
 require 'sinatra/base'
 require 'tilt/erb'
+
+require_relative 'lib/constants'
+require_relative 'model/all_models'
+require_relative 'lib/anidb_http'
+require_relative 'lib/feed_processor'
+require_relative 'lib/torrent'
+require_relative '../lib/loggers'
+require_relative '../lib/concurrent_logger'
 
 def Logging.make_sinatra_logger
   Loggers::Web.tap do |l|
@@ -96,17 +99,44 @@ class App < Sinatra::Application
     end  
   end
 
-  delete "/shows/:id" do
-    show = Show.get(params[:id])
-    show.destroy!
-    200
-  end  
-
   # put "/shows/:id" do
   #   @show = Show.get params[:id]
   #   @show.aid = params[:aid]
   #   show.save.to_json
   # end
+
+  delete "/shows/:id" do
+    show = Show.get(params[:id])
+    show.destroy!
+    200
+  end
+
+  # instead of using feed_items/:item_id, we expect id to be a query string param
+  # the reason for this is some feed_item ids cannot be used inside a url since 
+  # they are urls 
+  get "/shows/:show_id/feed_item" do
+    return not_found unless Show.exists?(params[:show_id])
+    feed = Show.get(params[:show_id]).feed
+    feed.exists?(params[:id]) ? feed.get(params[:id]).to_json : not_found
+  end
+
+  post "/shows/:show_id/feed_item/download" do
+    feed_item = Show.get(params[:show_id]).feed.get(params[:id])
+    Torrent.download feed_item
+    redirect "/shows/#{params[:show_id]}/feed_item?id=#{CGI.escape(params[:id])}" 
+  end  
+
+  post "/shows/:show_id/feed_item/mark_downloaded" do
+    feed_item = Show.get(params[:show_id]).feed.get(params[:id])
+    feed_item.mark_downloaded
+    redirect "/shows/#{params[:show_id]}/feed_item?id=#{CGI.escape(params[:id])}"
+  end
+
+  post "/shows/:show_id/feed_item/unmark_downloaded" do
+    feed_item = Show.get(params[:show_id]).feed.get(params[:id])
+    feed_item.unmark_downloaded
+    redirect "/shows/#{params[:show_id]}/feed_item?id=#{CGI.escape(params[:id])}"
+  end
 
   get "/anidb/:aid.xml" do
     content_type 'application/xml'

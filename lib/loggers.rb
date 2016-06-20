@@ -1,6 +1,6 @@
 require 'logging'
 
-Logging.logger.root.level = :info
+Logging.logger.root.level = :debug
 
 default_scheme = Logging::ColorScheme[:default]
 

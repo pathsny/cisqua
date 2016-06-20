@@ -21,6 +21,9 @@ export const DISMISS_SNACKBAR = 'DISMISS_SNACKBAR'
 export const CHECK_ALL_FEEDS = 'CHECK_ALL_FEEDS'
 export const CHECK_FEED = 'CHECK_FEED'
 
+export const DOWNLOAD_FILE = 'DOWNLOAD_FILE'
+export const TOGGLE_DOWNLOADED = 'TOGGLE_DOWNLOADED'
+
 export const TAILING_LOGS_START = 'TAILING_LOGS_START'
 export const TAILING_LOGS_STOP = 'TAILING_LOGS_STOP'
 export const TAILING_LOGS_ERROR =  'TAILING_LOGS_ERROR'
@@ -110,7 +113,7 @@ export const fetchShows = createAsyncAction(
     return await processJSONResponse(fetch('/shows/with_feed_items')) 
   },
   thunkCreationUtil((actionCreator, dispatch, getState) => {
-    if (!getState().app.fetching.list) {
+    if (!getState().app.async.showList) {
       dispatch(actionCreator());
     }
   }),  
@@ -123,7 +126,7 @@ export const fetchShow = createAsyncAction(
     return await processJSONResponse(fetch(`shows/${id}/with_feed_items`))
   },
   thunkCreationUtil((actionCreator, dispatch, getState, id) => {
-    if (!getState().app.fetching.shows[id]) {
+    if (!getState().app.async.showsByID[id]) {
       dispatch(actionCreator(id));
     }
   }),
@@ -187,7 +190,7 @@ export const fetchSuggestionsFromAnidb = createAsyncAction(
       return (dispatch, getState) => {
         const state = getState();
         if (!(
-          _.has(state.autosuggest.fetching, hint) ||
+          _.has(state.autosuggest.async, hint) ||
           _.has(state.autosuggest.suggestions, hint)
         )) {
           debouncedActionCreator(dispatch, hint)
@@ -204,7 +207,7 @@ export const fetchSuggestionsFromAnidb = createAsyncAction(
 
 export const checkAllFeeds = createAsyncAction(
   CHECK_ALL_FEEDS,
-  async function (id) {
+  async function(id) {
     const response = await fetch(
       '/force/check_feeds', 
       {method: 'POST'},
@@ -221,7 +224,7 @@ export const checkFeed = createAsyncAction(
   async function(id) {
     const response = await fetch(
       `/force/check_feed/${id}`, 
-      {method: 'POST'}
+      {method: 'POST'},
     );
     if (response.ok) {
       return id 
@@ -229,6 +232,50 @@ export const checkFeed = createAsyncAction(
     return await processResponseError(response)
   },
 );
+
+/*
+ * FeedItem Actions
+ */
+
+export const downloadFile = createAsyncAction(
+  DOWNLOAD_FILE,
+  async function(showID, feedItemID) {
+    const response = await fetch(
+      `/shows/${showID}/feed_item/download?id=${encodeURIComponent(feedItemID)}`,
+      {method: 'POST'},
+    )
+    return processJSONResponse(response)
+  },
+  _.identity,
+  (showID, feedItemID) => ({showID, feedItemID}),
+)
+
+
+export const markDownloaded = createAsyncAction(
+  TOGGLE_DOWNLOADED,
+  async function(showID, feedItemID) {
+    const response = await fetch(
+      `/shows/${showID}/feed_item/mark_downloaded?id=${encodeURIComponent(feedItemID)}`,
+      {method: 'POST'},
+    )
+    return processJSONResponse(response)
+  },
+  _.identity,
+  (showID, feedItemID) => ({showID, feedItemID}),
+)
+
+export const unmarkDownloaded = createAsyncAction(
+  TOGGLE_DOWNLOADED,
+  async function(showID, feedItemID) {
+    const response = await fetch(
+      `/shows/${showID}/feed_item/unmark_downloaded?id=${encodeURIComponent(feedItemID)}`,
+      {method: 'POST'},
+    )
+    return processJSONResponse(response)
+  },
+  _.identity,
+  (showID, feedItemID) => ({showID, feedItemID}),
+)
 
 /*
  * Logs

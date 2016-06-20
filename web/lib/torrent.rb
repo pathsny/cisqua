@@ -1,0 +1,26 @@
+require 'trans-api'
+
+CONFIG = { 
+  host: '10.0.0.35', 
+  port: 9091, 
+  user: 'path', 
+  pass: '1Luv8suki', 
+  path: '/transmission/rpc', 
+}
+
+Trans::Api::Client.config = CONFIG
+
+class Torrent
+
+  class << self
+    def download(feed_item)
+      client = Trans::Api::Client.new
+      res = client.connect.torrent_add({
+        'download-dir' => '/media/Incoming/Anime/',
+        :filename => feed_item.url,
+      })
+      feed_item.downloaded_at = DateTime.now
+      feed_item.save
+    end  
+  end
+end

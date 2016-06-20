@@ -1,6 +1,8 @@
 require 'feedjira'
 require 'set'
 require 'concurrent-edge'
+require 'resolv-replace'
+
 require_relative '../model/show'
 require_relative '../model/feed_item'
 require_relative './constants'

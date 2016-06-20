@@ -91,8 +91,8 @@ class ShowFetcherPresentation extends Component {
 }
 
 const mapStateToProps = (state) => ({
-  fetchingList: state.app.fetching.list,
-  fetchingShows: _.keys(state.app.fetching.shows),
+  fetchingList: state.app.async.showList,
+  fetchingShows: _.keys(state.app.async.showsByID),
   isUpdatingFeedItemsForAllShows: state.app.isUpdatingFeedItemsForAllShows,
   updatingShows: _.filter(
     state.app.showsByID,

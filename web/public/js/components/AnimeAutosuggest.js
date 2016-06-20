@@ -103,7 +103,7 @@ AnimeAutosuggestPresentation.propTypes = {
 
 const mapStateToProps = (state) => ({
   suggestionMap: state.autosuggest.suggestions,
-  hintsBeingFetched: state.autosuggest.fetching,
+  hintsBeingFetched: state.autosuggest.async,
 });
 
 const mapDispatchToProps = (dispatch) => ({

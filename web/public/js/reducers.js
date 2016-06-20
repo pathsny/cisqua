@@ -10,7 +10,8 @@ import {
   DISMISS_SNACKBAR,
   CHECK_ALL_FEEDS, 
   CHECK_FEED,
-
+  DOWNLOAD_FILE,
+  TOGGLE_DOWNLOADED,
   TAILING_LOGS_START,
   TAILING_LOGS_STOP, 
   TAILING_LOGS_ERROR,
@@ -33,7 +34,13 @@ function maybeDate(d) {
   return d ? new Date(d) : d
 }
 
-function mapFeedItem({published_at, downloaded_at, hidden_at, marked_predownloaded_at, ...feedItemProps}) {
+function mapFeedItem({
+  published_at, 
+  downloaded_at, 
+  hidden_at, 
+  marked_predownloaded_at, 
+  ...feedItemProps
+}) {
   return {
     published_at: new Date(published_at),
     downloaded_at: maybeDate(downloaded_at),
@@ -77,9 +84,10 @@ function updateForShow(state, showPayload) {
 }
 
 const initialAppState = {
-  fetching: {
-    list: false,
-    shows: {},
+  async: {
+    showList: false,
+    showsByID: {},
+    feedItemsByID: {},
   },
   dialogsOpen: {
     addShow: false,
@@ -105,10 +113,10 @@ const app = typeToReducer({
   }),
   [FETCH_SHOWS]: {
     PENDING: (state, action) => update(state, {
-      fetching: {$merge: {list: true}},
+      async: {$merge: {showList: true}},
     }),
     REJECTED: (state, action) => update(state, {
-      fetching: {$merge: {list: false}},
+      async: {$merge: {showList: false}},
     }),
     FULFILLED: (state, action) => {
       const showsAndFeedItems = action.payload.shows.map(mapShowAndFeedItems)
@@ -118,27 +126,63 @@ const app = typeToReducer({
         showList: {$set: shows.map(show => show.id)},
         showsByID: {$set: _.keyBy(shows, show => show.id)},
         feedItemsByID: {$set: feedItemsByID},
-        fetching: {$merge: {list: false}},
+        async: {$merge: {showList: false}},
         isUpdatingFeedItemsForAllShows: {$set: action.payload.is_updating_feed_items},
       });
     },
   },
   [FETCH_SHOW]: {
     PENDING: (state, action) => update(state, {
-      fetching: {shows: {$merge: {[action.meta.id]: true}}},
+      async: {showsByID: {$merge: {[action.meta.id]: true}}},
     }),
     REJECTED: (state, action) => update(state, {
-      fetching: {shows: {$set: _.omit(state.fetching.shows, action.meta.id)}},
+      async: {showsByID: {$set: _.omit(state.async.showsByID, action.meta.id)}},
     }),
     FULFILLED: (state, action) => update(state, _.merge(
       updateForShow(state, action.payload),
-      {fetching: {shows: {$set: _.omit(state.fetching.shows, action.meta.id)}}},
+      {async: {showsByID: {$set: _.omit(state.async.showsByID, action.meta.id)}}},
     )),
   },
   [REMOVE_SHOW]: {
     FULFILLED: (state, action) => update(state, {
       showList: {$set: _.without(state.showList, action.meta.id)},
       showsByID: {$set: _.omit(state.showsByID, [action.meta.id])},
+    }),
+  },
+  [TOGGLE_DOWNLOADED]: {
+    PENDING: (state, action) => update(state, {
+      async: {feedItemsByID: {$merge: {
+        [action.meta.feedItemID]: {markDownloaded: true},
+      }}},
+    }),
+    REJECTED: (state, action) => update(state, {
+      async: {feedItemsByID: {$merge: {
+        [action.meta.feedItemID]: {markDownloaded: false},
+      }}},
+    }),
+    FULFILLED: (state, action) => update(state, {
+      async: {feedItemsByID: {$merge: {
+        [action.meta.feedItemID]: {markDownloaded: false},
+      }}},
+      feedItemsByID: {$merge: {[action.payload.id]: mapFeedItem(action.payload)}},
+    }),
+  },
+  [DOWNLOAD_FILE]: {
+    PENDING: (state, action) => update(state, {
+      async: {feedItemsByID: {$merge: {
+        [action.meta.feedItemID]: {download: true},
+      }}},
+    }),
+    REJECTED: (state, action) => update(state, {
+      async: {feedItemsByID: {$merge: {
+        [action.meta.feedItemID]: {download: false},
+      }}},
+    }),
+    FULFILLED: (state, action) => update(state, {
+      async: {feedItemsByID: {$merge: {
+        [action.meta.feedItemID]: {download: false},
+      }}},
+      feedItemsByID: {$merge: {[action.payload.id]: mapFeedItem(action.payload)}},
     }),
   },
   [CHECK_FEED]: {
@@ -162,7 +206,7 @@ const app = typeToReducer({
 }, initialAppState)
 
 const initialAutosuggestState = {
-  fetching: {},
+  async: {},
   suggestions: {},
 }
 
@@ -171,13 +215,13 @@ const autosuggest = typeToReducer({
     PENDING: (state, action) => {
       const hint = action.meta.hint
       return update(state, {
-        fetching: {$merge: {[hint]: hint}}
+        async: {$merge: {[hint]: hint}}
       });
     },
     REJECTED: (state, action) => {
       const hint = action.meta.hint
       return update(state, {
-        fetching: {$set: _.omit(state.fetching, [hint])}
+        async: {$set: _.omit(state.async, [hint])}
       })
     },
     FULFILLED: (state, action) => {
@@ -186,7 +230,7 @@ const autosuggest = typeToReducer({
         s => update(s, {$merge: {name: getAnidbTitle(s)}}) 
       );
       return update(state, {
-        fetching: {$set: _.omit(state.fetching, [hint])},
+        async: {$set: _.omit(state.async, [hint])},
         suggestions: {$merge: {[hint]: suggestions}}
       })
       return state;

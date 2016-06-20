@@ -20,6 +20,7 @@ gem 'veto'
 gem 'slowweb'
 gem 'logging'
 gem 'faye-websocket'
+gem 'trans-api'
 
 group :test do
   gem 'rspec'

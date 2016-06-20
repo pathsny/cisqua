@@ -68,5 +68,17 @@ class FeedItem < Model::Base
     @published_at = published_at
     @summary = summary
   end
+
+  def mark_downloaded
+    if self.marked_predownloaded_at.nil?
+      self.marked_predownloaded_at = DateTime.now 
+      save
+    end 
+  end  
+
+  def unmark_downloaded
+    self.marked_predownloaded_at = nil
+    save
+  end  
 end 
 

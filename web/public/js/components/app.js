@@ -130,7 +130,7 @@ AppPresentation.contextTypes = {
 }
 
 const mapStateToProps = (state) => ({
-  fetchingList: state.app.fetching.list,
+  fetchingList: state.app.async.showList,
   snackbarPayload: _.first(state.snackbarPayloads),
 })
 

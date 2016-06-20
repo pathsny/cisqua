@@ -113,6 +113,9 @@ GEM
     timecop (0.8.1)
     timers (4.0.1)
       hitimes
+    trans-api (0.0.6)
+      json (> 1.6.1)
+      nokogiri (> 1.5.0)
     veto (1.0.1)
     websocket-driver (0.6.4)
       websocket-extensions (>= 0.1.0)
@@ -149,4 +152,5 @@ DEPENDENCIES
   sinatra
   slowweb
   timecop
+  trans-api
   veto
