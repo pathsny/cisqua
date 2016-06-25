@@ -56,16 +56,16 @@ def try_fix(folder, movie)
         destination = File.join(File.dirname(file), new_name)
         if File.exists? destination
           Duplicates[file] = destination
-          puts "#{file} seems to be duplicate of #{destination}"
+          Loggers::BadFiles.debug {"#{file} seems to be duplicate of #{destination}" }
         else
-          puts "renaming #{file} as #{destination}"
+          Loggers::BadFiles.info { "renaming #{file} as #{destination}" }
           FileUtils.mv file, destination
         end    
       end  
     end  
   end
   rescue
-    puts "error working with #{folder} #{$!}"  
+    Loggers::BadFiles.error { "error working with #{folder} #{$!}" } 
 end
 
 def test_names(folder, movie)
@@ -76,7 +76,7 @@ def test_names(folder, movie)
   patterns = movie ? m_pattern(folder_name) : s_pattern(folder_name)
   files.each do |file| 
     unless patterns.any?{|p| p.match File.basename(file)}
-      puts "do not know file #{file} using #{patterns.inspect}" 
+      Loggers::BadFiles.debug { "do not know file #{file} using #{patterns.inspect}" }
       Unknown.push(file)
     end  
   end  
@@ -94,7 +94,7 @@ end
 File.open('duplicates.yml', 'w') {|f| f.write(Duplicates.to_yaml)}
 File.open('unknown.yml', 'w') {|f| f.write(Unknown.to_yaml)}
 
-puts Duplicates.inspect
-puts Unknown.inspect
+Loggers::BadFiles.info { Duplicates.inspect }
+Loggers::BadFiles.info { Unknown.inspect }
 
   

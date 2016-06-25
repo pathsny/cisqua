@@ -46,4 +46,8 @@ module Loggers
   PostProcessor = Logging.logger['PostProcessor']
   Renamer = Logging.logger['Renamer']
   UDPClient = Logging.logger['UDPClient']
+  CreateLinks = Logging.logger['CreateLinks']
+  FindDuplicates = Logging.logger['FindDuplicates']
+  NFOize = Logging.logger['NFOize']
+  BadFiles = Logging.logger['BadFiles']
 end

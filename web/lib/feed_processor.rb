@@ -16,7 +16,7 @@ class FeedProcessor
   @is_updating_show_feed_items = Concurrent::Map.new
 
   Kernel.at_exit {
-    puts "shutting down thread pool"
+    Loggers::FeedProcessor.info { "shutting down thread pool" }
     @executor.shutdown
     @executor.wait_for_termination
   }

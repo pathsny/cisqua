@@ -26,9 +26,9 @@ begin
   :ended => true,
   :completed => a_attrs["status"] == 'complete'}
   renamer.update_symlinks_for ainfo, File.basename(f), f
-  puts "#{f} has #{ainfo.inspect}"
+  Loggers::CreateLinks.debug { "#{f} has #{ainfo.inspect}" }
 rescue
-   puts "error working with #{f}"
+   Loggers::CreateLinks.error { "error working with #{f}" }
 end
 end
 
@@ -37,4 +37,4 @@ symlink_folders = [:movies, :incomplete_series, :complete_series, :incomplete_ot
   Dir["#{syms[k]}/**"].map {|f| File.basename(f)}
 }.reduce([]) {|acc, arr| acc | arr}
 all_folder_names = all_folder.map {|f| File.basename(f)}
-puts "something is wrong #{all_folder_names} does not map to #{symlink_folders}" unless symlink_folders.size == all_folder_names.size && (symlink_folders & all_folder_names == symlink_folders)
+Loggers::CreateLinks.error { "something is wrong #{all_folder_names} does not map to #{symlink_folders}" } unless symlink_folders.size == all_folder_names.size && (symlink_folders & all_folder_names == symlink_folders)

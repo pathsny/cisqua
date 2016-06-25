@@ -9,7 +9,7 @@ abort "nfoize <source_path> <destination_path>" unless ARGV.length == 2
 options = YAML.load_file(File.expand_path('../../data/options.yml', __FILE__))
 
 destination = ARGV[1]
-puts "moving done to #{destination}"
+Loggers::NFOize.info { "moving done to #{destination}" }
 FileUtils.mkdir_p destination
 
 
@@ -53,5 +53,5 @@ info_getter.join
 scanner.join
 nfo_creator.join
 
-puts "unknown files are #{unknown.inspect}"
-puts "no files to scan in #{tuples.select {|_, b| b.nil?}.map(&:first).inspect}"
+Loggers::NFOize.info { "unknown files are #{unknown.inspect}" }
+Loggers::NFOize.info { "no files to scan in #{tuples.select {|_, b| b.nil?}.map(&:first).inspect}" }
