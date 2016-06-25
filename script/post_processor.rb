@@ -1,12 +1,12 @@
 # Main entry point for rename script. Checks with anidb, adds to mylist etc
-require File.expand_path('../lib/libs', __FILE__)
+require File.expand_path('../../lib/libs', __FILE__)
 
 class PostProcessor
   class << self
     def run
       Thread.abort_on_exception = true
 
-      options = YAML.load_file(File.expand_path('../data/options.yml', __FILE__))
+      options = YAML.load_file(File.expand_path('../../data/options.yml', __FILE__))
 
       files = file_list(options[:scanner])
 
