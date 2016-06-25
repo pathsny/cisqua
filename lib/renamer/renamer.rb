@@ -25,7 +25,7 @@ module Renamer
       location, path, name = generate_location(work_item.info)
       process_file(name, work_item, location, path)
     rescue
-      logger.warn "error naming #{work_item.file} from #{work_item.info.inspect} with #{$!}"
+      Loggers::Renamer.error "error naming #{work_item.file} from #{work_item.info.inspect} with #{$!}"
       raise
     end
 
@@ -103,12 +103,12 @@ module Renamer
         s = File.join(l, folder)
         if File.symlink?(s)
           File.unlink(s)
-          logger.info "deleting symlink #{s} to #{location}" 
+          Loggers::Renamer.info "deleting symlink #{s} to #{location}" 
         end  
       end  
       if correct_location && !File.symlink?("#{correct_location}/#{folder}")
         symlink(location, correct_location, folder)
-        logger.debug "symlinking #{location} to #{correct_location}/#{folder}" 
+        Loggers::Renamer.debug "symlinking #{location} to #{correct_location}/#{folder}" 
       end  
     end
     
@@ -124,7 +124,7 @@ module Renamer
     def symlink(source, dest, name)
       Symlinker.relative_with_name(source, dest, name)
     rescue Exception => e
-      logger.warn e.inspect
+      Loggers::Renamer.warn e.inspect
       raise
     end
   end

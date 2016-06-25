@@ -43,4 +43,7 @@ module Loggers
   DB = Logging.logger['DB']
   Concurrent = Logging.logger['Concurrent']
   LogTailer = Logging.logger['LogTailer'] 
+  PostProcessor = Logging.logger['PostProcessor']
+  Renamer = Logging.logger['Renamer']
+  UDPClient = Logging.logger['UDPClient']
 end

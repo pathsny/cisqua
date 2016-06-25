@@ -25,12 +25,14 @@ class Anidb
 
   private
   def make_client
-    params = [:host, :port, :localport, :user, :pass, :nat].map{|k| @options[k]} 
-    Net::AniDBUDP.new(*params).tap {|client| client.connect }
+    params = [:host, :port, :localport, :user, :pass, :nat].map{|k| @options[k]}
+    logger = Loggers::UDPClient
+    logger.instance_eval("def proto(v = '') ; self.debug v ; end") 
+    Net::AniDBUDP.new(*params, logger).tap {|client| client.connect }
   end  
 
   def update_mylist_with(info)
-    logger.debug "adding #{info.inspect} to mylist"
+    Loggers::PostProcessor.debug "adding #{info.inspect} to mylist"
     mylist_add(info[:fid])
   end  
 
@@ -56,7 +58,7 @@ class Anidb
   def identify_file(name, size, ed2k)
     search_file(name, size, ed2k).tap do |info|
       @cache['episode_' + info[:file][:eid]] = info[:anime][:epno] if info
-      logger.debug "file #{name} identified as #{info.inspect}"
+      Loggers::PostProcessor.debug "file #{name} identified as #{info.inspect}"
     end
   end    
 

@@ -8,7 +8,7 @@ module Renamer
     # options can be configured to create a new_name at destination or 
     # symlink back to source.
     def process(old_path, location, options = {})
-      logger.debug "process #{old_path} to #{location} with #{options}"
+      Loggers::Renamer.debug "process #{old_path} to #{location} with #{options}"
       destination = generate_destination(old_path, location, options)
       if (is_duplicate_destination(old_path, destination))
         return Response.duplicate(destination)

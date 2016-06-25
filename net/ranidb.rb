@@ -867,7 +867,7 @@ module Net
           rescue ServerTimeout
           end
         end
-        lr.tap{|l| p l}
+        lr
       end
     end
 
