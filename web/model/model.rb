@@ -28,7 +28,7 @@ module Model
         db = @dbs[db_name]
         @dbs.delete(db_name)
         return unless db
-        db.synchronize { db.flush.close }
+        db.synchronize { db.flush.close unless db.closed? }  
         File.delete(File.join(Data_location, db_name + '.db'))
       end  
 
