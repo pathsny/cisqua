@@ -40,10 +40,19 @@ class App < Sinatra::Application
   set :root, File.dirname(__FILE__)
   set :static_cache_control, [:no_cache, :must_revalidate, max_age: 0]
 
+  def favicon_path
+    "favicon.#{settings.environment}.ico"
+  end  
+
   before do
     content_type 'application/json'
     env["rack.errors"] =  ErrorLogger
   end
+
+  get "/favicon.ico" do
+    content_type 'image/x-icon'
+    send_file File.join(settings.root, 'public', favicon_path), :disposition => :inline
+  end  
 
   get "/" do
     content_type 'text/html'
