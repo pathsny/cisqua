@@ -66,6 +66,11 @@ class App < Sinatra::Application
     erb :index
   end
 
+  get "/settings" do
+    content_type 'text/html'
+    erb :index
+  end  
+
   get "/shows" do
     {
       is_updating_feed_items: FeedProcessor.is_updating_feed_items?, 

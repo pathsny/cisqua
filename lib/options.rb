@@ -12,7 +12,7 @@ module Options
     end  
 
     def bootstrap_data
-      {:all_valid => true}
+      {:all_valid => false}
     end  
 
     def settings_display

@@ -16,6 +16,7 @@ import {
   TAILING_LOGS_STOP, 
   TAILING_LOGS_ERROR,
   TAILING_LOGS_LOG,
+  ALL_VALID,
   JSONResponseCarryingError,
 } from './actions'
 
@@ -267,10 +268,15 @@ const logs = typeToReducer({
   } 
 }, [])
 
+const settings = typeToReducer({
+  [ALL_VALID]: (state, action) => ({all_valid: true})
+}, window.Config.settings)
+
 export default combineReducers({
   app, 
   form, 
   autosuggest, 
   snackbarPayloads,
   logs,
+  settings,
 })

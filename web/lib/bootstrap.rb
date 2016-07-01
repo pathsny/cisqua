@@ -1,3 +1,3 @@
 ::Bootstrap = {
-  :options => Options.bootstrap_data, 
+  :settings => Options.bootstrap_data, 
 }

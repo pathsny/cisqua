@@ -29,6 +29,10 @@ export const TAILING_LOGS_STOP = 'TAILING_LOGS_STOP'
 export const TAILING_LOGS_ERROR =  'TAILING_LOGS_ERROR'
 export const TAILING_LOGS_LOG =  'TAILING_LOGS_LOG'
 
+export const ALL_VALID = 'ALL_VALID'
+
+export const makeAllValid = createAction(ALL_VALID)
+
 /*
  * Utilties
  */

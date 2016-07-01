@@ -12,7 +12,7 @@ import Divider from 'material-ui/Divider';
 
 import ActionHome from 'material-ui/svg-icons/action/home';
 import ActionBugReport from 'material-ui/svg-icons/action/bug-report';
-
+import ActionSettings from 'material-ui/svg-icons/action/settings';
 
 import { IndexLink, Link } from 'react-router'
 
@@ -21,10 +21,18 @@ import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 
 import { connect } from 'react-redux'
 import _ from 'lodash'
-import { fetchShows, dismissSnackbar, checkAllFeeds } from '../actions'
+import { fetchShows, dismissSnackbar, checkAllFeeds, makeAllValid } from '../actions'
 import '../../styles/app.css'
 
 class AppPresentation extends Component {
+  _disableMenu() {
+    return !this.context.router
+  }
+
+  _disablePath(path) {
+    return !this.context.router|| this.context.router.isActive(path, true)
+  }
+
   _renderRightIcon(style) {
     return (
       <IconMenu 
@@ -34,27 +42,39 @@ class AppPresentation extends Component {
         onRequestChange={this._onRequestChange}
       >
         <MenuItem
-          disabled={this.context.router.isActive("/", true)}
+          disabled={this._disablePath('/')}
           onTouchTap={() => _.delay(() => this.context.router.push("/"))}
           primaryText="Home"
           leftIcon={<ActionHome/>}
         />
         <MenuItem
-          disabled={this.context.router.isActive("/logs", true)}
+          disabled={this._disablePath('/logs')}
           onTouchTap={() => _.delay(() => this.context.router.push("/logs"))}
           primaryText="Logs"
           leftIcon={<ActionBugReport/>}
         />  
+        <MenuItem
+          disabled={this._disablePath('/settings')}
+          onTouchTap={() => _.delay(() => this.context.router.push("/settings"))}
+          primaryText="Settings"
+          leftIcon={<ActionSettings/>}
+        />  
         <Divider inset={true}/>
         <MenuItem 
           primaryText="Refresh Shows"
-          disabled={this.props.fetchingList}
+          disabled={this._disableMenu() || this.props.fetchingList}
           onTouchTap={this.props.onRefresh}
           insetChildren={true}
         />
         <MenuItem
+          disabled={this._disableMenu()}
           primaryText="Check All Feeds"
           onTouchTap={this.props.onCheckAllFeeds}
+          insetChildren={true}
+        /> 
+        <MenuItem
+          primaryText="Make it OK"
+          onTouchTap={this.props.onMakeItOk}
           insetChildren={true}
         /> 
       </IconMenu>
@@ -126,7 +146,7 @@ AppPresentation.propTypes = {
 }
 
 AppPresentation.contextTypes = {
-  router: PropTypes.object.isRequired
+  router: PropTypes.object
 }
 
 const mapStateToProps = (state) => ({
@@ -138,6 +158,7 @@ const mapDispatchToProps = (dispatch) => ({
   onRefresh: () => dispatch(fetchShows()),
   dismissSnackbar: () => dispatch(dismissSnackbar()),
   onCheckAllFeeds: () => dispatch(checkAllFeeds()),
+  onMakeItOk: () => dispatch(makeAllValid())
 })
 
 const App = connect(
