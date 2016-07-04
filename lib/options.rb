@@ -12,16 +12,37 @@ module Options
     end  
 
     def bootstrap_data
-      {:all_valid => false}
+      {
+        :all_valid => false,
+        'config' => config,
+      }
     end  
 
-    def settings_display
+    def config
       [
         {
-          name: 'Torrent',
-          valid: false,
-
-        }
+          :name => 'Torrent',
+          :fields => [{
+            :name => 'host',
+            :label => 'Host',
+            :placeholder => '127.0.0.1',
+            :type => :text,
+          },{
+            :name => 'port',
+            :label => 'Port',
+            :type => :number,
+          },{
+            :name => 'user',
+            :label => 'User Name',
+            :placeholder => 'User Name',
+            :type => :text,
+          },{
+            :name => 'pass',
+            :label => 'Password',
+            :placeholder => 'Password',
+            :type => :password,
+          }],
+        },
       ] 
     end  
   end  

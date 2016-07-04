@@ -171,5 +171,5 @@ class App < Sinatra::Application
 
   post "/force/check_feed/:id" do
     Show.exists?(params[:id]) ? FeedProcessor.update_show(params[:id]) : not_found
-  end  
+  end
 end  
