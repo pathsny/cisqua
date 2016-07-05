@@ -30,6 +30,7 @@ export const TAILING_LOGS_ERROR =  'TAILING_LOGS_ERROR'
 export const TAILING_LOGS_LOG =  'TAILING_LOGS_LOG'
 
 export const ALL_VALID = 'ALL_VALID'
+export const FETCH_SETTINGS = 'FETCH_SETTINGS'
 
 export const makeAllValid = createAction(ALL_VALID)
 
@@ -312,8 +313,19 @@ export const {startTailingLogs, stopTailingLogs} = (function() {
       }
     },
     stopTailingLogs() {
-      console.log('did this happen', wsclient)
       wsclient && wsclient.close()
     },
   };
 })()
+
+
+/**
+ * Settings
+ */
+
+export const fetchSettings = createAsyncAction(
+  FETCH_SETTINGS,
+  async function() {
+    return await processJSONResponse(fetch(`/settings/values`))
+  },
+)

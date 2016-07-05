@@ -172,4 +172,8 @@ class App < Sinatra::Application
   post "/force/check_feed/:id" do
     Show.exists?(params[:id]) ? FeedProcessor.update_show(params[:id]) : not_found
   end
+
+  get "/settings/values" do
+    Options.values.to_json
+  end  
 end  

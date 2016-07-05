@@ -7,10 +7,12 @@ import RefreshIndicator from 'material-ui/RefreshIndicator';
 import SettingsFormWrapper from './settings_form'
 const {SettingsForm} = SettingsFormWrapper 
 
+import {fetchSettings} from '../actions'
 
 class SettingsPresentation extends Component {
-  componentWillMount() {
-
+  constructor(props) {
+    super(props)
+    props.onFetchSettings()
   }
 
   _getStyle() {
@@ -20,7 +22,7 @@ class SettingsPresentation extends Component {
       },
       overlay: {
         zIndex: 10,
-        display: 'block',
+        display: 'none',
         position: 'absolute',
         height: '100%',
         top: '0px',
@@ -37,10 +39,13 @@ class SettingsPresentation extends Component {
 
   render() {
     const style = this._getStyle();
+    const refreshStyle = this.props.fetchingValues ?
+      _.merge({}, style.overlay, {display: 'block'}) : 
+      style.overlay; 
     return (
     <div style={style.container}>
       <SettingsForm {...this.props}/>
-      <div style={style.overlay}> 
+      <div style={refreshStyle}> 
       <RefreshIndicator
         size={200}
         left={300}
@@ -54,12 +59,21 @@ class SettingsPresentation extends Component {
   }  
 }  
 
-const mapStateToProps = (state) => ({
-  form: state.settings.config[0].name,
-  fields: state.settings.config[0].fields.map(f => f.name),
-  config: state.settings.config[0],
+const mapStateToProps = (state) => {
+  const config = state.settings.config[0];
+  return {
+    form: config.name,
+    fields: config.fields.map(f => f.name),
+    config: config,
+    initialValues: state.settings.values[config.name],
+    fetchingValues: state.settings.async.values,
+  }
+}
+
+const mapDisatchToProps = (dispatch) => ({
+  onFetchSettings: () => dispatch(fetchSettings()),
 })
 
-const Settings = connect(mapStateToProps)(SettingsPresentation)
+const Settings = connect(mapStateToProps, mapDisatchToProps)(SettingsPresentation)
 
 export default Settings

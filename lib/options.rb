@@ -44,6 +44,17 @@ module Options
           }],
         },
       ] 
+    end
+
+    def values
+      {
+        :Torrent => {
+          :host => nil,
+          :port => 9091,
+          :name => nil,
+          :pass => nil,
+        },
+      }
     end  
   end  
 end
