@@ -25,10 +25,11 @@ const Routes = (
   </Router>    
 )
 
-const MainContent = ({all_valid}) => all_valid ? 
-  Routes : 
-  (<App><Settings/></App>)
+// const MainContent = ({all_valid}) => all_valid ? 
+//   Routes : 
+//   (<App><Settings/></App>)
 
+const MainContent = ({all_valid}) => Routes;
 const MainConnected = connect((state) => state.settings)(MainContent)
 
 export default class Main extends Component {

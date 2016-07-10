@@ -11,7 +11,6 @@ CONFIG = {
 Trans::Api::Client.config = CONFIG
 
 class Torrent
-
   class << self
     def download(feed_item)
       client = Trans::Api::Client.new
@@ -23,4 +22,11 @@ class Torrent
       feed_item.save
     end  
   end
+
+  def test(config)
+    puts "testing #{config}"
+    # res = Trans::Api::Connect.new config
+    # puts res.inspect
+    # res
+  end  
 end

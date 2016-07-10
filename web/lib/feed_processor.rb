@@ -7,10 +7,11 @@ require_relative '../model/show'
 require_relative '../model/feed_item'
 require_relative './constants'
 require_relative '../../lib/loggers.rb'
+require_relative '../../lib/options'
 
 class FeedProcessor
   @executor = Concurrent::ThreadPoolExecutor.new(
-    :max_threads => ::Options[:concurrent_rss_threads]
+    :max_threads => ::Options::Misc[:concurrent_rss_threads]
   )
   @is_updating_feed_items = Concurrent::AtomicBoolean.new
   @is_updating_show_feed_items = Concurrent::Map.new

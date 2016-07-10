@@ -175,5 +175,14 @@ class App < Sinatra::Application
 
   get "/settings/values" do
     Options.values.to_json
+  end
+
+  post "/settings/values/:name" do
+    begin
+      Options.save(params[:name], params)
+      200
+    rescue Veto::InvalidEntity => e
+      [400, e.errors.to_json]
+    end  
   end  
 end  

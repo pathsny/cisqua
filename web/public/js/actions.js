@@ -29,10 +29,8 @@ export const TAILING_LOGS_STOP = 'TAILING_LOGS_STOP'
 export const TAILING_LOGS_ERROR =  'TAILING_LOGS_ERROR'
 export const TAILING_LOGS_LOG =  'TAILING_LOGS_LOG'
 
-export const ALL_VALID = 'ALL_VALID'
 export const FETCH_SETTINGS = 'FETCH_SETTINGS'
-
-export const makeAllValid = createAction(ALL_VALID)
+export const SAVE_SETTINGS = 'SAVE_SETTINGS'
 
 /*
  * Utilties
@@ -327,5 +325,20 @@ export const fetchSettings = createAsyncAction(
   FETCH_SETTINGS,
   async function() {
     return await processJSONResponse(fetch(`/settings/values`))
+  },
+)
+
+export const saveSettings = createAsyncAction(
+  SAVE_SETTINGS,
+  async function(name, values) {
+    const formData = new FormData()
+    _(values).toPairs().each(([k, v], i) => formData.append(k, v))
+    const response = await fetch(`/settings/values/${name}`, {
+      method: 'POST',
+      body: formData,
+    })
+    if (!response.ok) {
+      return await processResponseError(response)
+    }
   },
 )

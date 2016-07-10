@@ -21,6 +21,7 @@ gem 'slowweb'
 gem 'logging'
 gem 'faye-websocket'
 gem 'trans-api'
+gem 'net-ping'
 
 group :test do
   gem 'rspec'

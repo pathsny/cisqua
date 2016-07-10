@@ -16,8 +16,8 @@ import {
   TAILING_LOGS_STOP, 
   TAILING_LOGS_ERROR,
   TAILING_LOGS_LOG,
-  ALL_VALID,
   FETCH_SETTINGS,
+  SAVE_SETTINGS,
   JSONResponseCarryingError,
 } from './actions'
 
@@ -278,7 +278,6 @@ const InitialSettingsState = {
 }
 
 const settings = typeToReducer({
-  [ALL_VALID]: (state, action) => ({all_valid: true}),
   [FETCH_SETTINGS]: {
     PENDING: (state, action) => update(state, {
       async: {values: {$set: true}},
@@ -291,6 +290,16 @@ const settings = typeToReducer({
       values: {$set: action.payload},
     }),
   },
+    PENDING: (state, action) => update(state, {
+      async: {values: {$set: true}},
+    }),
+    REJECTED: (state, action) => update(state, {
+      async: {values: {$set: false}},
+    }),
+    FULFILLED: (state, action) => update(state, {
+      async: {values: {$set: false}},
+      values: {$set: action.payload},
+    }),
 }, InitialSettingsState)
 
 export default combineReducers({
