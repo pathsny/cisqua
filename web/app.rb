@@ -11,6 +11,7 @@ require_relative 'model/all_models'
 require_relative 'lib/anidb_http'
 require_relative 'lib/feed_processor'
 require_relative 'lib/torrent'
+require_relative 'lib/tasks'
 require_relative '../lib/loggers'
 require_relative '../lib/concurrent_logger'
 
@@ -184,5 +185,10 @@ class App < Sinatra::Application
     rescue Veto::InvalidEntity => e
       [400, e.errors.to_json]
     end  
+  end
+
+  post "/tasks/postprocess" do
+    Tasks.post_process
+    200
   end  
 end  

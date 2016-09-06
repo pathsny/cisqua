@@ -21,7 +21,13 @@ import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 
 import { connect } from 'react-redux'
 import _ from 'lodash'
-import { fetchShows, dismissSnackbar, checkAllFeeds, makeAllValid } from '../actions'
+import { 
+  fetchShows, 
+  dismissSnackbar, 
+  checkAllFeeds, 
+  makeAllValid,
+  runPostProcessor,
+} from '../actions'
 import '../../styles/app.css'
 
 class AppPresentation extends Component {
@@ -70,6 +76,12 @@ class AppPresentation extends Component {
           disabled={this._disableMenu()}
           primaryText="Check All Feeds"
           onTouchTap={this.props.onCheckAllFeeds}
+          insetChildren={true}
+        /> 
+        <MenuItem
+          disabled={this._disableMenu()}
+          primaryText="Run PostProcessor"
+          onTouchTap={this.props.onRunPostProcessor}
           insetChildren={true}
         /> 
         <MenuItem
@@ -158,7 +170,8 @@ const mapDispatchToProps = (dispatch) => ({
   onRefresh: () => dispatch(fetchShows()),
   dismissSnackbar: () => dispatch(dismissSnackbar()),
   onCheckAllFeeds: () => dispatch(checkAllFeeds()),
-  onMakeItOk: () => dispatch(makeAllValid())
+  onMakeItOk: () => dispatch(makeAllValid()),
+  onRunPostProcessor: () => dispatch(runPostProcessor()),
 })
 
 const App = connect(

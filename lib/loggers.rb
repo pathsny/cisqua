@@ -40,6 +40,7 @@ module Loggers
   Web = Logging.logger['Web']
   AnidbHTTP = Logging.logger['AnidbHTTP']
   FeedProcessor = Logging.logger['FeedProcessor']
+  Tasks = Logging.logger['Tasks']
   DB = Logging.logger['DB']
   Concurrent = Logging.logger['Concurrent']
   LogTailer = Logging.logger['LogTailer'] 

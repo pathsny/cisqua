@@ -162,7 +162,7 @@ module Net
     def connect(user = nil, pass = nil, nat = false)
       raise ServerOfflineError.new("Trying to send a command to a dead server") if @dead
       @sock = UDPSocket.new()
-      @sock.bind(0, @localport)
+      @sock.bind('0.0.0.0', @localport)
       @sock.connect(@host, @port)
       @connected = true
       @nat = nat if nat

@@ -32,6 +32,8 @@ export const TAILING_LOGS_LOG =  'TAILING_LOGS_LOG'
 export const FETCH_SETTINGS = 'FETCH_SETTINGS'
 export const SAVE_SETTINGS = 'SAVE_SETTINGS'
 
+export const RUN_POST_PROCESSOR = 'RUN_POST_PROCESSOR'
+
 /*
  * Utilties
  */
@@ -341,4 +343,20 @@ export const saveSettings = createAsyncAction(
       return await processResponseError(response)
     }
   },
+)
+
+/**
+ * Tasks
+ */
+
+export const runPostProcessor = createAsyncAction(
+  RUN_POST_PROCESSOR,
+  async function() {
+    const response = await fetch(`/tasks/postprocess`, {
+      method: 'POST',
+    })
+    if (!response.ok) {
+      return await processResponseError(response)
+    }
+  }
 )

@@ -1,12 +1,11 @@
-# Main entry point for rename script. Checks with anidb, adds to mylist etc
-require File.expand_path('../lib/libs', __FILE__)
+require File.expand_path('../libs', __FILE__)
+require 'resolv-replace'
 
 class PostProcessor
   class << self
-    def run
-      Thread.abort_on_exception = true
-
-      options = YAML.load_file(File.expand_path('../data/options.yml', __FILE__))
+    def run(test_client)
+      @test_client = test_client
+      options = YAML.load_file(File.expand_path('../../data/options.yml', __FILE__))
 
       files = file_list(options[:scanner])
 
@@ -36,7 +35,7 @@ class PostProcessor
       end
 
       info_getter = Thread.new do
-        anidb_api_klass = ARGV[0] == 'test_client' ? CachingAnidb : Anidb
+        anidb_api_klass = @test_client ? CachingAnidb : Anidb
         anidb_api = anidb_api_klass.new(options[:anidb])
         pipe_while_queue_has_items(info_queue, rename_queue) do |data|
           WorkItem.new(data.first, anidb_api.process(*data))
@@ -84,9 +83,9 @@ class PostProcessor
 
       [scanner, info_getter, rename_worker].each(&:join)
 
-      exit unless options[:clean_up_empty_dirs]
+      return unless options[:clean_up_empty_dirs]
       basedir = options[:scanner][:basedir]
-      abort('empty basedir') unless basedir
+      raise 'empty basedir' unless basedir
 
       system "find /#{basedir} -type f -name \"tvshow.nfo\" -delete"
 
@@ -94,5 +93,3 @@ class PostProcessor
     end
   end
 end
-
-PostProcessor.run
