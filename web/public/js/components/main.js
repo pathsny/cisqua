@@ -29,7 +29,8 @@ const Routes = (
 //   Routes : 
 //   (<App><Settings/></App>)
 
-const MainContent = ({all_valid}) => Routes;
+const MainContent = () => Routes
+
 const MainConnected = connect((state) => state.settings)(MainContent)
 
 export default class Main extends Component {

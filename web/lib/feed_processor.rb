@@ -39,9 +39,12 @@ class FeedProcessor
     end
 
     def update_all_shows
-      Loggers::FeedProcessor.debug "update all shows start"
+      Loggers::FeedProcessor.info "update all shows start"
       res = @is_updating_feed_items.make_true
-      return unless res # someone has already started this process
+      unless res
+        Loggers::FeedProcessor.debug "update already in progress"
+        return
+      end  
       futures = Show.all.map {|s| FeedProcessor.update_show(s.id) }
       Loggers::FeedProcessor.debug "update all shows requested"
       Concurrent.zip(*futures).on_completion {
@@ -69,7 +72,9 @@ class FeedProcessor
 
     def update_show_impl(id)
       show = Show.get(id)
+      Loggers::FeedProcessor.debug { "fetching feed for #{id} : #{show.name} from #{show.feed_url}" }
       feed_entries = Feedjira::Feed.fetch_and_parse(show.feed_url).entries
+      Loggers::FeedProcessor.debug { "fetched feed for #{id} : #{show.name} from #{show.feed_url}" }
       feed_collection = show.feed
 
       existing_item_ids = Set.new(feed_collection.all.map(&:id))

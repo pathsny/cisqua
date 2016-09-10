@@ -7,7 +7,7 @@ import RaisedButton from 'material-ui/RaisedButton';
 import { Field, reduxForm } from 'redux-form'
 import invariant from 'invariant'
 
-import {saveSettings} from '../actions'
+import {saveSettings, JSONResponseCarryingError} from '../actions'
 
 function submit(name) {
   return async function(values, dispatch) {
@@ -16,16 +16,35 @@ function submit(name) {
     } catch (e) {
       if (e.reason instanceof JSONResponseCarryingError) {
         const errorJSON = e.reason.payload
+        console.log("i got", errorJSON);
         let resultJson = {}
         for (let k of _.keys(errorJSON)) {
-          const key = ['id', 'name'].includes(k) ? 'anime' : k
-          resultJson[key] = errorJSON[k][0] 
+          resultJson[k] = errorJSON[k][0] 
         }
+        console.log("gonna throw", resultJson)
         throw new SubmissionError(resultJson)
       } else {
         throw e
-        console.log("is this it", e)
       }
+    }
+  }
+}
+
+async function submitTorrent(values, dispatch) {
+  try {
+    await dispatch(saveSettings('Torrent', values));
+  } catch (e) {
+    if (e.reason instanceof JSONResponseCarryingError) {
+      const errorJSON = e.reason.payload
+      console.log("i got", errorJSON);
+      let resultJson = {}
+      for (let k of _.keys(errorJSON)) {
+        resultJson[k] = errorJSON[k][0] 
+      }
+      console.log("gonna throw", resultJson)
+      throw new SubmissionError(resultJson)
+    } else {
+      throw e
     }
   }
 }
@@ -38,13 +57,17 @@ class SettingsFormPresentation extends Component {
       case 'password':
         return (
           <Field name={f.name} key={f.name} component={ props => 
-            <TextField
+            {
+            console.log("for ", f, " we have", props);
+            return <TextField
               floatingLabelText={f.label}
               hintText={f.placeholder}
               fullWidth={true}
               type={f.type}
+              errorText = {props.touched && props.error}
               {...props}
-            /> 
+            />
+            } 
           }/>
         );   
       default:
@@ -54,7 +77,7 @@ class SettingsFormPresentation extends Component {
 
   render() {
     return (
-      <form onSubmit={this.props.handleSubmit(submit(this.props.config.name))}>
+      <form onSubmit={this.props.handleSubmit}>
         {this.props.config.fields.map(f => this._renderField(f))}
         <RaisedButton
           type="submit"
@@ -73,5 +96,7 @@ SettingsFormPresentation.propTypes = {
 }
 
 export default {
-  SettingsForm: reduxForm({})(SettingsFormPresentation),
+  SettingsForm: reduxForm({
+    onSubmit: submitTorrent
+  })(SettingsFormPresentation),
 }

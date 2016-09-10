@@ -12,7 +12,7 @@ module Options
     def initialize(config)
       @config = config
       @field_names = Set.new(@config[:fields].map {|f| f[:name]})
-      @struct = Struct.new(*@field_names.to_a)
+      @struct = Struct.new(*@field_names.to_a, :errors)
       @validator = Class.new do 
         include Veto.validator
         instance_eval &config[:validations]
@@ -37,19 +37,22 @@ module Options
     def update!(values)
       @values = {}
       @config[:fields].each do |f| 
-        name = f[:name].to_s
-        @values[name] = values[name]
-        @values[name] = f[:default] if @values[name].nil?
+        name = f[:name]
+        value = values[name] || values[name.to_s] || f[:default]
+        @values[name] = f[:type] === :number ? value.to_i : value
       end
     end
 
     def validate!
-      s = @struct.new(*@field_names.map {|n| @values[n.to_s]})
+      s = @struct.new(*@field_names.map {|n| @values[n.to_sym]})
       @validator.new.validate!(s)
+    rescue Veto::InvalidEntity => e
+      e.define_singleton_method(:errors) { s.errors }
+      raise
     end
 
     def valid?
-      s = @struct.new(*@field_names.map {|n| @values[n.to_s]})
+      s = @struct.new(*@field_names.map {|n| @values[n.to_sym]})
       @validator.new.valid?(s)
     end
   end
