@@ -118,6 +118,13 @@ module Model
     @model_types[type]
   end    
 
+# Model Fields
+# name (self explanatory)
+# serialize_to_ui (what you get when you call to_json)
+# mutable (has setter)
+# description (self explanatory)
+# default (self explanatory)
+
   class Base
     class << self
 

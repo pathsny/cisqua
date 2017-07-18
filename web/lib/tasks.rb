@@ -1,9 +1,11 @@
 require 'concurrent-edge'
 require_relative '../../lib/loggers'
 require_relative '../../lib/post_processor'
+# require_relative '../../model/scheduled_task'
 
 class Tasks
   @pp_executor = Concurrent::SingleThreadExecutor.new
+  @scheduled_task_executor = Concurrent::SingleThreadExecutor.new
 
   Kernel.at_exit {
     Loggers::Tasks.info { "shutting down thread pool" }
