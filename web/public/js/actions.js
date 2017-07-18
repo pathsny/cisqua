@@ -57,12 +57,9 @@ async function processResponseError(response) {
   try {
     const errorText = await response.text();
     const errorJSON = _.attempt(t => JSON.parse(t), errorText)
-    console.log("I got ", errorJSON, errorText);
     if (_.isError(errorJSON)) {
-      console.log("branch 1");
       error = new GenericServerError(response.statusText, errorText)
     } else {
-      console.log("branch 2");
       error = new JSONResponseCarryingError(response.statusText, errorJSON)   
     }
   } catch (e) {

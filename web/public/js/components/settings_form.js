@@ -16,12 +16,10 @@ function submit(name) {
     } catch (e) {
       if (e.reason instanceof JSONResponseCarryingError) {
         const errorJSON = e.reason.payload
-        console.log("i got", errorJSON);
         let resultJson = {}
         for (let k of _.keys(errorJSON)) {
           resultJson[k] = errorJSON[k][0] 
         }
-        console.log("gonna throw", resultJson)
         throw new SubmissionError(resultJson)
       } else {
         throw e
@@ -36,12 +34,10 @@ async function submitTorrent(values, dispatch) {
   } catch (e) {
     if (e.reason instanceof JSONResponseCarryingError) {
       const errorJSON = e.reason.payload
-      console.log("i got", errorJSON);
       let resultJson = {}
       for (let k of _.keys(errorJSON)) {
         resultJson[k] = errorJSON[k][0] 
       }
-      console.log("gonna throw", resultJson)
       throw new SubmissionError(resultJson)
     } else {
       throw e
@@ -58,7 +54,6 @@ class SettingsFormPresentation extends Component {
         return (
           <Field name={f.name} key={f.name} component={ props => 
             {
-            console.log("for ", f, " we have", props);
             return <TextField
               floatingLabelText={f.label}
               hintText={f.placeholder}
