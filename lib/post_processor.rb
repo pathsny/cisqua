@@ -44,7 +44,7 @@ class PostProcessor
 
       rename_worker = Thread.new do
         renamer = Renamer::Renamer.new(options[:renamer])
-        dups = Multimap.new
+        dups = {}
         success = {}
         files.each do 
           work_item = rename_queue.pop
@@ -57,17 +57,18 @@ class PostProcessor
             Loggers::PostProcessor.info "file #{work_item.file} is unknown #{"and moved to #{res.destination}" if res.destination}"
           when :duplicate
             Loggers::PostProcessor.info "#{work_item.file} is a duplicate of #{res.destination}"
-            dups[res.destination] = work_item
+            dups[res.destination] = dups[res.destination] || []
+            dups[res.destination].push(work_item)
           end      
         end
-        dups.each_association do |k, _|
+        dups.each do |k, _|
           # rescan the duplicates unless we have it in the success map
           scan_queue << k unless success.has_key?(k)
         end 
         scan_queue << :end
 
         #resolve duplicates immideately for when we have all the info
-        dups.each_association do |k, items|
+        dups.each do |k, items|
           renamer.process_duplicate_set(
             WorkItem.new(k, success[k].info), items
           ) if success.has_key?(k)

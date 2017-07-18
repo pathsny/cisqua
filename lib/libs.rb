@@ -1,6 +1,5 @@
 require 'yaml'
 require 'thread'
-require 'multimap'
 require_relative './loggers'
 require_relative '../external/lru_hash'
 

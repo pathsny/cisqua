@@ -1,4 +1,4 @@
-ruby '2.1.5'
+ruby '2.3.4'
 
 source 'https://rubygems.org'
 
@@ -15,7 +15,6 @@ gem 'invariant'
 gem 'concurrent-ruby'
 gem 'concurrent-ruby-ext'
 gem 'concurrent-ruby-edge'
-gem 'multimap'
 gem 'veto'
 gem 'slowweb'
 gem 'logging'

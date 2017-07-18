@@ -64,7 +64,6 @@ GEM
     mocha (1.1.0)
       metaclass (~> 0.0.1)
     multi_json (1.12.1)
-    multimap (1.1.3)
     multipart-post (2.0.0)
     net-ping (1.7.8)
     net-scp (1.2.1)
@@ -142,7 +141,6 @@ DEPENDENCIES
   json
   logging
   mocha
-  multimap
   net-ping
   nokogiri
   puma
@@ -156,3 +154,9 @@ DEPENDENCIES
   timecop
   trans-api
   veto
+
+RUBY VERSION
+   ruby 2.3.4p301
+
+BUNDLED WITH
+   1.15.1
