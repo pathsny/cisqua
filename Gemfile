@@ -1,4 +1,4 @@
-ruby '2.3.4'
+ruby File.read('.ruby-version', mode: 'rb').chomp
 
 source 'https://rubygems.org'
 
@@ -36,4 +36,6 @@ group :development do
   gem 'capistrano-rsync-bladrak'
   gem 'capistrano-bundler'
   gem 'capistrano3-puma'
-end  
+  gem 'capistrano-rbenv'
+  gem 'capistrano-rbenv-install', '~> 1.2.0'
+end

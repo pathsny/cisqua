@@ -1,5 +1,5 @@
 # config valid only for current version of Capistrano
-lock '3.5.0'
+lock '3.11.0'
 
 set :application, 'anidb'
 set :repo_url, '.'
@@ -8,12 +8,14 @@ set :repo_url, '.'
 # ask :branch, `git rev-parse --abbrev-ref HEAD`.chomp
 
 # Default deploy_to directory is /var/www/my_app_name
-set :deploy_to, '/anidb'
+set :deploy_to, '/anidb_ruby'
+
+set :rbenv_ruby, File.read('.ruby-version').strip
 
 # Default value for :scm is :git
 set :scm, :rsync
 set :rsync_options, %w[
-  --recursive --delete --delete-excluded 
+  --recursive --delete --delete-excluded
   --include /web/public/build/
   --include /web/public/index.html
   --include /web/public/favicon.production.ico
@@ -34,8 +36,10 @@ namespace :rsync do
       public_dir = File.expand_path(File.join(fetch(:rsync_stage), 'web/public'))
       shared_node_modules_dir = File.expand_path(File.join(fetch(:rsync_stage), '../node_modules'))
       current_node_modules_dir = File.expand_path(File.join(public_dir, 'node_modules'))
+
       Dir.chdir public_dir do
-        File.symlink(node_modules_dir, current_node_modules_dir) unless File.symlink?(current_node_modules_dir)
+        FileUtils.mkdir_p shared_node_modules_dir
+        File.symlink(shared_node_modules_dir, current_node_modules_dir) unless File.symlink?(current_node_modules_dir)
         system("npm install && npm run build")
       end
     end
@@ -71,7 +75,7 @@ namespace :deploy do
     unless test(dir_path)
       execute "mkdir -p #{dir_path}"
     end
-  end     
+  end
 
 
   after :check, :create_directories do
@@ -80,7 +84,7 @@ namespace :deploy do
       ensure_dir File.join(shared_path, "data/http_anime_info_cache")
       ensure_dir File.join(shared_path, "data/udp_anime_info_cache/lock")
     end
-  end  
+  end
 
   after :restart, :clear_cache do
     on roles(:app), in: :groups, limit: 3, wait: 10 do
@@ -91,4 +95,28 @@ namespace :deploy do
     end
   end
 
+end
+
+
+desc "Check that we can access everything"
+task :check_write_permissions do
+  on roles(:all) do |host|
+    if test("[ -w #{fetch(:deploy_to)} ]")
+      info "#{fetch(:deploy_to)} is writable on #{host}"
+    else
+      error "#{fetch(:deploy_to)} is not writable on #{host}"
+    end
+  end
+end
+
+# lib/capistrano/tasks/agent_forwarding.rake
+desc "Check if agent forwarding is working"
+task :forwarding do
+  on roles(:all) do |h|
+    if test("env | grep SSH_AUTH_SOCK")
+      info "Agent forwarding is up to #{h}"
+    else
+      error "Agent forwarding is NOT up to #{h}"
+    end
+  end
 end
