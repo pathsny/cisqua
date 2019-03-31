@@ -1,8 +1,8 @@
 'use strict';
 
 import React, { PropTypes, Component } from 'react';
-import TextField from 'material-ui/TextField';
-import RaisedButton from 'material-ui/RaisedButton';
+import TextField from '@material-ui/core/TextField';
+import Button from '@material-ui/core/Button';
 
 import { Field, reduxForm } from 'redux-form'
 import invariant from 'invariant'
@@ -18,7 +18,7 @@ function submit(name) {
         const errorJSON = e.reason.payload
         let resultJson = {}
         for (let k of _.keys(errorJSON)) {
-          resultJson[k] = errorJSON[k][0] 
+          resultJson[k] = errorJSON[k][0]
         }
         throw new SubmissionError(resultJson)
       } else {
@@ -36,7 +36,7 @@ async function submitTorrent(values, dispatch) {
       const errorJSON = e.reason.payload
       let resultJson = {}
       for (let k of _.keys(errorJSON)) {
-        resultJson[k] = errorJSON[k][0] 
+        resultJson[k] = errorJSON[k][0]
       }
       throw new SubmissionError(resultJson)
     } else {
@@ -52,7 +52,7 @@ class SettingsFormPresentation extends Component {
       case 'text':
       case 'password':
         return (
-          <Field name={f.name} key={f.name} component={ props => 
+          <Field name={f.name} key={f.name} component={ props =>
             {
             return <TextField
               floatingLabelText={f.label}
@@ -62,9 +62,9 @@ class SettingsFormPresentation extends Component {
               errorText = {props.touched && props.error}
               {...props}
             />
-            } 
+            }
           }/>
-        );   
+        );
       default:
         invariant(false, `unsupported option type ${f.type} of name ${f.name}`)
     }
@@ -74,9 +74,10 @@ class SettingsFormPresentation extends Component {
     return (
       <form onSubmit={this.props.handleSubmit}>
         {this.props.config.fields.map(f => this._renderField(f))}
-        <RaisedButton
+        <Button
           type="submit"
           label="Save"
+          variant='contained'
           primary={true}
           disabled={this.props.pristine || this.props.submitting}
         />

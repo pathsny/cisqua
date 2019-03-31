@@ -1,36 +1,46 @@
 'use strict';
 
 import React, { PropTypes, Component } from 'react';
-import AppBar from 'material-ui/AppBar';
-import MoreVertIcon from 'material-ui/svg-icons/navigation/more-vert';
-import MenuItem from 'material-ui/MenuItem';
-import FontIcon from 'material-ui/FontIcon';
-import IconMenu from 'material-ui/IconMenu';
-import IconButton from 'material-ui/IconButton';
-import Snackbar from 'material-ui/Snackbar';
-import Divider from 'material-ui/Divider';
+import AppBar from '@material-ui/core/AppBar';
+import MoreVertIcon from '@material-ui/icons/MoreVert';
+import MenuItem from '@material-ui/core/MenuItem';
+import Menu from '@material-ui/core/Menu';
+import IconButton from '@material-ui/core/IconButton';
+import Snackbar from '@material-ui/core/Snackbar';
+import Divider from '@material-ui/core/Divider';
 
-import ActionHome from 'material-ui/svg-icons/action/home';
-import ActionBugReport from 'material-ui/svg-icons/action/bug-report';
-import ActionSettings from 'material-ui/svg-icons/action/settings';
+import ActionHome from '@material-ui/icons/Home';
+import ActionBugReport from '@material-ui/icons/BugReport';
+import ActionSettings from '@material-ui/icons/Settings';
 
 import { IndexLink, Link } from 'react-router'
 
-import getMuiTheme from 'material-ui/styles/getMuiTheme';
-import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
+// import getMuiTheme from 'material-ui/styles/getMuiTheme';
+// import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 
 import { connect } from 'react-redux'
 import _ from 'lodash'
-import { 
-  fetchShows, 
-  dismissSnackbar, 
-  checkAllFeeds, 
-  makeAllValid,
+import {
+  fetchShows,
+  dismissSnackbar,
+  checkAllFeeds,
   runPostProcessor,
 } from '../actions'
 import '../../styles/app.css'
 
 class AppPresentation extends Component {
+  state = {
+    anchorEl: null,
+  };
+
+  handleClick = event => {
+    this.setState({ anchorEl: event.currentTarget });
+  };
+
+  handleClose = () => {
+    this.setState({ anchorEl: null });
+  };
+
   _disableMenu() {
     return !this.context.router
   }
@@ -40,56 +50,64 @@ class AppPresentation extends Component {
   }
 
   _renderRightIcon(style) {
+    const { anchorEl } = this.state;
+    const open = Boolean(anchorEl);
     return (
-      <IconMenu 
-        iconButtonElement={<IconButton><MoreVertIcon /></IconButton>}
-        targetOrigin={{horizontal: 'right', vertical: 'top'}}
-        anchorOrigin={{horizontal: 'right', vertical: 'top'}}
-        onRequestChange={this._onRequestChange}
-      >
-        <MenuItem
-          disabled={this._disablePath('/')}
-          onTouchTap={() => _.delay(() => this.context.router.push("/"))}
-          primaryText="Home"
-          leftIcon={<ActionHome/>}
-        />
-        <MenuItem
-          disabled={this._disablePath('/logs')}
-          onTouchTap={() => _.delay(() => this.context.router.push("/logs"))}
-          primaryText="Logs"
-          leftIcon={<ActionBugReport/>}
-        />  
-        <MenuItem
-          disabled={this._disablePath('/settings')}
-          onTouchTap={() => _.delay(() => this.context.router.push("/settings"))}
-          primaryText="Settings"
-          leftIcon={<ActionSettings/>}
-        />  
-        <Divider inset={true}/>
-        <MenuItem 
-          primaryText="Refresh Shows"
-          disabled={this._disableMenu() || this.props.fetchingList}
-          onTouchTap={this.props.onRefresh}
-          insetChildren={true}
-        />
-        <MenuItem
-          disabled={this._disableMenu()}
-          primaryText="Check All Feeds"
-          onTouchTap={this.props.onCheckAllFeeds}
-          insetChildren={true}
-        /> 
-        <MenuItem
-          disabled={this._disableMenu()}
-          primaryText="Run PostProcessor"
-          onTouchTap={this.props.onRunPostProcessor}
-          insetChildren={true}
-        /> 
-        <MenuItem
-          primaryText="Make it OK"
-          onTouchTap={this.props.onMakeItOk}
-          insetChildren={true}
-        /> 
-      </IconMenu>
+      <div>
+        <IconButton
+            aria-label="More"
+            aria-owns={open ? 'more-menu' : undefined}
+            aria-haspopup="true"
+            onClick={this.handleClick}
+          >
+            <MoreVertIcon />
+          </IconButton>
+        <Menu
+          id="long-menu"
+          anchorEl={anchorEl}
+          open={open}
+          onClose={this.handleClose}
+        >
+          <MenuItem
+            id="more-menu"
+            disabled={this._disablePath('/')}
+            onTouchTap={() => _.delay(() => this.context.router.push("/"))}
+            primaryText="Home"
+            leftIcon={<ActionHome/>}
+          />
+          <MenuItem
+            disabled={this._disablePath('/logs')}
+            onTouchTap={() => _.delay(() => this.context.router.push("/logs"))}
+            primaryText="Logs"
+            leftIcon={<ActionBugReport/>}
+          />
+          <MenuItem
+            disabled={this._disablePath('/settings')}
+            onTouchTap={() => _.delay(() => this.context.router.push("/settings"))}
+            primaryText="Settings"
+            leftIcon={<ActionSettings/>}
+          />
+          <Divider inset={true}/>
+          <MenuItem
+            primaryText="Refresh Shows"
+            disabled={this._disableMenu() || this.props.fetchingList}
+            onTouchTap={this.props.onRefresh}
+            insetChildren={true}
+          />
+          <MenuItem
+            disabled={this._disableMenu()}
+            primaryText="Check All Feeds"
+            onTouchTap={this.props.onCheckAllFeeds}
+            insetChildren={true}
+          />
+          <MenuItem
+            disabled={this._disableMenu()}
+            primaryText="Run PostProcessor"
+            onTouchTap={this.props.onRunPostProcessor}
+            insetChildren={true}
+          />
+        </Menu>
+      </div>
     )
   }
 
@@ -126,10 +144,10 @@ class AppPresentation extends Component {
   }
 
   render() {
-    const muiTheme = getMuiTheme();
-    const style = this._getStyle(muiTheme);
+    // const muiTheme = getMuiTheme();
+    // const style = this._getStyle(muiTheme);
     return (
-      <MuiThemeProvider muiTheme={muiTheme}>
+      // <MuiThemeProvider muiTheme={muiTheme}>
         <div>
           <AppBar
             title="Cisqua"
@@ -140,11 +158,11 @@ class AppPresentation extends Component {
           <div style={style.root}>
             <div style={style.content}>
               {this.props.children}
-            </div>  
-          </div>  
+            </div>
+          </div>
           {this._renderSnackBar()}
-        </div>  
-      </MuiThemeProvider> 
+        </div>
+      // </MuiThemeProvider>
     );
   }
 }
@@ -170,7 +188,6 @@ const mapDispatchToProps = (dispatch) => ({
   onRefresh: () => dispatch(fetchShows()),
   dismissSnackbar: () => dispatch(dismissSnackbar()),
   onCheckAllFeeds: () => dispatch(checkAllFeeds()),
-  onMakeItOk: () => dispatch(makeAllValid()),
   onRunPostProcessor: () => dispatch(runPostProcessor()),
 })
 

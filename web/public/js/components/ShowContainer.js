@@ -2,11 +2,11 @@
 
 import React, { PropTypes, Component } from 'react'
 import { connect } from 'react-redux'
-import {List, ListItem} from 'material-ui/List';
-import {Toolbar, ToolbarGroup, ToolbarSeparator, ToolbarTitle} from 'material-ui/Toolbar';
-import RaisedButton from 'material-ui/RaisedButton';
-import TextField from 'material-ui/TextField';
-import Dialog from 'material-ui/Dialog';
+import {List, ListItem} from '@material-ui/core/List';
+import {Toolbar, ToolbarGroup, ToolbarSeparator, ToolbarTitle} from '@material-ui/core/Toolbar';
+import Button from '@material-ui/core/Button';
+import TextField from '@material-ui/core/TextField';
+import Dialog from '@material-ui/core/Dialog';
 import {HotKeys} from 'react-hotkeys';
 
 import {ShowPropType} from './proptypes.js'
@@ -38,7 +38,7 @@ class ShowContainerPresentation extends Component {
       <ListItem key={show.id} disabled={true}>
         <Show anime={show} />
       </ListItem>
-    );  
+    );
   }
 
   _onFilterShows(event) {
@@ -61,29 +61,30 @@ class ShowContainerPresentation extends Component {
     return (
       <Toolbar>
         <ToolbarGroup float="left">
-          <HotKeys 
-            handlers={handlers} 
+          <HotKeys
+            handlers={handlers}
             focused={this.context.noDialogsOpen}
             attach={window}
           >
             <TextField
-              ref="filterField" 
+              ref="filterField"
               hintText="Filter"
               fullWidth={true}
               onChange={this._handleFilterChange}
               value={this.state.filterText}
               onKeyDown={this._onStopFilteringShowsMaybe}
             />
-          </HotKeys>  
+          </HotKeys>
         </ToolbarGroup>
         <ToolbarGroup float="right" lastChild={true}>
-          <RaisedButton 
-            label="Add New Show" 
+          <Button
+            label="Add New Show"
             primary={true}
+            variant='contained'
             onTouchTap={() => this.props.onAddDialogStateChange(true)}
           />
-        </ToolbarGroup>  
-      </Toolbar>  
+        </ToolbarGroup>
+      </Toolbar>
     )
   }
 
@@ -103,7 +104,7 @@ class ShowContainerPresentation extends Component {
     );
   }
 }
-  
+
 ShowContainerPresentation.propTypes = {
   shows: PropTypes.arrayOf(ShowPropType.isRequired).isRequired,
   onAddDialogStateChange: PropTypes.func.isRequired,

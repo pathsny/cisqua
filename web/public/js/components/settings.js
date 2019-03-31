@@ -2,12 +2,18 @@
 
 import React, { PropTypes, Component } from 'react';
 import { connect } from 'react-redux'
-
-import RefreshIndicator from 'material-ui/RefreshIndicator';
+import { withStyles } from '@material-ui/core/styles';
+import CircularProgress from '@material-ui/core/CircularProgress';
 import SettingsFormWrapper from './settings_form'
-const {SettingsForm} = SettingsFormWrapper 
+const {SettingsForm} = SettingsFormWrapper
 
 import {fetchSettings} from '../actions'
+
+const styles = theme => ({
+  progress: {
+    margin: theme.spacing.unit * 2,
+  },
+});
 
 class SettingsPresentation extends Component {
   constructor(props) {
@@ -40,24 +46,18 @@ class SettingsPresentation extends Component {
   render() {
     const style = this._getStyle();
     const refreshStyle = this.props.fetchingValues ?
-      _.merge({}, style.overlay, {display: 'block'}) : 
-      style.overlay; 
+      _.merge({}, style.overlay, {display: 'block'}) :
+      style.overlay;
     return (
     <div style={style.container}>
       <SettingsForm {...this.props}/>
-      <div style={refreshStyle}> 
-      <RefreshIndicator
-        size={200}
-        left={300}
-        top={40}
-        status="loading"
-        style={style.indicator}
-      />
+      <div style={refreshStyle}>
+      <CircularProgress className={classes.progress}/>
       </div>
     </div>
     )
-  }  
-}  
+  }
+}
 
 const mapStateToProps = (state) => {
   const config = state.settings.config[0];
@@ -74,6 +74,6 @@ const mapDisatchToProps = (dispatch) => ({
   onFetchSettings: () => dispatch(fetchSettings()),
 })
 
-const Settings = connect(mapStateToProps, mapDisatchToProps)(SettingsPresentation)
+const Settings = connect(mapStateToProps, mapDisatchToProps)(withStyles(styles)(SettingsPresentation))
 
 export default Settings

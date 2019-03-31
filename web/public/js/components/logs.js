@@ -1,12 +1,12 @@
 'use strict';
 
-import {Table, TableBody, TableRow, TableRowColumn} from 'material-ui/Table';
+import {Table, TableBody, TableRow, TableRowColumn} from '@material-ui/core/Table';
 import React, { PropTypes, Component } from 'react';
 import ReactDOM from 'react-dom';
 
 import { connect } from 'react-redux'
 import moment from 'moment'
-import {deepPurple900, grey500, green800, grey900, amber900, red500, white} from 'material-ui/styles/colors';
+import {deepPurple900, grey500, green800, grey900, amber900, red500, white} from '@material-ui/core/colors';
 
 import {startTailingLogs, stopTailingLogs} from '../actions.js'
 
@@ -56,7 +56,7 @@ function GetStyle(theme, type, value) {
       fontWeight: 500,
     }),
     column,
-  }  
+  }
 }
 
 class LogsPresentation extends Component {
@@ -77,7 +77,7 @@ class LogsPresentation extends Component {
   componentWillUpdate() {
     const node = ReactDOM.findDOMNode(this)
     this.shouldScrollBottom = (
-      node.scrollHeight - node.scrollTop === node.clientHeight 
+      node.scrollHeight - node.scrollTop === node.clientHeight
     );
   }
 
@@ -98,7 +98,7 @@ class LogsPresentation extends Component {
       <TableRow key={i} displayBorder={false} style={style.row}>
         <TableRowColumn style={style.timestamp}>
           [&nbsp;&nbsp;
-          {moment(l.timestamp).format('YYYY-MM-DD HH:mm:ss')}  
+          {moment(l.timestamp).format('YYYY-MM-DD HH:mm:ss')}
           &nbsp;&nbsp;]
         </TableRowColumn>
         <TableRowColumn style={style.level(l.level)}>{l.level}</TableRowColumn>
@@ -106,7 +106,7 @@ class LogsPresentation extends Component {
         <TableRowColumn style={style.logger}>{l.logger}:</TableRowColumn>
         <TableRowColumn style={style.message}>{l.message}</TableRowColumn>
         <TableRowColumn style={style.column}/>
-      </TableRow>  
+      </TableRow>
     )
   }
 
@@ -115,8 +115,8 @@ class LogsPresentation extends Component {
       <Table>
         <TableBody  displayRowCheckbox={false}>
           {this.props.logs.map(this._renderLog)}
-        </TableBody>  
-      </Table>  
+        </TableBody>
+      </Table>
     );
   }
 }

@@ -1,12 +1,11 @@
 import React, { PropTypes, Component } from 'react'
-import Dialog from 'material-ui/Dialog';
+import Dialog from '@material-ui/core/Dialog';
 import { connect } from 'react-redux'
 import { Field, reduxForm } from 'redux-form'
-import { SubmissionError } from 'redux-form'; 
-import FlatButton from 'material-ui/FlatButton';
-import RaisedButton from 'material-ui/RaisedButton';
-import TextField from 'material-ui/TextField';
-import Toggle from 'material-ui/Toggle';
+import { SubmissionError } from 'redux-form';
+import Button from '@material-ui/core/Button';
+import TextField from '@material-ui/core/TextField';
+import Switch from '@material-ui/core/Switch';
 
 import _ from 'lodash'
 
@@ -20,7 +19,7 @@ async function onSubmit(values, dispatch) {
       _.parseInt(anime['@aid']),
       anime.name,
       values.feed_url,
-      values.auto_fetch,  
+      values.auto_fetch,
     ));
   } catch (e) {
     if (e.reason instanceof JSONResponseCarryingError) {
@@ -28,7 +27,7 @@ async function onSubmit(values, dispatch) {
       let resultJson = {}
       for (let k of _.keys(errorJSON)) {
         const key = ['id', 'name'].includes(k) ? 'anime' : k
-        resultJson[key] = errorJSON[k][0] 
+        resultJson[key] = errorJSON[k][0]
       }
       throw new SubmissionError(resultJson)
     } else {
@@ -61,24 +60,26 @@ class NewShowDialogFormPresentation extends Component {
   _getActions() {
     return [
       <Field name="auto_fetch" component={ auto_fetch =>
-        <Toggle
+        <Switch
+          checked={auto_fetch.value}
+          onChange={event => auto_fetch.onChange(auto_fetch.value)}
           form="addShowForm"
           label="Auto Fetch"
           labelPosition="left"
-          toggled={auto_fetch.value}
-          onToggle={(event, toggled) => auto_fetch.onChange(toggled)}
         />
       }/>,
-      <FlatButton
+      <Button
         type="button"
         label="Cancel"
         secondary={true}
+        variant='outlined'
         onTouchTap={this.props.onRequestClose}
       />,
-      <RaisedButton
+      <Button
         type="submit"
         label="Submit"
         form="addShowForm"
+        variant='contained'
         primary={true}
         disabled={this.props.pristine || this.props.submitting}
       />,
@@ -93,7 +94,7 @@ class NewShowDialogFormPresentation extends Component {
         onRequestClose={this.props.onRequestClose}
         open={true}>
         <form onSubmit={this.props.handleSubmit} id="addShowForm">
-          <Field name="anime" component={ anime => 
+          <Field name="anime" component={ anime =>
             <AnimeAutosuggest
               floatingLabelText="Show Name"
               autoFocus={true}
@@ -104,7 +105,7 @@ class NewShowDialogFormPresentation extends Component {
               fullWidth={true}
             />
           }/>
-          <Field name="feed_url" component={ feed_url => 
+          <Field name="feed_url" component={ feed_url =>
             <TextField
               floatingLabelText="Feed URL"
               errorText = {feed_url.touched && feed_url.error}
@@ -112,7 +113,7 @@ class NewShowDialogFormPresentation extends Component {
               fullWidth={true}
             />
           }/>
-        </form>    
+        </form>
       </Dialog>
     );
   }
@@ -132,4 +133,4 @@ export default {
     onSubmit,
     initialValues,
   })(NewShowDialogFormPresentation)
-}  
+}

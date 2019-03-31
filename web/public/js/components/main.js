@@ -2,7 +2,7 @@
 
 import React, { Component } from 'react';
 import { Provider, connect } from 'react-redux'
-import { Router, Route, browserHistory, IndexRoute } from 'react-router'
+import { Route, Link, BrowserRouter as Router } from 'react-router-dom'
 import {HotKeys} from 'react-hotkeys';
 
 import App from './app'
@@ -15,18 +15,19 @@ if (process.env.NODE_ENV === `development`) {
   require('../utils/debug_helper')
 }
 
+{/* <Route path="/" component={App}> */}
+
+
 const Routes = (
-  <Router history={browserHistory}>
-    <Route path="/" component={App}>
-      <IndexRoute component={Home} />
-      <Route path="/logs" component={Logs} />
-      <Route path="/settings" component={Settings} />
-    </Route>
-  </Router>    
+  <Router>
+    <Route exact path="/" component={Home} />
+    <Route path="/logs" component={Logs} />
+    <Route path="/settings" component={Settings} />
+  </Router>
 )
 
-// const MainContent = ({all_valid}) => all_valid ? 
-//   Routes : 
+// const MainContent = ({all_valid}) => all_valid ?
+//   Routes :
 //   (<App><Settings/></App>)
 
 const MainContent = () => Routes

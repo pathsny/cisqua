@@ -1,37 +1,36 @@
 'use strict';
 
 import React, { PropTypes, Component } from 'react';
-import {Card, CardActions, CardHeader, CardText} from 'material-ui/Card';
-import FlatButton from 'material-ui/FlatButton';
-import IconButton from 'material-ui/IconButton';
-import CircularProgress from 'material-ui/CircularProgress';
-import FileCloudDownload from 'material-ui/svg-icons/file/cloud-download';
-import ContentArchive from 'material-ui/svg-icons/content/archive';
+import {Card, CardActions, CardHeader, CardText} from '@material-ui/core/Card';
+import Button from '@material-ui/core/Button';
+import CircularProgress from '@material-ui/core/CircularProgress';
+import FileCloudDownload from '@material-ui/icons/CloudDownload';
+import ContentArchive from '@material-ui/icons/Archive';
 
-import {grey500, green800} from 'material-ui/styles/colors';
+import {grey500, green800} from '@material-ui/core/colors';
 
 import {
-  Table, 
-  TableBody, 
-  TableHeader, 
-  TableHeaderColumn, 
-  TableRow, 
+  Table,
+  TableBody,
+  TableHeader,
+  TableHeaderColumn,
+  TableRow,
   TableRowColumn,
-} from 'material-ui/Table';
+} from '@material-ui/core/Table';
 
 import { connect } from 'react-redux'
 
 import {ShowPropType, FeedItemPropType} from './proptypes.js'
 import {
-  checkFeed, 
-  removeShow, 
-  downloadFile, 
-  markDownloaded, 
+  checkFeed,
+  removeShow,
+  downloadFile,
+  markDownloaded,
   unmarkDownloaded,
 } from '../actions.js'
 
 function getColors(theme, active) {
-  const inactiveColor = theme.palette.accent3Color 
+  const inactiveColor = theme.palette.accent3Color
   return {
     download: active ? green800 : inactiveColor,
     markDownloaded: active ? theme.palette.accent1Color : inactiveColor,
@@ -40,7 +39,7 @@ function getColors(theme, active) {
 
 class ShowPresentation extends Component {
   constructor(props) {
-    super(props)    
+    super(props)
   }
 
   _avatarURL() {
@@ -53,13 +52,13 @@ class ShowPresentation extends Component {
         size={0.25}
       /> :
     (
-      <IconButton 
-        tooltip={feedItem.marked_predownloaded_at ? "Unmark Downloaded" : "Mark Downloaded"} 
-        tooltipPosition="top-right" 
+      <IconButton
+        tooltip={feedItem.marked_predownloaded_at ? "Unmark Downloaded" : "Mark Downloaded"}
+        tooltipPosition="top-right"
         onTouchTap={() => (
-          feedItem.marked_predownloaded_at ? 
+          feedItem.marked_predownloaded_at ?
           this.props.onUnmarkDownloaded :
-          this.props.onMarkDownloaded 
+          this.props.onMarkDownloaded
         )(feedItem.id)}
       >
         <ContentArchive color={colors.markDownloaded}/>
@@ -73,20 +72,20 @@ class ShowPresentation extends Component {
         size={0.25}
       /> :
     (
-      <IconButton 
-        tooltip="Download" 
-        tooltipPosition="top-right" 
+      <IconButton
+        tooltip="Download"
+        tooltipPosition="top-right"
         touch={true}
         onTouchTap={() => this.props.onDownload(feedItem.id)}
       >
         <FileCloudDownload color={colors.download}/>
       </IconButton>
-      )  
+      )
   }
 
   _renderFeedItem(feedItem) {
     const colors = getColors(
-      this.context.muiTheme, 
+      this.context.muiTheme,
       !feedItem.downloaded_at && !feedItem.marked_predownloaded_at,
     )
     return (
@@ -113,7 +112,7 @@ class ShowPresentation extends Component {
         </CardHeader>
         <CardText expandable={false}>
          <Table fixedHeader={true} selectable={false}>
-            <TableHeader 
+            <TableHeader
               adjustForCheckbox={false}
               displaySelectAll={false}>
               <TableRow>
@@ -127,11 +126,15 @@ class ShowPresentation extends Component {
           </Table>
         </CardText>
         <CardActions>
-          <FlatButton label="Remove Show" onTouchTap={this.props.onRemoveShow}/>
+          <Button
+            label="Remove Show"
+            onTouchTap={this.props.onRemoveShow}
+            variant='outlined'
+          />
         </CardActions>
       </Card>
     )
-  } 
+  }
 }
 
 ShowPresentation.contextTypes = {
@@ -151,8 +154,8 @@ ShowPresentation.propTypes = {
 const mapStateToProps = (state, ownProps) => ({
   feedItems: ownProps.anime.feed_items.map(
     id => Object.assign(
-      {}, 
-      state.app.feedItemsByID[id], 
+      {},
+      state.app.feedItemsByID[id],
       {async: {
         markDownloaded: _.get(state.app.async.feedItemsByID[id], 'markDownloaded', false),
         download: _.get(state.app.async.feedItemsByID[id], 'download', false),

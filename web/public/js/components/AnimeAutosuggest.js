@@ -4,7 +4,7 @@ import React, { PropTypes, Component } from 'react';
 import _ from 'lodash'
 import invariant from 'invariant'
 import { connect } from 'react-redux'
-import AutoComplete from 'material-ui/AutoComplete';
+// import AutoComplete from '@material-ui/core/AutoComplete';
 
 import {fetchSuggestionsFromAnidb} from '../actions'
 
@@ -12,7 +12,7 @@ const initialState = {
   suggestions: [],
 };
 
-export default class AnimeAutosuggestPresentation extends Component {
+class AnimeAutosuggestPresentation extends Component {
   constructor(props) {
     super(props)
     this.state = initialState;
@@ -25,7 +25,7 @@ export default class AnimeAutosuggestPresentation extends Component {
     const {value: {suggestion, searchText}, suggestionMap} = nextProps
     invariant( // only the user can select an anime;
       !suggestion || suggestion.name === searchText,
-      `invalid props being sent ${searchText} does not match ${suggestion && suggestion.name}` 
+      `invalid props being sent ${searchText} does not match ${suggestion && suggestion.name}`
     );
     if (suggestion) {
       return; // there is a valid suggestion and it matches the text.
@@ -55,7 +55,7 @@ export default class AnimeAutosuggestPresentation extends Component {
 
   _onSuggestionSelected(name, index) {
     this.props.onChange(null, {
-      // note there is a small chance of a race condition, 
+      // note there is a small chance of a race condition,
       // if the selection is made before we render, but after setting state
       // or if between the user selecting and this callback firing, state is changed
       suggestion: this.state.suggestions[index],
@@ -66,17 +66,17 @@ export default class AnimeAutosuggestPresentation extends Component {
   render() {
     const isLoading = _.has(this.state.hintsBeingFetched, this.props.searchText)
     const status = (isLoading ? 'Loading...' : 'Type to load suggestions');
-    return (
-      <AutoComplete
-        dataSource={this.state.suggestions.map(s => s.name)}
-        filter={AutoComplete.noFilter} // fuzzyFilter works for us, but has not been released yet
-        onNewRequest={this._onSuggestionSelected}
-        onUpdateInput={this._onChange}
-        searchText={this.props.searchText}
-        openOnFocus={true}
-        {..._.omit(this.props, ['value', 'onChange', 'suggestionMap', 'hintsBeingFetched'])}
-      />
-    );  
+    return (<div/>
+      // <AutoComplete
+      //   dataSource={this.state.suggestions.map(s => s.name)}
+      //   filter={AutoComplete.noFilter} // fuzzyFilter works for us, but has not been released yet
+      //   onNewRequest={this._onSuggestionSelected}
+      //   onUpdateInput={this._onChange}
+      //   searchText={this.props.searchText}
+      //   openOnFocus={true}
+      //   {..._.omit(this.props, ['value', 'onChange', 'suggestionMap', 'hintsBeingFetched'])}
+      // />
+    );
   }
 }
 
@@ -107,7 +107,7 @@ const mapStateToProps = (state) => ({
 });
 
 const mapDispatchToProps = (dispatch) => ({
-  fetchSuggestions: (hint) => dispatch(fetchSuggestionsFromAnidb(hint)) 
+  fetchSuggestions: (hint) => dispatch(fetchSuggestionsFromAnidb(hint))
 })
 
 const AnimeAutosuggest = connect(
