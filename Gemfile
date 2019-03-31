@@ -1,4 +1,5 @@
-ruby File.read('.ruby-version', mode: 'rb').chomp
+ruby_version_path = File.join(File.expand_path('../', __FILE__), '.ruby-version')
+ruby File.read(ruby_version_path, mode: 'rb').chomp
 
 source 'https://rubygems.org'
 
