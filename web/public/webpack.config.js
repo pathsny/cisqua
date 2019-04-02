@@ -38,6 +38,11 @@ var config = {
       "NODE_ENV"
     ]),
   ],
+  resolve: {
+    alias: {
+      'react-dom': '@hot-loader/react-dom'
+    }
+  },
   devServer: {
     port: 9494,
     host: 'localhost',
