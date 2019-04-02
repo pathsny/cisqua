@@ -1,6 +1,8 @@
 'use strict';
 
-import React, { PropTypes, Component } from 'react';
+import PropTypes from 'prop-types';
+
+import React, { Component } from 'react';
 import { connect } from 'react-redux'
 import { withStyles } from '@material-ui/core/styles';
 import CircularProgress from '@material-ui/core/CircularProgress';

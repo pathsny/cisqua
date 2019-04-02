@@ -41,6 +41,7 @@
     "invariant": "^2.2.4",
     "lodash": "^4.17.11",
     "moment": "^2.24.0",
+    "prop-types": "^15.7.2",
     "react": "^16.8.6",
     "react-addons-update": "^15.6.2",
     "react-dom": "^16.8.6",

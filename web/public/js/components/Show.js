@@ -1,6 +1,8 @@
 'use strict';
 
-import React, { PropTypes, Component } from 'react';
+import PropTypes from 'prop-types';
+
+import React, { Component } from 'react';
 import {Card, CardActions, CardHeader, CardText} from '@material-ui/core/Card';
 import Button from '@material-ui/core/Button';
 import CircularProgress from '@material-ui/core/CircularProgress';

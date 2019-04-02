@@ -1,6 +1,8 @@
 'use strict';
 
-import React, { PropTypes, Component } from 'react';
+import PropTypes from 'prop-types';
+
+import React, { Component } from 'react';
 import AppBar from '@material-ui/core/AppBar';
 import MoreVertIcon from '@material-ui/icons/MoreVert';
 import MenuItem from '@material-ui/core/MenuItem';

@@ -1,6 +1,8 @@
 'use strict';
 
-import React, { PropTypes, Component } from 'react';
+import PropTypes from 'prop-types';
+
+import React, { Component } from 'react';
 import { connect } from 'react-redux'
 import ShowContainer from './ShowContainer'
 import {HotKeys} from 'react-hotkeys';
@@ -10,13 +12,13 @@ import { addShowDialog } from '../actions'
 import NewShowDialogFormWrapper from './NewShowDialogForm'
 import ShowFetcher from './show_fetcher'
 
-const {NewShowDialogForm} = NewShowDialogFormWrapper 
+const {NewShowDialogForm} = NewShowDialogFormWrapper
 
 const keyEventsMap = {
   'addShow': 'n',
   'filterShows': 'f',
   'escape': 'escape',
-};  
+};
 
 class HomePresentation extends Component {
   constructor(props) {

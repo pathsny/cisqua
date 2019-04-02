@@ -1,6 +1,8 @@
 'use strict';
 
-import React, { PropTypes, Component } from 'react';
+import PropTypes from 'prop-types';
+
+import React, { Component } from 'react';
 import _ from 'lodash'
 import invariant from 'invariant'
 import { connect } from 'react-redux'

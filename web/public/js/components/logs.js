@@ -1,7 +1,8 @@
 'use strict';
 
 import {Table, TableBody, TableRow, TableRowColumn} from '@material-ui/core/Table';
-import React, { PropTypes, Component } from 'react';
+import PropTypes from 'prop-types';
+import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
 
 import { connect } from 'react-redux'

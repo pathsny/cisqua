@@ -1,6 +1,8 @@
 'use strict';
 
-import React, { PropTypes, Component } from 'react'
+import PropTypes from 'prop-types';
+
+import React, { Component } from 'react';
 import { connect } from 'react-redux'
 import {List, ListItem} from '@material-ui/core/List';
 import {Toolbar, ToolbarGroup, ToolbarSeparator, ToolbarTitle} from '@material-ui/core/Toolbar';
