@@ -3,6 +3,7 @@
 import React, { Component } from 'react';
 import { Provider, connect } from 'react-redux'
 import { Route, Link, BrowserRouter as Router } from 'react-router-dom'
+import { hot } from 'react-hot-loader/root'
 import {HotKeys} from 'react-hotkeys';
 
 import App from './app'
@@ -26,15 +27,12 @@ const Routes = (
   </Router>
 )
 
-// const MainContent = ({all_valid}) => all_valid ?
-//   Routes :
-//   (<App><Settings/></App>)
 
 const MainContent = () => Routes
 
 const MainConnected = connect((state) => state.settings)(MainContent)
 
-export default class Main extends Component {
+class Main extends Component {
   render() {
     return (
       <Provider store={store}>
@@ -43,3 +41,5 @@ export default class Main extends Component {
     );
   }
 }
+
+export default hot(Main)
