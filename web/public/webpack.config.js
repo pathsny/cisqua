@@ -8,15 +8,9 @@ var config = {
   entry: [
     APP_DIR + '/index.js'
   ],
-  // entry: [
-  //   'webpack-dev-server/client?http://0.0.0.0:9494',
-  //   'webpack/hot/only-dev-server',
-  //   'babel-polyfill',
-  //   APP_DIR + '/index.js'
-  // ],
   output: {
     path: BUILD_DIR,
-    publicPath: "http://0.0.0.0:9494/build/",
+    publicPath: "/build/",
     filename: 'bundle.js'
   },
   module : {
@@ -25,7 +19,6 @@ var config = {
         test : /\.jsx?/,
         include : APP_DIR,
         use: [
-          // {loader: 'react-hot-loader'},
           {loader: 'babel-loader'},
         ]
       },
@@ -44,7 +37,20 @@ var config = {
     new webpack.EnvironmentPlugin([
       "NODE_ENV"
     ]),
-  ]
+  ],
+  devServer: {
+    port: 9494,
+    host: 'localhost',
+    hot: true,
+    index: '',
+    headers: {
+      'Access-Control-Allow-Origin': '*'
+	  },
+    proxy: {
+      context: () => true,
+      target: 'http://localhost:9393'
+    }
+  }
 };
 
 module.exports = config;
