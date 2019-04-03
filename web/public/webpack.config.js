@@ -35,9 +35,9 @@ module.exports = (env, options) => {
         Promise: 'imports-loader?this=>global!exports-loader?global.Promise!es6-promise',
         fetch: 'exports-loader?self.fetch!whatwg-fetch/dist/fetch.umd',
       }),
-      new webpack.EnvironmentPlugin([
-        "NODE_ENV"
-      ]),
+      new webpack.EnvironmentPlugin({
+        'process.env.NODE_ENV': JSON.stringify(options.mode),
+      }),
     ],
     devtool: options.mode === 'development' ? 'eval-cheap-module-source-map' : 'source-map',
     resolve: {
