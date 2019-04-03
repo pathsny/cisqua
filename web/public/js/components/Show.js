@@ -57,7 +57,7 @@ class ShowPresentation extends Component {
       <IconButton
         tooltip={feedItem.marked_predownloaded_at ? "Unmark Downloaded" : "Mark Downloaded"}
         tooltipPosition="top-right"
-        onTouchTap={() => (
+        onClick={() => (
           feedItem.marked_predownloaded_at ?
           this.props.onUnmarkDownloaded :
           this.props.onMarkDownloaded
@@ -78,7 +78,7 @@ class ShowPresentation extends Component {
         tooltip="Download"
         tooltipPosition="top-right"
         touch={true}
-        onTouchTap={() => this.props.onDownload(feedItem.id)}
+        onClick={() => this.props.onDownload(feedItem.id)}
       >
         <FileCloudDownload color={colors.download}/>
       </IconButton>
@@ -130,7 +130,7 @@ class ShowPresentation extends Component {
         <CardActions>
           <Button
             label="Remove Show"
-            onTouchTap={this.props.onRemoveShow}
+            onClick={this.props.onRemoveShow}
             variant='outlined'
           />
         </CardActions>

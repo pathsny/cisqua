@@ -73,19 +73,19 @@ class AppPresentation extends Component {
           <MenuItem
             id="more-menu"
             disabled={this._disablePath('/')}
-            onTouchTap={() => _.delay(() => this.context.router.push("/"))}
+            onClick={() => _.delay(() => this.context.router.push("/"))}
             primaryText="Home"
             leftIcon={<ActionHome/>}
           />
           <MenuItem
             disabled={this._disablePath('/logs')}
-            onTouchTap={() => _.delay(() => this.context.router.push("/logs"))}
+            onClick={() => _.delay(() => this.context.router.push("/logs"))}
             primaryText="Logs"
             leftIcon={<ActionBugReport/>}
           />
           <MenuItem
             disabled={this._disablePath('/settings')}
-            onTouchTap={() => _.delay(() => this.context.router.push("/settings"))}
+            onClick={() => _.delay(() => this.context.router.push("/settings"))}
             primaryText="Settings"
             leftIcon={<ActionSettings/>}
           />
@@ -93,19 +93,19 @@ class AppPresentation extends Component {
           <MenuItem
             primaryText="Refresh Shows"
             disabled={this._disableMenu() || this.props.fetchingList}
-            onTouchTap={this.props.onRefresh}
+            onClick={this.props.onRefresh}
             insetChildren={true}
           />
           <MenuItem
             disabled={this._disableMenu()}
             primaryText="Check All Feeds"
-            onTouchTap={this.props.onCheckAllFeeds}
+            onClick={this.props.onCheckAllFeeds}
             insetChildren={true}
           />
           <MenuItem
             disabled={this._disableMenu()}
             primaryText="Run PostProcessor"
-            onTouchTap={this.props.onRunPostProcessor}
+            onClick={this.props.onRunPostProcessor}
             insetChildren={true}
           />
         </Menu>

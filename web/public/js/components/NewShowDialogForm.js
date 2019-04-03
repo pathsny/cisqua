@@ -74,7 +74,7 @@ class NewShowDialogFormPresentation extends Component {
         label="Cancel"
         secondary={true}
         variant='outlined'
-        onTouchTap={this.props.onRequestClose}
+        onClick={this.props.onRequestClose}
       />,
       <Button
         type="submit"

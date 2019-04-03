@@ -83,10 +83,10 @@ class ShowContainerPresentation extends Component {
             label="Add New Show"
             primary={true}
             variant='contained'
-            onTouchTap={() => this.props.onAddDialogStateChange(true)}
           />
         </ToolbarGroup>
       </Toolbar>
+            onClick={() => this.props.onAddDialogStateChange(true)}
     )
   }
 
