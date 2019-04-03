@@ -4,19 +4,77 @@ import PropTypes from 'prop-types';
 
 import React, { Component } from 'react';
 import { connect } from 'react-redux'
-import {List, ListItem} from '@material-ui/core/List';
-import {Toolbar, ToolbarGroup, ToolbarSeparator, ToolbarTitle} from '@material-ui/core/Toolbar';
+import List from '@material-ui/core/List';
+import ListItem from '@material-ui/core/ListItem';
+import ListItemText from '@material-ui/core/ListItemText';
+import AppBar from '@material-ui/core/AppBar';
+import Toolbar from '@material-ui/core/Toolbar';
 import Button from '@material-ui/core/Button';
 import TextField from '@material-ui/core/TextField';
+import InputAdornment from '@material-ui/core/InputAdornment';
+import SearchIcon from '@material-ui/icons/Search';
 import Dialog from '@material-ui/core/Dialog';
 import {HotKeys} from 'react-hotkeys';
 
 import {ShowPropType} from './proptypes.js'
 import Show from './Show'
 import NewShowDialogFormWrapper from './NewShowDialogForm'
+import { fade } from '@material-ui/core/styles/colorManipulator';
+import { withStyles } from '@material-ui/core/styles';
 import {addShowDialog} from '../actions.js'
 
 const {NewShowDialogForm} = NewShowDialogFormWrapper
+
+import IconButton from '@material-ui/core/IconButton';
+import Typography from '@material-ui/core/Typography';
+import MenuIcon from '@material-ui/icons/Menu';
+import InputBase from '@material-ui/core/InputBase';
+
+const styles = theme => ({
+  root: {
+    width: '100%',
+  },
+  grow: {
+    flexGrow: 1,
+  },
+  menuButton: {
+    marginLeft: -12,
+    marginRight: 20,
+  },
+  title: {
+    display: 'none',
+    [theme.breakpoints.up('sm')]: {
+      display: 'block',
+    },
+  },
+  search: {
+    position: 'relative',
+    borderRadius: theme.shape.borderRadius,
+    backgroundColor: fade(theme.palette.common.white, 0.15),
+    '&:hover': {
+      backgroundColor: fade(theme.palette.common.white, 0.25),
+    },
+    marginRight: theme.spacing.unit * 64,
+    width: '100%',
+    flexGrow: 1,
+  },
+  inputRoot: {
+    color: 'inherit',
+    width: '100%',
+  },
+  sectionDesktop: {
+    display: 'none',
+    [theme.breakpoints.up('md')]: {
+      display: 'flex',
+    },
+  },
+  sectionMobile: {
+    display: 'flex',
+    [theme.breakpoints.up('md')]: {
+      display: 'none',
+    },
+  },
+});
 
 const InitialState = {
   filterText: '',
@@ -60,9 +118,11 @@ class ShowContainerPresentation extends Component {
     const handlers = {
       'filterShows': this._onFilterShows,
     };
+    const { classes } = this.props;
     return (
-      <Toolbar>
-        <ToolbarGroup float="left">
+
+      <AppBar position="static">
+        <Toolbar>
           <HotKeys
             handlers={handlers}
             focused={this.context.noDialogsOpen}
@@ -70,23 +130,32 @@ class ShowContainerPresentation extends Component {
           >
             <TextField
               ref="filterField"
-              hintText="Filter"
-              fullWidth={true}
               onChange={this._handleFilterChange}
               value={this.state.filterText}
               onKeyDown={this._onStopFilteringShowsMaybe}
+              className={classes.search}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon />
+                  </InputAdornment>
+                ),
+              }}
+              classes={{
+                root: classes.inputRoot,
+              }}
             />
           </HotKeys>
-        </ToolbarGroup>
-        <ToolbarGroup float="right" lastChild={true}>
+          <span className={classes.grow}/>
           <Button
-            label="Add New Show"
-            primary={true}
+            color='secondary'
             variant='contained'
-          />
-        </ToolbarGroup>
-      </Toolbar>
             onClick={() => this.props.onAddDialogStateChange(true)}
+          >
+            Add New Show
+          </Button>
+        </Toolbar>
+      </AppBar>
     )
   }
 
@@ -96,13 +165,14 @@ class ShowContainerPresentation extends Component {
       show => show.name.search(regexp) !== -1
     )
   }
-
   render() {
     return (
-      <List>
+      <div>
         {this._renderControlSection()}
-        {this._filteredShowList().map(show => this._renderShow(show))}
-      </List>
+        <List>
+          {this._filteredShowList().map(show => this._renderShow(show))}
+       </List>
+     </div>
     );
   }
 }
@@ -131,4 +201,4 @@ const ShowContainer = connect(
   mapDispatchToProps,
 )(ShowContainerPresentation)
 
-export default ShowContainer
+export default  withStyles(styles)(ShowContainer)
