@@ -2,7 +2,7 @@
 
 import React, { Component } from 'react';
 import { Provider, connect } from 'react-redux'
-import { Route, Link, BrowserRouter as Router } from 'react-router-dom'
+import { Switch, Route, BrowserRouter as Router } from 'react-router-dom'
 import { hot } from 'react-hot-loader/root'
 import {HotKeys} from 'react-hotkeys';
 
@@ -16,19 +16,17 @@ if (process.env.NODE_ENV === `development`) {
   require('../utils/debug_helper')
 }
 
-{/* <Route path="/" component={App}> */}
-
-
-const Routes = (
+const MainContent = () => (
   <Router>
-    <Route exact path="/" component={Home} />
-    <Route path="/logs" component={Logs} />
-    <Route path="/settings" component={Settings} />
+    <App>
+      <Switch>
+        <Route exact path="/" component={Home} />
+        <Route path="/logs" component={Logs} />
+        <Route path="/settings" component={Settings} />
+      </Switch>
+    </App>
   </Router>
-)
-
-
-const MainContent = () => Routes
+);
 
 const MainConnected = connect((state) => state.settings)(MainContent)
 
