@@ -4,10 +4,16 @@ import PropTypes from 'prop-types';
 
 import React, { Component } from 'react';
 import AppBar from '@material-ui/core/AppBar';
-import MoreVertIcon from '@material-ui/icons/MoreVert';
+import Toolbar from '@material-ui/core/Toolbar';
+import Typography from '@material-ui/core/Typography';
 import MenuItem from '@material-ui/core/MenuItem';
 import Menu from '@material-ui/core/Menu';
 import IconButton from '@material-ui/core/IconButton';
+import MenuIcon from '@material-ui/icons/Menu';
+import MoreVertIcon from '@material-ui/icons/MoreVert';
+import ListItemIcon from '@material-ui/core/ListItemIcon';
+import ListItemText from '@material-ui/core/ListItemText';
+
 import Snackbar from '@material-ui/core/Snackbar';
 import Divider from '@material-ui/core/Divider';
 
@@ -15,10 +21,13 @@ import ActionHome from '@material-ui/icons/Home';
 import ActionBugReport from '@material-ui/icons/BugReport';
 import ActionSettings from '@material-ui/icons/Settings';
 
-import { IndexLink, Link } from 'react-router'
-
-// import getMuiTheme from 'material-ui/styles/getMuiTheme';
-// import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
+import { matchPath, withRouter } from "react-router";
+import { withStyles } from '@material-ui/core/styles';
+import {
+  usePopupState,
+  bindTrigger,
+  bindMenu,
+} from 'material-ui-popup-state/hooks'
 
 import { connect } from 'react-redux'
 import _ from 'lodash'
@@ -30,143 +39,128 @@ import {
 } from '../actions'
 import '../../styles/app.css'
 
-class AppPresentation extends Component {
-  state = {
-    anchorEl: null,
+const styles = theme => {
+  const spacing = theme.spacing;
+  return {
+    root: {
+      paddingTop: spacing.desktopKeylineIncrement,
+      minHeight: 400,
+    },
+    content: {
+      margin: spacing.desktopGutter,
+      width: 1200,
+    },
+    title: {
+      display: 'none',
+      [theme.breakpoints.up('sm')]: {
+        display: 'block',
+      },
+      flexGrow: 1,
+    },
+    menuButton: {
+      marginLeft: -12,
+      marginRight: 20,
+    },
+    activeMenuItem: {
+      color: theme.palette.disabledColor,
+    },
   };
+};
 
-  handleClick = event => {
-    this.setState({ anchorEl: event.currentTarget });
-  };
-
-  handleClose = () => {
-    this.setState({ anchorEl: null });
-  };
-
-  _disableMenu() {
-    return !this.context.router
+const AppPresentation = (props) => {
+  const {classes} = props;
+  const popupState = usePopupState({ variant: 'popover', popupId: 'rightMenu' });
+  const disablePath = path => {
+    return !!matchPath(props.location.pathname, {
+      path,
+      exact: true
+    });
   }
-
-  _disablePath(path) {
-    return !this.context.router|| this.context.router.isActive(path, true)
-  }
-
-  _renderRightIcon(style) {
-    const { anchorEl } = this.state;
-    const open = Boolean(anchorEl);
-    return (
-      <div>
-        <IconButton
-            aria-label="More"
-            aria-owns={open ? 'more-menu' : undefined}
-            aria-haspopup="true"
-            onClick={this.handleClick}
-          >
-            <MoreVertIcon />
-          </IconButton>
-        <Menu
-          id="long-menu"
-          anchorEl={anchorEl}
-          open={open}
-          onClose={this.handleClose}
-        >
-          <MenuItem
-            id="more-menu"
-            disabled={this._disablePath('/')}
-            onClick={() => _.delay(() => this.context.router.push("/"))}
-            primaryText="Home"
-            leftIcon={<ActionHome/>}
-          />
-          <MenuItem
-            disabled={this._disablePath('/logs')}
-            onClick={() => _.delay(() => this.context.router.push("/logs"))}
-            primaryText="Logs"
-            leftIcon={<ActionBugReport/>}
-          />
-          <MenuItem
-            disabled={this._disablePath('/settings')}
-            onClick={() => _.delay(() => this.context.router.push("/settings"))}
-            primaryText="Settings"
-            leftIcon={<ActionSettings/>}
-          />
-          <Divider inset={true}/>
-          <MenuItem
-            primaryText="Refresh Shows"
-            disabled={this._disableMenu() || this.props.fetchingList}
-            onClick={this.props.onRefresh}
-            insetChildren={true}
-          />
-          <MenuItem
-            disabled={this._disableMenu()}
-            primaryText="Check All Feeds"
-            onClick={this.props.onCheckAllFeeds}
-            insetChildren={true}
-          />
-          <MenuItem
-            disabled={this._disableMenu()}
-            primaryText="Run PostProcessor"
-            onClick={this.props.onRunPostProcessor}
-            insetChildren={true}
-          />
-        </Menu>
-      </div>
-    )
-  }
-
-  _renderSnackBar() {
-    return (
-      <Snackbar
-        open={!!this.props.snackbarPayload}
-        message={_.get(this.props.snackbarPayload, 'message') || ''}
-        onRequestClose={this.props.dismissSnackbar}
-        autoHideDuration={2000}
-      />
-    );
-  }
-
-  _getStyle(muiTheme) {
-    const spacing = muiTheme.spacing
-    return {
-      root: {
-        paddingTop: spacing.desktopKeylineIncrement,
-        minHeight: 400,
-      },
-      content: {
-        margin: spacing.desktopGutter,
-        width: 1200,
-      },
-      appBar: {
-        position: 'fixed',
-        top: 0,
-      },
-      activeMenuItem: {
-        color: muiTheme.palette.disabledColor,
-      },
+  const closeMenuAndAction = action => (
+    (evt) => {
+      console.log("ok even ", evt);
+      popupState.close();
+      action(evt);
     }
-  }
+  );
 
-  render() {
-    // const muiTheme = getMuiTheme();
-    // const style = this._getStyle(muiTheme);
-    return (
-      // <MuiThemeProvider muiTheme={muiTheme}>
-        <div>
-          <AppBar
-            title="Cisqua"
-            iconElementRight={this._renderRightIcon(style)}
-            showMenuIconButton={false}
-            style={style.appBar}
-          />
-          <div style={style.root}>
-            <div style={style.content}>
-              {this.props.children}
-            </div>
-          </div>
-          {this._renderSnackBar()}
+  const closeMenuAndNavigateTo = path =>
+    closeMenuAndAction((evt) => props.history.push(path));
+
+  const rightMenu = (
+    <Menu {...bindMenu(popupState)}>
+      <MenuItem
+        disabled={disablePath('/')}
+        onClick={closeMenuAndNavigateTo("/")}
+      >
+        <ListItemIcon><ActionHome/></ListItemIcon>
+        <ListItemText>Home</ListItemText>
+      </MenuItem>
+      <MenuItem
+        disabled={disablePath('/logs')}
+        onClick={closeMenuAndNavigateTo("/logs")}
+      >
+        <ListItemIcon><ActionBugReport/></ListItemIcon>
+        <ListItemText>Logs</ListItemText>
+      </MenuItem>
+      <MenuItem
+        disabled={disablePath('/settings')}
+        onClick={closeMenuAndNavigateTo("/settings")}
+      >
+        <ListItemIcon><ActionSettings/></ListItemIcon>
+        <ListItemText>Settings</ListItemText>
+      </MenuItem>
+      <Divider variant="inset"/>
+      <MenuItem
+        disabled={props.fetchingList}
+        onClick={closeMenuAndAction(props.onRefresh)}
+      >
+        <ListItemText inset={true}>Refresh Shows</ListItemText>
+      </MenuItem>
+      <MenuItem onClick={closeMenuAndAction(props.onCheckAllFeeds)}>
+        <ListItemText inset={true}>Check All Feeds</ListItemText>
+      </MenuItem>
+      <MenuItem onClick={closeMenuAndAction(props.onRunPostProcessor)}>
+        <ListItemText inset={true}>Run PostProcessor</ListItemText>
+      </MenuItem>
+    </Menu>
+  );
+
+  const snackBar = (
+    <Snackbar
+      open={!!props.snackbarPayload}
+      message={_.get(props.snackbarPayload, 'message') || ''}
+      variant="error"
+      onRequestClose={props.dismissSnackbar}
+      autoHideDuration={2000}
+    />
+  );
+
+
+  return (
+    <div>
+      <AppBar className={classes.appBar}>
+        <Toolbar>
+          <Typography className={classes.title} variant="h6" color="inherit">
+            Cisqua
+          </Typography>
+          <IconButton
+            className={classes.menuButton}
+            {...bindTrigger(popupState)}
+          >
+            <MenuIcon />
+          </IconButton>
+          {rightMenu}
+        </Toolbar>
+      </AppBar>
+      <div className={classes.root}>
+        <div className={classes.content}>
+          {props.children}
         </div>
-      // </MuiThemeProvider>
-    );
-  }
+      </div>
+      {snackBar}
+    </div>
+  );
 }
 
 AppPresentation.propTypes = {
@@ -175,10 +169,6 @@ AppPresentation.propTypes = {
   onRefresh: PropTypes.func.isRequired,
   dismissSnackbar: PropTypes.func.isRequired,
   onCheckAllFeeds: PropTypes.func.isRequired,
-}
-
-AppPresentation.contextTypes = {
-  router: PropTypes.object
 }
 
 const mapStateToProps = (state) => ({
@@ -193,9 +183,9 @@ const mapDispatchToProps = (dispatch) => ({
   onRunPostProcessor: () => dispatch(runPostProcessor()),
 })
 
-const App = connect(
+const App = withRouter(connect(
   mapStateToProps,
   mapDispatchToProps,
-)(AppPresentation)
+)(withStyles(styles)(AppPresentation)))
 
 export default App

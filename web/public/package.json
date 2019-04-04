@@ -41,6 +41,7 @@
     "imports-loader": "^0.8.0",
     "invariant": "^2.2.4",
     "lodash": "^4.17.11",
+    "material-ui-popup-state": "^1.3.2",
     "moment": "^2.24.0",
     "prop-types": "^15.7.2",
     "react": "^16.8.6",
