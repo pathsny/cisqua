@@ -5,7 +5,6 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux'
 import { withStyles } from '@material-ui/core/styles';
-import CircularProgress from '@material-ui/core/CircularProgress';
 import SettingsFormWrapper from './settings_form'
 const {SettingsForm} = SettingsFormWrapper
 
@@ -54,7 +53,6 @@ class SettingsPresentation extends Component {
     <div style={style.container}>
       <SettingsForm {...this.props}/>
       <div style={refreshStyle}>
-      <CircularProgress className={classes.progress}/>
       </div>
     </div>
     )
