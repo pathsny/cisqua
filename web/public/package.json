@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "webpack-dev-server --mode development",
     "build": "webpack --mode production --progress",
-    "lint": "eslint src && echo \"eslint: no lint errors\""
+    "lint": "eslint js && echo \"eslint: no lint errors\""
   },
   "repository": {
     "type": "git",
