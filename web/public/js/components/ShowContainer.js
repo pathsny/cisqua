@@ -116,7 +116,7 @@ class ShowContainerPresentation extends Component {
     const { classes } = this.props;
     return (
 
-      <AppBar position="static">
+      <AppBar position="static" color="default">
         <Toolbar>
           <HotKeys
             handlers={handlers}

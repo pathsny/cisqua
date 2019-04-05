@@ -45,7 +45,7 @@ class HomePresentation extends Component {
 
   _onAddShowKey(event) {
     event.preventDefault()
-    this.props.onAddDialogStateChange(!this.props.dialogsOpen.addShow); 
+    this.props.onAddDialogStateChange(!this.props.dialogsOpen.addShow);
   }
 
   getChildContext() {
@@ -60,16 +60,16 @@ class HomePresentation extends Component {
     };
     return (
       <HotKeys
-        keyMap={keyEventsMap} 
-        handlers={handlers} 
+        keyMap={keyEventsMap}
+        handlers={handlers}
         focused={this.getChildContext().noDialogsOpen}
         attach={window}
       >
         {this._renderNewShowDialog()}
         <ShowContainer />
         <ShowFetcher />
-      </HotKeys>  
-    );  
+      </HotKeys>
+    );
   }
 }
 

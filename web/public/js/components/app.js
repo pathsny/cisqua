@@ -11,6 +11,8 @@ import Menu from '@material-ui/core/Menu';
 import IconButton from '@material-ui/core/IconButton';
 import MenuIcon from '@material-ui/icons/Menu';
 import MoreVertIcon from '@material-ui/icons/MoreVert';
+import Paper from '@material-ui/core/Paper';
+import CssBaseline from '@material-ui/core/CssBaseline';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 
@@ -42,14 +44,6 @@ import '../../styles/app.css'
 const styles = theme => {
   const spacing = theme.spacing;
   return {
-    root: {
-      paddingTop: spacing.desktopKeylineIncrement,
-      minHeight: 400,
-    },
-    content: {
-      margin: spacing.desktopGutter,
-      width: 1200,
-    },
     title: {
       display: 'none',
       [theme.breakpoints.up('sm')]: {
@@ -61,9 +55,18 @@ const styles = theme => {
       marginLeft: -12,
       marginRight: 20,
     },
-    activeMenuItem: {
-      color: theme.palette.disabledColor,
+    container: {
+      ...theme.mixins.gutters(),
+       margin: `${theme.spacing.unit * 2}px auto`,
+      paddingTop: theme.spacing.unit * 2,
+      paddingBottom: theme.spacing.unit * 2,
+      backgroundColor: theme.palette.grey[300],
+      height: theme.spacing.unit * 200,
     },
+    content: theme.mixins.toolbar,
+    wrapper: {
+      ...theme.mixins.gutters(),
+    }
   };
 };
 
@@ -138,7 +141,8 @@ const AppPresentation = (props) => {
 
   return (
     <div>
-      <AppBar className={classes.appBar}>
+      <CssBaseline/>
+      <AppBar color="primary" position="fixed">
         <Toolbar>
           <Typography className={classes.title} variant="h6" color="inherit">
             Cisqua
@@ -152,10 +156,11 @@ const AppPresentation = (props) => {
           {rightMenu}
         </Toolbar>
       </AppBar>
-      <div className={classes.root}>
-        <div className={classes.content}>
-          {props.children}
-        </div>
+      <div className={classes.content}/>
+      <div className={classes.wrapper}>
+        <Paper className={classes.container}>
+            {props.children}
+        </Paper>
       </div>
       {snackBar}
     </div>
