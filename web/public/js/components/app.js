@@ -78,7 +78,6 @@ const AppPresentation = (props) => {
   }
   const closeMenuAndAction = action => (
     (evt) => {
-      console.log("ok even ", evt);
       popupState.close();
       action(evt);
     }
