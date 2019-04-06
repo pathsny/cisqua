@@ -11,6 +11,7 @@ import Button from '@material-ui/core/Button';
 import TextField from '@material-ui/core/TextField';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Switch from '@material-ui/core/Switch';
+import { withStyles } from '@material-ui/core/styles';
 
 import _ from 'lodash'
 
@@ -62,36 +63,22 @@ const initialValues = {
   auto_fetch: true,
 }
 
+const styles = theme => ({
+});
+
 class NewShowDialogFormPresentation extends Component {
   _getActions() {
     return (
       <DialogActions>
-        <Field name="auto_fetch" component={ auto_fetch => {
-          console.log("autofehc is ", auto_fetch);
-
-          return <FormControlLabel
-            control={
-              <Switch
-                checked={auto_fetch.value}
-                onChange={event => auto_fetch.onChange(auto_fetch.value)}
-                form="addShowForm"
-                labelPosition="left"
-              />
-            }
-            label="Auto Fetch"
-          />
-        }}/>
         <Button
           type="button"
-          secondary={true}
-          variant='outlined'
+          color="default"
           onClick={this.props.onRequestClose}
         >Cancel</Button>
         <Button
           type="submit"
           form="addShowForm"
-          variant='contained'
-          primary={true}
+          color="primary"
           disabled={this.props.pristine || this.props.submitting}
         >Submit</Button>
       </DialogActions>
@@ -99,11 +86,13 @@ class NewShowDialogFormPresentation extends Component {
   }
 
   render() {
+    const {classes} = this.props;
     return (
       <Dialog
         onClose={this.props.onRequestClose}
-        open={true}>
-        <DialogTitle>"Add a New Show"</DialogTitle>
+        open={true}
+        classes={classes} >
+        <DialogTitle>Add a New Show</DialogTitle>
         <DialogContent>
           <form onSubmit={this.props.handleSubmit} id="addShowForm">
             <Field name="anime" component={ anime =>
@@ -120,19 +109,33 @@ class NewShowDialogFormPresentation extends Component {
                 label="Show"
                 error={anime.touched && anime.error}
                 FormHelperTextProps={{children: anime.touched && anime.error}}
-                {...anime}
+                {...anime.input}
+                 autoFocus={true}
                 fullWidth={true}
               />
             }/>
             <Field name="feed_url" component={ feed_url =>
               <TextField
                 label="Feed URL"
-                error={feed_url.touched && feed_url.error}
+                error={feed_url.meta.touched && feed_url.meta.error}
                 FormHelperTextProps={{children: feed_url.touched && feed_url.error}}
-                {...feed_url}
+                {...feed_url.input}
                 fullWidth={true}
               />
             }/>
+            <Field name="auto_fetch" component={ auto_fetch => {
+              return <FormControlLabel
+                control={
+                  <Switch
+                    checked={auto_fetch.input.value}
+                    {...auto_fetch.input}
+                    form="addShowForm"
+                  />
+                }
+                labelPlacement="top"
+                label="Auto Fetch"
+              />
+              }}/>
           </form>
         </DialogContent>
         {this._getActions()}
@@ -154,5 +157,5 @@ export default {
     validate,
     onSubmit,
     initialValues,
-  })(NewShowDialogFormPresentation)
+  })(withStyles(styles)(NewShowDialogFormPresentation))
 }
