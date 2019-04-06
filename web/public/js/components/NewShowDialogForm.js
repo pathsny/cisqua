@@ -1,11 +1,15 @@
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import Dialog from '@material-ui/core/Dialog';
+import DialogActions from '@material-ui/core/DialogActions';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogTitle from '@material-ui/core/DialogTitle';
 import { connect } from 'react-redux'
 import { Field, reduxForm } from 'redux-form'
 import { SubmissionError } from 'redux-form';
 import Button from '@material-ui/core/Button';
 import TextField from '@material-ui/core/TextField';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Switch from '@material-ui/core/Switch';
 
 import _ from 'lodash'
@@ -42,79 +46,96 @@ const validate = values => {
   if (!values.feed_url) {
     errors.feed_url = 'Feed URL Required'
   }
-  if (!values.anime.suggestion) {
+  if (!values?.anime?.suggestion) {
     errors.anime = 'Anime Required'
   }
   return errors
 }
 
 const initialValues = {
-  anime: {
-    suggestion: null,
-    searchText: '',
-  },
+  // anime: {
+  //   suggestion: null,
+  //   searchText: '',
+  // },
+  anime: '',
   feed_url: '',
   auto_fetch: true,
 }
 
 class NewShowDialogFormPresentation extends Component {
   _getActions() {
-    return [
-      <Field name="auto_fetch" component={ auto_fetch =>
-        <Switch
-          checked={auto_fetch.value}
-          onChange={event => auto_fetch.onChange(auto_fetch.value)}
+    return (
+      <DialogActions>
+        <Field name="auto_fetch" component={ auto_fetch => {
+          console.log("autofehc is ", auto_fetch);
+
+          return <FormControlLabel
+            control={
+              <Switch
+                checked={auto_fetch.value}
+                onChange={event => auto_fetch.onChange(auto_fetch.value)}
+                form="addShowForm"
+                labelPosition="left"
+              />
+            }
+            label="Auto Fetch"
+          />
+        }}/>
+        <Button
+          type="button"
+          secondary={true}
+          variant='outlined'
+          onClick={this.props.onRequestClose}
+        >Cancel</Button>
+        <Button
+          type="submit"
           form="addShowForm"
-          label="Auto Fetch"
-          labelPosition="left"
-        />
-      }/>,
-      <Button
-        type="button"
-        label="Cancel"
-        secondary={true}
-        variant='outlined'
-        onClick={this.props.onRequestClose}
-      />,
-      <Button
-        type="submit"
-        label="Submit"
-        form="addShowForm"
-        variant='contained'
-        primary={true}
-        disabled={this.props.pristine || this.props.submitting}
-      />,
-    ];
+          variant='contained'
+          primary={true}
+          disabled={this.props.pristine || this.props.submitting}
+        >Submit</Button>
+      </DialogActions>
+    );
   }
 
   render() {
     return (
       <Dialog
-        title="Add a New Show"
-        actions={this._getActions()}
-        onRequestClose={this.props.onRequestClose}
+        onClose={this.props.onRequestClose}
         open={true}>
-        <form onSubmit={this.props.handleSubmit} id="addShowForm">
-          <Field name="anime" component={ anime =>
-            <AnimeAutosuggest
-              floatingLabelText="Show Name"
-              autoFocus={true}
-              errorText = {anime.touched && anime.error}
-              {...anime}
-              onChange={(_e, newValue) => anime.onChange(newValue)}
-              onBlur={(_e, f) => anime.onBlur(anime.value)}
-              fullWidth={true}
-            />
-          }/>
-          <Field name="feed_url" component={ feed_url =>
-            <TextField
-              floatingLabelText="Feed URL"
-              errorText = {feed_url.touched && feed_url.error}
-              {...feed_url}
-              fullWidth={true}
-            />
-          }/>
-        </form>
+        <DialogTitle>"Add a New Show"</DialogTitle>
+        <DialogContent>
+          <form onSubmit={this.props.handleSubmit} id="addShowForm">
+            <Field name="anime" component={ anime =>
+              // <AnimeAutosuggest
+              //   label="Show Name"
+              //   autoFocus={true}
+              //   errorText = {anime.touched && anime.error}
+              //   {...anime}
+              //   onChange={(_e, newValue) => anime.onChange(newValue)}
+              //   onBlur={(_e, f) => anime.onBlur(anime.value)}
+              //   fullWidth={true}
+              // />
+              <TextField
+                label="Show"
+                error={anime.touched && anime.error}
+                FormHelperTextProps={{children: anime.touched && anime.error}}
+                {...anime}
+                fullWidth={true}
+              />
+            }/>
+            <Field name="feed_url" component={ feed_url =>
+              <TextField
+                label="Feed URL"
+                error={feed_url.touched && feed_url.error}
+                FormHelperTextProps={{children: feed_url.touched && feed_url.error}}
+                {...feed_url}
+                fullWidth={true}
+              />
+            }/>
+          </form>
+        </DialogContent>
+        {this._getActions()}
       </Dialog>
     );
   }
