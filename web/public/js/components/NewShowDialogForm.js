@@ -107,8 +107,8 @@ class NewShowDialogFormPresentation extends Component {
               // />
               <TextField
                 label="Show"
-                error={anime.touched && anime.error}
-                FormHelperTextProps={{children: anime.touched && anime.error}}
+                error={anime.meta.touched && anime.meta.invalid}
+                helperText={anime.meta.touched ? anime.meta.error : ''}
                 {...anime.input}
                  autoFocus={true}
                 fullWidth={true}
@@ -117,8 +117,8 @@ class NewShowDialogFormPresentation extends Component {
             <Field name="feed_url" component={ feed_url =>
               <TextField
                 label="Feed URL"
-                error={feed_url.meta.touched && feed_url.meta.error}
-                FormHelperTextProps={{children: feed_url.touched && feed_url.error}}
+                error={feed_url.meta.touched && feed_url.meta.invalid}
+                helperText={feed_url.meta.touched ? feed_url.meta.error : ''}
                 {...feed_url.input}
                 fullWidth={true}
               />
