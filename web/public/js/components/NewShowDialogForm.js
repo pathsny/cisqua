@@ -20,7 +20,7 @@ import {addShowDialog, JSONResponseCarryingError, addShow} from '../actions.js'
 
 async function onSubmit(values, dispatch) {
   try {
-    const anime = values.anime.suggestion
+    const anime = values.anime.selection
     await dispatch(addShow(
       _.parseInt(anime['@aid']),
       anime.name,
@@ -47,18 +47,17 @@ const validate = values => {
   if (!values.feed_url) {
     errors.feed_url = 'Feed URL Required'
   }
-  if (!values?.anime?.suggestion) {
+  if (!values?.anime?.selection) {
     errors.anime = 'Anime Required'
   }
   return errors
 }
 
 const initialValues = {
-  // anime: {
-  //   suggestion: null,
-  //   searchText: '',
-  // },
-  anime: '',
+  anime: {
+    selection: null,
+    searchText: '',
+  },
   feed_url: '',
   auto_fetch: true,
 }
@@ -96,21 +95,9 @@ class NewShowDialogFormPresentation extends Component {
         <DialogContent>
           <form onSubmit={this.props.handleSubmit} id="addShowForm">
             <Field name="anime" component={ anime =>
-              // <AnimeAutosuggest
-              //   label="Show Name"
-              //   autoFocus={true}
-              //   errorText = {anime.touched && anime.error}
-              //   {...anime}
-              //   onChange={(_e, newValue) => anime.onChange(newValue)}
-              //   onBlur={(_e, f) => anime.onBlur(anime.value)}
-              //   fullWidth={true}
-              // />
-              <TextField
-                label="Show"
-                error={anime.meta.touched && anime.meta.invalid}
-                helperText={anime.meta.touched ? anime.meta.error : ''}
-                {...anime.input}
-                 autoFocus={true}
+              <AnimeAutosuggest
+                field={anime}
+                autoFocus={true}
                 fullWidth={true}
               />
             }/>
@@ -143,6 +130,14 @@ class NewShowDialogFormPresentation extends Component {
     );
   }
 }
+
+// errorText = {anime.touched && anime.error}
+// {...anime}
+// onChange={(_e, newValue) => anime.onChange(newValue)}
+// onBlur={(_e, f) => anime.onBlur(anime.value)}
+// label="Show Name"
+
+
 
 NewShowDialogFormPresentation.propTypes = {
   onRequestClose: PropTypes.func.isRequired,
