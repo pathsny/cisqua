@@ -131,13 +131,6 @@ class NewShowDialogFormPresentation extends Component {
   }
 }
 
-// errorText = {anime.touched && anime.error}
-// {...anime}
-// onChange={(_e, newValue) => anime.onChange(newValue)}
-// onBlur={(_e, f) => anime.onBlur(anime.value)}
-// label="Show Name"
-
-
 
 NewShowDialogFormPresentation.propTypes = {
   onRequestClose: PropTypes.func.isRequired,
