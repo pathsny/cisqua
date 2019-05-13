@@ -35,6 +35,8 @@ group :development do
   gem 'rerun', '0.10.0'
   gem 'capistrano'
   gem 'capistrano-rsync-bladrak'
+  gem 'ed25519'
+  gem 'bcrypt_pbkdf'
   gem 'capistrano-bundler'
   gem 'capistrano3-puma'
   gem 'capistrano-rbenv'

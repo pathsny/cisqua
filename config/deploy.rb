@@ -6,10 +6,12 @@ set :repo_url, '.'
 
 # Default branch is :master
 # ask :branch, `git rev-parse --abbrev-ref HEAD`.chomp
+set :branch, 'develop'
 
 # Default deploy_to directory is /var/www/my_app_name
 set :deploy_to, '/anidb_ruby'
 
+set :rbenv_type, :user
 set :rbenv_ruby, File.read('.ruby-version').strip
 
 # Default value for :scm is :git
