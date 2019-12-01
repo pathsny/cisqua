@@ -76,7 +76,7 @@ namespace :deploy do
 
         options_path = File.join(data_path, "options.yml")
         unless test("[ -f #{options_path} ]")
-          local_options_bak = File.expand_path('../../script/helpers/options.yml.bak', __FILE__)          puts "coping options #{local_options_bak}"
+          local_options_bak = File.expand_path('../../script/helpers/options.yml.bak', __FILE__)
           upload! local_options_bak, options_path
         end
       end
