@@ -47,7 +47,7 @@ namespace :rsync do
     end
 end
 
-set :linked_dirs, fetch(:linked_dirs, []).push('data', 'tmp/pids', 'tmp/sockets', 'log')
+set :linked_dirs, fetch(:linked_dirs, []).push('data', 'tmp/pids', 'tmp/sockets', 'log', 'bundler_home')
 
 set :puma_rackup, -> { File.join(current_path, 'web', 'config.ru') }
 
@@ -68,11 +68,11 @@ namespace :deploy do
   namespace :check do
     after :directories, :setup_shared_infra  do
       on roles(:all) do
+        ensure_dir File.join(shared_path, 'bundler_home')
         data_path = File.join(shared_path, "data")
         ensure_dir File.join(data_path, "db")
         ensure_dir File.join(data_path, "http_anime_info_cache")
         ensure_dir File.join(data_path, "udp_anime_info_cache/lock")
-
 
         options_path = File.join(data_path, "options.yml")
         unless test("[ -f #{options_path} ]")
