@@ -13,10 +13,10 @@ module Options
       @config = config
       @field_names = Set.new(@config[:fields].map {|f| f[:name]})
       @struct = Struct.new(*@field_names.to_a, :errors)
-      @validator = Class.new do 
+      @validator = Class.new do
         include Veto.validator
         instance_eval &config[:validations]
-      end  
+      end
     end
 
     attr_reader :values
@@ -27,7 +27,7 @@ module Options
 
     def ui_config
       @config.select {|k, v| UI_CONFIG_KEYS.include?(k)}
-    end    
+    end
 
     def [](key)
       assert(@field_names.include?(key), 'invalid key')
@@ -36,7 +36,7 @@ module Options
 
     def update!(values)
       @values = {}
-      @config[:fields].each do |f| 
+      @config[:fields].each do |f|
         name = f[:name]
         value = values[name] || values[name.to_s] || f[:default]
         @values[name] = f[:type] === :number ? value.to_i : value
@@ -57,7 +57,7 @@ module Options
     end
   end
 
-  @option_groups = []  
+  @option_groups = []
 
   class << self
     def load_data
@@ -66,27 +66,27 @@ module Options
       data = json.is_a?(Hash) ? json : {}
       @option_groups.each do |option_group|
         option_group.update!(data[option_group.name] || {})
-      end  
+      end
     end
 
     def value_hash
       Hash[@option_groups.map {|og| [og.name, og.values]}]
-    end  
+    end
 
     def save(name, option_values)
       option_group = const_get(name) rescue nil
       option_group.update!(option_values)
-      File.open(FileLocation, 'w') do |f| 
+      File.open(FileLocation, 'w') do |f|
         f.puts(JSON.pretty_generate(values))
-      end  
-      option_group.validate!  
-    end    
+      end
+      option_group.validate!
+    end
 
     def configure(configuration)
       configuration.each do |cg|
         option_group = OptionGroup.new(cg)
         self.const_set(cg[:name], option_group)
-        @option_groups << option_group 
+        @option_groups << option_group
       end
     end
 
@@ -126,7 +126,7 @@ module Options
       :placeholder => 'Password',
       :type => :password,
     }],
-    :validations => Proc.new { 
+    :validations => Proc.new {
       validates :host, :presence => true
       validates :port, :presence => true, :numeric => true, :inclusion => 1..65535
       validates :user, :presence => true
@@ -136,7 +136,7 @@ module Options
 
       define_method :host_set? do |entity|
         entity.host
-      end  
+      end
 
       define_method :pingable? do |entity|
         host_set?(entity) && Net::Ping::External.new(entity.host).ping?
@@ -144,12 +144,12 @@ module Options
 
       define_method :host_is_pingable do |entity|
         errors.add(:host, "cannot be pinged") unless pingable?(entity)
-      end  
+      end
 
       define_method :configuration_is_correct do |entity|
         res = Trans::Api::Connect.new entity.to_h
         errors.add(:host, "and then what?")
-      end  
+      end
     }
   },{
     :name => 'Misc',
@@ -163,7 +163,7 @@ module Options
     }],
     :validations => Proc.new {
       validates :concurrent_rss_threads, :numeric => true, :greater_than => 1
-    }  
+    }
   }]
-  load_data 
+  load_data
 end

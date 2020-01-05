@@ -8,13 +8,13 @@ SlowWeb.limit('anidb.net', 1, 2)
 class AnidbHTTP
   class << self
     def data(aid)
-      get_file "#{aid}.xml" do 
-        download_data(aid).tap { |res| 
+      get_file "#{aid}.xml" do
+        download_data(aid).tap { |res|
           Loggers::AnidbHTTP.warn(
             "Banned from Anidb"
-          ) if res == "<error>Banned</error>" 
+          ) if res == "<error>Banned</error>"
         }
-      end  
+      end
     end
 
     def thumb(aid)
@@ -24,15 +24,15 @@ class AnidbHTTP
           xml = Nokogiri::XML(f)
           xml.at_xpath('/anime/picture').content
         end
-      end  
-    end  
+      end
+    end
 
 
     private
     def get_file(name)
       file_path = File.join(Web_dir, '../data/http_anime_info_cache', name)
       return file_path if File.exist?(file_path)
-      lock_path = File.join(Web_dir, '../data/http_anime_info_cache', 'lock', name) 
+      lock_path = File.join(Web_dir, '../data/http_anime_info_cache', 'lock', name)
       begin
         lock_file = File.open(lock_path, File::RDWR|File::CREAT)
         lock_file.flock(File::LOCK_EX)
@@ -41,23 +41,23 @@ class AnidbHTTP
         file = File.open(file_path, 'wb') do |output|
           output.write data
         end
-        return file_path  
+        return file_path
       ensure
         lock_file.close unless lock_file.nil?
-      end  
+      end
     end
 
     def get_thumb_file(aid)
       get_file("#{aid}-thumb.jpg") do
         Loggers::AnidbHTTP.debug { "getting thumb for #{aid}" }
         pic_file = yield
-        RestClient.get "http://img7.anidb.net/pics/anime/thumbs/50x65/#{pic_file}-thumb.jpg"  
-      end      
+        RestClient.get "http://img7.anidb.net/pics/anime/thumbs/50x65/#{pic_file}-thumb.jpg"
+      end
     end
 
     def download_data(aid)
       Loggers::AnidbHTTP.debug { "getting data for #{aid}" }
-      RestClient.get "http://api.anidb.net:9001/httpapi?client=misakatron&clientver=1&protover=1&request=anime&aid=#{aid}" 
+      RestClient.get "http://api.anidb.net:9001/httpapi?client=misakatron&clientver=1&protover=1&request=anime&aid=#{aid}"
     end
-  end  
-end  
+  end
+end
