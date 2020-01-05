@@ -2,11 +2,25 @@
 #the anidb ids of anime. the argument passed in is the first folder to start from (to allow resuming)
 
 require File.expand_path('../../lib/libs', __FILE__)
-options = YAML.load_file(File.expand_path('../../data/options.yml', __FILE__))
+require File.expand_path('helpers/load_options', __dir__)
 require 'rexml/document'
+require 'optparse'
+
+options_file = nil
+mylist_location = nil
+OptionParser.new do |opts|
+  opts.banner = "Usage: create_symlinks -o <options file> -m <mylist_location>"
+  opts.on("-oOPTIONS", "--options=OPTIONS", "location of options config") do |o|
+    options_file = o
+  end
+  opts.on("-mMYLIST", "--mylist=MYLIST", "location of mylist") do |m|
+    mylist_location = m
+  end
+end.parse!
+
+options = ScriptOptions.load_options(options_file)
 r_options = options[:renamer]
 
-mylist_location = ARGV.first
 mylist = REXML::Document.new File.new("#{mylist_location}/mylist.xml")
 
 all_folders = Dir["#{r_options[:output_location]}/**"].sort

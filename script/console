@@ -1,9 +1,17 @@
 #!/usr/bin/env ruby
-# console for debugging. 
+# console for debugging.
 #    anidb loads a console with the udp client
-#    data loads a console with the database 
-name = ARGV[0]
+#    data loads a console with the database
+require 'optparse'
+name = nil
+OptionParser.new do |opts|
+  opts.banner = "Usage: console -n anidb"
+  opts.on("-nNAME", "--name=Name", "Name of console type") do |n|
+    name = n
+  end
+end.parse!
+
+raise "missing argument name " unless name
 location = File.expand_path("../helpers/#{name}_console.rb", __FILE__)
 raise "#{name} is not a supported console type" unless File.exist?(location)
 exec "ruby -S irb -r #{location}  --simple-prompt"
-

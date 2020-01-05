@@ -1,17 +1,31 @@
-# identifies duplicate files and unknown files 
+# identifies duplicate files and unknown files
 
-require File.expand_path('../../lib/libs', __FILE__)
-options = YAML.load_file(File.expand_path('../../options.yml', __FILE__))
 require 'rexml/document'
+require 'optparse'
+require File.expand_path('helpers/load_options', __dir__)
+require File.expand_path('../../lib/libs', __FILE__)
+options_file = nil
+mylist_location = nil
+OptionParser.new do |opts|
+  opts.banner = "Usage: console -n anidb"
+  opts.on("-oOPTIONS", "--options=OPTIONS", "location of options config") do |o|
+    options_file = o
+  end
+  opts.on("-mMYLIST", "--mylist=MYLIST", "location of mylist") do |m|
+    mylist_location = m
+  end
+end.parse!
+options = ScriptOptions.load_options(options_file)
+
+
 r_options = options[:renamer]
 
-mylist_location = ARGV.first
 mylist = REXML::Document.new File.new("#{mylist_location}/mylist.xml")
 
 def m_pattern(folder_name)
   extension = /\.[A-Za-z0-9]+$/
   end_part = /\s- (?:Complete Movie|Part \d+ of \d+|[^\[]*)(?:\s\[[\w&-\.~\s!=]+\])? \[\(XS?-\d+(?:-\d+)?\)\]/
-  [Regexp.new("^#{Regexp.quote(folder_name)}\.?#{end_part.source}#{extension.source}")] 
+  [Regexp.new("^#{Regexp.quote(folder_name)}\.?#{end_part.source}#{extension.source}")]
 end
 
 def s_pattern(folder_name)
@@ -19,7 +33,7 @@ def s_pattern(folder_name)
   end_part = /\s- episode \d+(?:\s\[[\w&-\.~\s!=]+\])?/
   special_end = /\s- episode [A-Z](\d+)(?:\s\[[\w&-\.~\s!=]+\])?\s\[\(XS-\d+-\1\)\]/
   f = Regexp.quote(folder_name)
-  [Regexp.new("^#{f}\\.?#{end_part.source}#{extension.source}"), 
+  [Regexp.new("^#{f}\\.?#{end_part.source}#{extension.source}"),
     Regexp.new("^#{f}\\.?#{special_end.source}#{extension.source}"),
     Regexp.new("^#{f}\\.?\\s- episode \\d+-\\d+(?:\\s\\[[\\w&-\\.~\\s!]+\\])?#{extension.source}")
     ]
@@ -42,15 +56,15 @@ def s_pattern_fix(folder_name)
 end
 
 Duplicates = {}
-Unknown = []        
-    
+Unknown = []
+
 def try_fix(folder, movie)
   folder_name = File.basename(folder)
   files = Dir["#{folder}/*"].reject {|f| /^[^\.]*$/.match File.basename(f) || File.basename(f) == "tvshow.nfo"}
   fix_patterns = movie ? m_pattern_fix(folder_name) : s_pattern_fix(folder_name)
   files.each do |file|
     fix_patterns.each do |p|
-      m = p[:r].match File.basename(file)  
+      m = p[:r].match File.basename(file)
       if m
         new_name = p[:p].map{|part| part.is_a?(Integer) ? m[part] : part }.join('')
         destination = File.join(File.dirname(file), new_name)
@@ -60,12 +74,12 @@ def try_fix(folder, movie)
         else
           Loggers::BadFiles.info { "renaming #{file} as #{destination}" }
           FileUtils.mv file, destination
-        end    
-      end  
-    end  
+        end
+      end
+    end
   end
   rescue
-    Loggers::BadFiles.error { "error working with #{folder} #{$!}" } 
+    Loggers::BadFiles.error { "error working with #{folder} #{$!}" }
 end
 
 def test_names(folder, movie)
@@ -74,12 +88,12 @@ def test_names(folder, movie)
     /^[^\.]*$/.match(file) || File.basename(file) == "tvshow.nfo" || Duplicates.has_key?(file)
   end
   patterns = movie ? m_pattern(folder_name) : s_pattern(folder_name)
-  files.each do |file| 
+  files.each do |file|
     unless patterns.any?{|p| p.match File.basename(file)}
       Loggers::BadFiles.debug { "do not know file #{file} using #{patterns.inspect}" }
       Unknown.push(file)
-    end  
-  end  
+    end
+  end
 end
 
 
@@ -96,5 +110,3 @@ File.open('unknown.yml', 'w') {|f| f.write(Unknown.to_yaml)}
 
 Loggers::BadFiles.info { Duplicates.inspect }
 Loggers::BadFiles.info { Unknown.inspect }
-
-  

@@ -19,15 +19,15 @@ class Tasks
       return if @pp_executor.queue_length > 0
       Concurrent.future(@pp_executor) {
         begin
-        PostProcessor.run(false)
+        PostProcessor.run(false, nil /* fetch options and pass it here */)
       rescue Exception => e
         Loggers::Tasks.warn { "could not post process : because #{e}" }
-      end 
+      end
       }.then(:io) {
         Loggers::Tasks.info { "post process ended" }
       }.rescue(:io) { |reason|
         Loggers::Tasks.warn { "could not post process : because #{reason}" }
       }
-    end   
-  end  
+    end
+  end
 end

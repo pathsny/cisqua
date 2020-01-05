@@ -1,5 +1,16 @@
 # console for debugging
 require 'yaml'
-Options = YAML.load_file File.expand_path('../../../data/options.yml', __FILE__)
+require 'optparse'
+require File.expand_path('helpers/load_options', __dir__)
+
+options_file = nil
+OptionParser.new do |opts|
+  opts.banner = "Usage: create_symlinks -o <options file> -m <mylist_location>"
+  opts.on("-oOPTIONS", "--options=OPTIONS", "location of options config") do |o|
+    options_file = o
+  end
+end.parse!
+options = ScriptOptions.load_options(options_file)
 require File.expand_path('../../../lib/libs', __FILE__)
-Client = Net::AniDBUDP.new(*([:host, :port, :localport, :user, :pass, :nat].map{|k| Options[:anidb][k]}))
+
+Client = Net::AniDBUDP.new(*([:host, :port, :localport, :user, :pass, :nat].map{|k| options[:anidb][k]}))

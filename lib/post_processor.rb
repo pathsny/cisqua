@@ -3,10 +3,8 @@ require 'resolv-replace'
 
 class PostProcessor
   class << self
-    def run(test_client)
+    def run(test_client, options)
       @test_client = test_client
-      options = YAML.load_file(File.expand_path('../../data/options.yml', __FILE__))
-
       files = file_list(options[:scanner])
 
       scan_queue = Queue.new
@@ -16,15 +14,15 @@ class PostProcessor
       def while_queue_has_items(queue)
         until (item = queue.pop) == :end do
           yield item
-        end  
+        end
       end
 
       def pipe_while_queue_has_items(source_queue, destination_queue)
         while_queue_has_items(source_queue) do |source_item|
-          destination_queue << yield(source_item) 
+          destination_queue << yield(source_item)
         end
-        destination_queue << :end  
-      end  
+        destination_queue << :end
+      end
 
       scanner = Thread.new do
         pipe_while_queue_has_items(scan_queue, info_queue) do |file|
@@ -46,7 +44,7 @@ class PostProcessor
         renamer = Renamer::Renamer.new(options[:renamer])
         dups = {}
         success = {}
-        files.each do 
+        files.each do
           work_item = rename_queue.pop
           res = renamer.try_process(work_item)
           case res.type
@@ -59,12 +57,12 @@ class PostProcessor
             Loggers::PostProcessor.info "#{work_item.file} is a duplicate of #{res.destination}"
             dups[res.destination] = dups[res.destination] || []
             dups[res.destination].push(work_item)
-          end      
+          end
         end
         dups.each do |k, _|
           # rescan the duplicates unless we have it in the success map
           scan_queue << k unless success.has_key?(k)
-        end 
+        end
         scan_queue << :end
 
         #resolve duplicates immideately for when we have all the info
@@ -74,10 +72,10 @@ class PostProcessor
           ) if success.has_key?(k)
         end
 
-        #resolve duplicates as we get legacy info  
+        #resolve duplicates as we get legacy info
         while_queue_has_items(rename_queue) do |work_item|
           renamer.process_duplicate_set(work_item, dups[work_item.file])
-        end  
+        end
       end
 
       files.each {|f| scan_queue << f }
@@ -90,7 +88,7 @@ class PostProcessor
 
       system "find /#{basedir} -type f -name \"tvshow.nfo\" -delete"
 
-      Dir["#{basedir}/**/*"].select { |d| File.directory? d }.sort{|a,b| b <=> a}.each {|d| Dir.rmdir(d) if Dir.entries(d).size ==  2} 
+      Dir["#{basedir}/**/*"].select { |d| File.directory? d }.sort{|a,b| b <=> a}.each {|d| Dir.rmdir(d) if Dir.entries(d).size ==  2}
     end
   end
 end

@@ -2,18 +2,34 @@
 
 require 'rubygems'
 require 'fileutils'
+require 'optparse'
+require File.expand_path('helpers/load_options', __dir__)
 require File.expand_path('../../lib/libs', __FILE__)
 
-abort "nfoize <source_path> <destination_path>" unless ARGV.length == 2
+options_file = nil
+source_path = null
+destination = null
+OptionParser.new do |opts|
+  opts.banner = "Usage: nfoize -o <options file> -m <mylist_location>"
+  opts.on("-oOPTIONS", "--options=OPTIONS", "location of options config") do |o|
+    options_file = o
+  end
+  opts.on("-sSOURCE", "--source=SOURCE", "location of source path") do |source|
+    source_path = source
+  end
+  opts.on("-dDESTINATION", "--dest=DESTINATION", "location of source path") do |dest|
+    destination = dest
+  end
+end.parse!
+options = ScriptOptions.load_options(options_file)
 
-options = YAML.load_file(File.expand_path('../../data/options.yml', __FILE__))
+raise 'incorrect usage unless' source_path && destination
 
-destination = ARGV[1]
 Loggers::NFOize.info { "moving done to #{destination}" }
 FileUtils.mkdir_p destination
 
 
-dirs = Dir["#{ARGV.first}/*"].entries.select{|f| File.directory? f}
+dirs = Dir["#{source_path}/*"].entries.select{|f| File.directory? f}
 extensions = options[:scanner][:extensions].split.map{|e| ".#{e}"}
 tuples = dirs.map {|d| [d, Dir["#{d}/*"].entries.find {|e| extensions.include? File.extname(e)}]}
 files = tuples.map{|d,f| f}.compact
@@ -34,7 +50,7 @@ info_getter = Thread.new do
   end
 end
 
-unknown = []    
+unknown = []
 
 nfo_creator = Thread.new do
   files.each do
@@ -42,12 +58,12 @@ nfo_creator = Thread.new do
     if aid
       dir = File.dirname(file)
       File.open("#{dir}/tvshow.nfo", 'w') {|f| f.write("aid=#{aid}")}
-      FileUtils.mv dir, destination 
+      FileUtils.mv dir, destination
     else
       unknown << file
-    end  
-  end  
-end  
+    end
+  end
+end
 
 info_getter.join
 scanner.join
