@@ -5,3 +5,4 @@ config/deploy
 log
 tmp
 *.sublime-workspace
+*.code-workspace

@@ -77,10 +77,11 @@ module Renamer
       @mover.process(work_item.file, location, :new_name => name).tap do |response|
         if response.type == :success
           ensure_nfo(location, work_item.info)
+          ensure_anidb_id_file(location, work_item.info)
           update_symlinks_for(work_item.info[:anime], path, location) if options[:create_symlinks]
         end
       end
-    end  
+    end
 
     def generate_location(info)
       path, name = @name_generator.generate_name_and_path(info)
@@ -89,13 +90,20 @@ module Renamer
 
     def ensure_nfo(location, info)
       nfo_path = File.join(location, 'tvshow.nfo')
-      File.open(nfo_path, 'w') do |f| 
+      File.open(nfo_path, 'w') do |f|
         f.write("aid=#{info[:file][:aid]}")
       end if !File.exist?(nfo_path) && options[:create_nfo_files]
     end
 
+    def ensure_anidb_id_file(location, info)
+      idfile_path = File.join(location, 'anidb.id')
+      File.open(idfile_path, 'w') do |f|
+        f.write("#{info[:file][:aid]}\n")
+      end if !File.exist?(idfile_path) && options[:create_nfo_files]
+    end
+
     def update_symlinks_for(ainfo, folder, location)
-      all_locations = [:movies, :incomplete_series, :complete_series, 
+      all_locations = [:movies, :incomplete_series, :complete_series,
         :incomplete_other, :complete_other, :adult_location].map {|k| options[:create_symlinks][k] }.compact
       correct_location = decide_symlink_location(ainfo)
       incorrect_locations = all_locations.reject{|a| a == correct_location }
@@ -103,24 +111,24 @@ module Renamer
         s = File.join(l, folder)
         if File.symlink?(s)
           File.unlink(s)
-          Loggers::Renamer.info "deleting symlink #{s} to #{location}" 
-        end  
-      end  
+          Loggers::Renamer.info "deleting symlink #{s} to #{location}"
+        end
+      end
       if correct_location && !File.symlink?("#{correct_location}/#{folder}")
         symlink(location, correct_location, folder)
-        Loggers::Renamer.debug "symlinking #{location} to #{correct_location}/#{folder}" 
-      end  
+        Loggers::Renamer.debug "symlinking #{location} to #{correct_location}/#{folder}"
+      end
     end
-    
+
     def decide_symlink_location(ainfo)
       symlink_locations = options[:create_symlinks]
-      return symlink_locations[:adult_location] if ainfo[:is_18_restricted] == "1" 
+      return symlink_locations[:adult_location] if ainfo[:is_18_restricted] == "1"
       return symlink_locations[:movies] if ainfo[:type] == "Movie"
       type = ["Web", "TV Series", "OVA", "TV Special"].include?(ainfo[:type]) ? :series : :other
       status = ainfo[:ended] && ainfo[:completed] ? :complete : :incomplete
       symlink_locations["#{status}_#{type}".to_sym]
     end
-    
+
     def symlink(source, dest, name)
       Symlinker.relative_with_name(source, dest, name)
     rescue Exception => e

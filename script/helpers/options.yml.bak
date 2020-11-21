@@ -1,6 +1,6 @@
 ---
 :anidb:
-  # configuration details for the api     
+  # configuration details for the api
   :port: 9000
   :host: api.anidb.net
   :localport: 12387
@@ -12,8 +12,8 @@
   :basedir: /path/to/anime
   # list of file extensions to scan
   :extensions: avi mpg mkv ogm mp4 flv wmv
-  # if this is false. Only the top level files of each directory in the basedir are scanned. 
-  # if this is true, all the files are picked up recursively 
+  # if this is false. Only the top level files of each directory in the basedir are scanned.
+  # if this is true, all the files are picked up recursively
   :recursive: true
   # set this to true to add all identified files to your mylist
   :add_to_mylist: true
@@ -30,20 +30,22 @@
   :unknown_location: /path/to/Unknown
   # set this to true if you want a symlink back to the source where the files were moved
   :symlink_source: true
-  # when replacing an existing file, searches this folder for symlinks and updates them to the new location. Most likely same as basedir. 
+  # when replacing an existing file, searches this folder for symlinks and updates them to the new location. Most likely same as basedir.
   :fix_symlinks_root: /path/to/anime
   # create symlinks to access anime by type and completeness factor. can be false, or a nested hash
-  :create_symlinks: 
+  :create_symlinks:
     :movies: /path/to/movies
     :incomplete_series: /path/to/incomplete tv series, oav and web
     :complete_series: /path/to/complete tv series, oav and web
     :incomplete_other: /path/to/incomplete other, music video etc
     :complete_other: /path/to/complete other, music video etc
-  # set this to a non null value if adult shows should be symlinked to a folder
+    # set this to a non null value if adult shows should be symlinked to a folder
     :adult_location: /path/to/store
-    # this is useful if you use xbmc. an nfo file is created in each folder to identify the anime.
+  # this is useful if you use xbmc. an nfo file is created in each folder to identify the anime.
   :create_nfo_files: true
-# set this to false if you want the base directory left alone. Otherwise this removes all directories that can be 
+  # needed to make sure plex identifies anime
+  :create_anidb_id_files: true
+# set this to false if you want the base directory left alone. Otherwise this removes all directories that can be
 # safely removed. i.e either they're empty or contain only empty directories
 :clean_up_empty_dirs: true
 :web:
@@ -53,4 +55,3 @@
   # set this to production when using it, development for hacking on it
   :environment: production
   :concurrent_rss_threads: 8
-      
