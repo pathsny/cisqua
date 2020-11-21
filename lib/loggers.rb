@@ -20,7 +20,7 @@ Logging.appenders.stdout(
   :layout => Logging.layouts.pattern({:color_scheme => :colorful}),
 
 )
-Logging.appenders.file('logfile', 
+Logging.appenders.file('logfile',
   :filename => File.expand_path('../../log/anidb.log', __FILE__),
   :layout => Logging.layouts.pattern({}),
 )
@@ -43,12 +43,13 @@ module Loggers
   Tasks = Logging.logger['Tasks']
   DB = Logging.logger['DB']
   Concurrent = Logging.logger['Concurrent']
-  LogTailer = Logging.logger['LogTailer'] 
+  LogTailer = Logging.logger['LogTailer']
   PostProcessor = Logging.logger['PostProcessor']
   Renamer = Logging.logger['Renamer']
   UDPClient = Logging.logger['UDPClient']
   CreateLinks = Logging.logger['CreateLinks']
   FindDuplicates = Logging.logger['FindDuplicates']
   NFOize = Logging.logger['NFOize']
+  PlexAnidbIdize = Logging.logger['PlexAnidbIdize']
   BadFiles = Logging.logger['BadFiles']
 end
