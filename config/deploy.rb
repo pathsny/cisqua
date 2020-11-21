@@ -6,7 +6,7 @@ set :repo_url, '.'
 
 # Default branch is :master
 # ask :branch, `git rev-parse --abbrev-ref HEAD`.chomp
-set :branch, 'develop'
+set :branch, 'master'
 
 # Default deploy_to directory is /var/www/my_app_name
 set :deploy_to, '/anidb_ruby'
