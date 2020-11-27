@@ -1,4 +1,4 @@
-# this method should return a path where files should be stored inside the destination directory and 
+# this method should return a path where files should be stored inside the destination directory and
 # the name that an identified file should take.
 # As a sample, the given file uses the romanji name of the anime as the folder
 # and the file is written as anime_name - episode <number> [groupname] and movie files are stored as
@@ -11,7 +11,7 @@ def generate_name(info)
   anime = info[:anime]
   name = anime[:romaji_name]
   part = movie?(anime) ? anime[:ep_english_name] : "episode #{anime[:epno]}"
-  [anime[:romaji_name], "#{name} - #{part}#{group_name(anime)}#{metadata_for_xbmc(anime)}"]  
+  [anime[:romaji_name], "#{name} - #{part}#{group_name(anime)}#{metadata_for_xbmc(anime)}"]
 end
 
 def group_name(anime)
@@ -25,16 +25,15 @@ end
 
 def char_value(char)
   char == 'S' ? 0 : 100 + char.upcase.bytes.first - 64
-end  
+end
 
 def special_metadata(epno)
   result = /^([A-Z])?(\d+(?:-\d+)?)$/.match epno
   raise "unknown" unless result
   result[1] && " [(XS-#{char_value result[1]}-#{result[2]})]"
-end    
+end
 
 def metadata_for_xbmc(anime)
   epno = anime[:epno]
-  special_metadata(epno) || (movie?(anime) ? " [(X-#{epno})]" : "")
+  special_metadata(epno) || ""
 end
-     
