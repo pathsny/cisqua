@@ -10,17 +10,15 @@ This is a script that when run, scans all the files in a folder
 * builds symlinks to allow you to identify series, movies etc
 * adds them files to your anidb myslist
 * generates nfo files for xbmc integration
+* generates id files for plex integration
 
-Run this using ```ruby anidb_renamer.rb```
+Run this using ```bundle exec ruby script/post_process.rb```
 
-# WEB INTERFACE
-
-There is also a web interface that allows you to follow shows and automatically download them from torrents. Kinda like sickbeard
 
 # INSTALLATION
 
-* Install ruby, node.js, npm
-* download this repository using git or by downloading the archive. 
+* Install ruby
+* download this repository using git or by downloading the archive.
 * run scripts/setup.rb
 * modify data/options.yml to add your username and other details
 
