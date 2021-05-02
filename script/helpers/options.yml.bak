@@ -45,6 +45,12 @@
   :create_nfo_files: true
   # needed to make sure plex identifies anime
   :create_anidb_id_files: true
+  # needed to update plex server after files have been renamed.
+  :plex_scan_library_files:
+    :token: X-Plex-Token
+    :host: plexhost
+    :port: plexport
+    :section: plexlibrarysection
 # set this to false if you want the base directory left alone. Otherwise this removes all directories that can be
 # safely removed. i.e either they're empty or contain only empty directories
 :clean_up_empty_dirs: true

@@ -1,7 +1,7 @@
 # console for debugging
 require 'yaml'
 require 'optparse'
-require File.expand_path('helpers/load_options', __dir__)
+require File.expand_path('load_options', __dir__)
 
 options_file = nil
 OptionParser.new do |opts|

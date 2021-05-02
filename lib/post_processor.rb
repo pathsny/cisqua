@@ -76,6 +76,8 @@ class PostProcessor
         while_queue_has_items(rename_queue) do |work_item|
           renamer.process_duplicate_set(work_item, dups[work_item.file])
         end
+
+        renamer.post_rename_actions
       end
 
       files.each {|f| scan_queue << f }

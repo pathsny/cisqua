@@ -2,6 +2,7 @@ require_relative '../../rename_rules'
 require 'fileutils'
 require 'pathname'
 require 'invariant'
+require 'rest_client'
 
 module Renamer
   class Renamer
@@ -9,6 +10,7 @@ module Renamer
       @options = options
       @mover = VideoFileMover.new(options)
       @name_generator = NameGenerator.new(method(:generate_name))
+      @atleast_one_success = false
     end
 
     attr_reader :options
@@ -54,6 +56,12 @@ module Renamer
       end
     end
 
+    def post_rename_actions
+      if (@atleast_one_success && options[:plex_scan_library_files])
+        plex_scan_library_files(options[:plex_scan_library_files])
+      end
+    end
+
     private
     def curried_method(sym)
       proc(&method(sym)).curry
@@ -76,6 +84,7 @@ module Renamer
     def process_file(name, work_item, location, path)
       @mover.process(work_item.file, location, :new_name => name).tap do |response|
         if response.type == :success
+          @atleast_one_success = true
           ensure_nfo(location, work_item.info)
           ensure_anidb_id_file(location, work_item.info)
           update_symlinks_for(work_item.info[:anime], path, location) if options[:create_symlinks]
@@ -134,6 +143,21 @@ module Renamer
     rescue Exception => e
       Loggers::Renamer.warn e.inspect
       raise
+    end
+
+    def plex_scan_library_files(plex_opt)
+      uri = URI::HTTP.build(
+        host: plex_opt[:host],
+        port: plex_opt[:port],
+        path: "/library/sections/#{plex_opt[:section]}/refresh"
+      ).to_s
+      Loggers::Renamer.debug "updating plex at #{uri}"
+      resp = RestClient.get(uri, params: {'X-Plex-Token': plex_opt[:token]})
+      if resp.code == 200
+        Loggers::Renamer.info "Requested plex server at #{uri} to scan library files"
+      else
+        Loggers::Renamer.error "could not update plex. Got status code #{resp.code} and body #{resp.body}"
+      end
     end
   end
 end
