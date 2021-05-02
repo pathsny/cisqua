@@ -54,6 +54,8 @@
 # set this to false if you want the base directory left alone. Otherwise this removes all directories that can be
 # safely removed. i.e either they're empty or contain only empty directories
 :clean_up_empty_dirs: true
+# the default log level in the logs
+:log_level: info
 :web:
   :port: 6545
     # address to bind to, this is probably fine

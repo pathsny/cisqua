@@ -52,4 +52,12 @@ module Loggers
   NFOize = Logging.logger['NFOize']
   PlexAnidbIdize = Logging.logger['PlexAnidbIdize']
   BadFiles = Logging.logger['BadFiles']
+
+  def self.set_log_level_from_option(log_level_option)
+    log_level = log_level_option.to_sym rescue :debug
+    unless [:debug, :info, :warn, :error, :fatal].include?(log_level)
+      log_level = :debug
+    end
+    Logging.logger.root.level = log_level
+  end
 end

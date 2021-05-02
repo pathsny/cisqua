@@ -125,7 +125,7 @@ module Renamer
       end
       if correct_location && !File.symlink?("#{correct_location}/#{folder}")
         symlink(location, correct_location, folder)
-        Loggers::Renamer.debug "symlinking #{location} to #{correct_location}/#{folder}"
+        Loggers::Renamer.info "symlinking #{location} to #{correct_location}/#{folder}"
       end
     end
 

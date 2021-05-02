@@ -18,4 +18,6 @@ OptionParser.new do |opts|
   end
 end.parse!
 options = ScriptOptions.load_options(options_file)
+Loggers.set_log_level_from_option(options[:log_level])
+
 PostProcessor.run(test_mode, options)
