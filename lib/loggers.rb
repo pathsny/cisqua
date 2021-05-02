@@ -37,13 +37,6 @@ Logging.define_singleton_method(:parseable_logfile) { parseable_logfile }
 Logging.logger.root.add_appenders 'stdout', 'logfile', 'parseable_logfile'
 
 module Loggers
-  Web = Logging.logger['Web']
-  AnidbHTTP = Logging.logger['AnidbHTTP']
-  FeedProcessor = Logging.logger['FeedProcessor']
-  Tasks = Logging.logger['Tasks']
-  DB = Logging.logger['DB']
-  Concurrent = Logging.logger['Concurrent']
-  LogTailer = Logging.logger['LogTailer']
   PostProcessor = Logging.logger['PostProcessor']
   Renamer = Logging.logger['Renamer']
   UDPClient = Logging.logger['UDPClient']
