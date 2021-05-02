@@ -8,8 +8,6 @@ require 'capistrano/bundler'
 require 'capistrano/rbenv'
 require 'capistrano/rbenv_install'
 
-require 'capistrano/puma'
-
 require "capistrano/rsync"
 
 # Include tasks from other gems included in your Gemfile
