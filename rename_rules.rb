@@ -10,8 +10,18 @@
 def generate_name(info)
   anime = info[:anime]
   name = anime[:romaji_name]
-  part = movie?(anime) ? anime[:ep_english_name] : "episode #{anime[:epno]}"
-  [anime[:romaji_name], "#{name} - #{part}#{group_name(anime)}#{metadata_for_xbmc(anime)}"]
+  episode = " - episode #{anime[:epno]}"
+  part =
+    if movie?(anime)
+      if /Complete Movie|Part \d of \d/.match(anime[:ep_english_name]) && !special?(anime)
+        " - #{anime[:ep_english_name]}"
+      else
+        "#{episode} - #{anime[:ep_english_name]}"
+      end
+    else
+      episode
+    end
+  [anime[:romaji_name], "#{name}#{part}#{group_name(anime)}"]
 end
 
 def group_name(anime)
@@ -23,17 +33,8 @@ def movie?(anime)
   anime[:type] == "Movie"
 end
 
-def char_value(char)
-  char == 'S' ? 0 : 100 + char.upcase.bytes.first - 64
-end
-
-def special_metadata(epno)
-  result = /^([A-Z])?(\d+(?:-\d+)?)$/.match epno
+def special?(anime)
+  result = /^(?<spc_type>[A-Z])?\d+(?:-\d+)?$/.match anime[:epno]
   raise "unknown" unless result
-  result[1] && " [(XS-#{char_value result[1]}-#{result[2]})]"
-end
-
-def metadata_for_xbmc(anime)
-  epno = anime[:epno]
-  special_metadata(epno) || ""
+  return !(result[:spc_type].nil?)
 end
