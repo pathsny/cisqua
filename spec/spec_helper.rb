@@ -4,16 +4,10 @@ require 'faker'
 require 'fakefs/spec_helpers'
 require 'date'
 require 'timecop'
-require 'feedjira'
 
-require_relative '../web/model/model' 
 require_relative '../lib/libs'
 require 'rspec/logging_helper'
 
-def prevent_realworld_effects
-  Model.send(:remove_const, :ModelDB)
-  Feedjira.send(:remove_const, :Feed)
-end  
 
 RSpec.configure do |config|
   config.expect_with :rspec do |expectations|
@@ -24,14 +18,12 @@ RSpec.configure do |config|
 
   config.mock_with :mocha
   config.capture_log_messages
-
-  prevent_realworld_effects
 end
 
 
 def require_from_root(p)
   require_relative File.join('..', p)
-end  
+end
 
 OPTIONS_BAK = YAML.load_file(File.expand_path('../../script/helpers/options.yml.bak', __FILE__))
 DUMMY_INFO = YAML.load_file(File.expand_path('../dummy_info.yml', __FILE__))
@@ -58,7 +50,7 @@ end
 
 RSpec::Matchers.define :be_symlink_to do |expected|
   match do |actual|
-    File.symlink?(actual) && 
+    File.symlink?(actual) &&
     resolve_symlink(actual) == expected
   end
 
@@ -68,10 +60,10 @@ RSpec::Matchers.define :be_symlink_to do |expected|
   end
 end
 
-RSpec::Matchers.define :be_moved do 
+RSpec::Matchers.define :be_moved do
   match do |actual|
-    File.symlink?(actual[:path]) || 
-    !File.exist?(actual[:path]) || 
+    File.symlink?(actual[:path]) ||
+    !File.exist?(actual[:path]) ||
     actual[:content] != read_file(actual[:path])
   end
 
@@ -84,9 +76,9 @@ end
 
 RSpec::Matchers.define :be_moved_to_without_source_symlink do |expected|
   match do |actual|
-    File.exist?(expected) && 
+    File.exist?(expected) &&
     actual[:content] == read_file(expected) &&
-    (!File.symlink?(actual[:path]) || resolve_symlink(actual[:path]) != expected) 
+    (!File.symlink?(actual[:path]) || resolve_symlink(actual[:path]) != expected)
   end
 
   match_when_negated do |actual|
@@ -99,16 +91,16 @@ RSpec::Matchers.define :be_moved_to_without_source_symlink do |expected|
       unless (!File.symlink?(actual[:path]) || resolve_symlink(actual[:path]) != expected)
     actual_content = read_file(expected)
     err_msg = "#{expected} was not moved correctly. " +
-      "expected content #{actual[:content]} but was #{actual_content}" 
+      "expected content #{actual[:content]} but was #{actual_content}"
     break err_msg unless actual[:content] == actual_content
   end
 end
 
 RSpec::Matchers.define :be_moved_to_with_source_symlink do |expected|
   match do |actual|
-    File.symlink?(actual[:path]) && 
+    File.symlink?(actual[:path]) &&
     resolve_symlink(actual[:path]) == expected &&
-    File.exist?(expected) && 
+    File.exist?(expected) &&
     actual[:content] == read_file(expected)
   end
 
@@ -120,11 +112,11 @@ RSpec::Matchers.define :be_moved_to_with_source_symlink do |expected|
     break "#{actual[:path]} should become symlink" unless File.symlink?(actual[:path])
     break "#{actual[:path]} should point to #{expected} \
       but was #{File.readlink(actual[:path])}" unless File.exist?(actual[:path]) &&
-      resolve_symlink(actual[:path]) == expected 
+      resolve_symlink(actual[:path]) == expected
     break "#{expected} should exist" unless File.exist?(expected)
     actual_content = read_file(expected)
     err_msg = "#{expected} was not moved correctly. " +
-      "expected content #{actual[:content]} but was #{actual_content}" 
+      "expected content #{actual[:content]} but was #{actual_content}"
     break err_msg unless actual[:content] == actual_content
   end
 end
