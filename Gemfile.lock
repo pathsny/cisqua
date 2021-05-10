@@ -36,6 +36,7 @@ GEM
     i18n (1.7.0)
       concurrent-ruby (~> 1.0)
     invariant (0.2.0)
+    irb (1.0.0)
     json (2.3.0)
     listen (2.10.1)
       celluloid (~> 0.16.0)
@@ -109,6 +110,7 @@ DEPENDENCIES
   fakefs
   faker
   invariant
+  irb
   json
   logging
   mocha

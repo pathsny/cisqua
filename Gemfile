@@ -20,6 +20,7 @@ end
 
 group :development do
   gem 'rerun', '0.10.0'
+  gem 'irb'
   gem 'capistrano'
   gem 'capistrano-rsync-bladrak'
   gem 'ed25519'
