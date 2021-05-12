@@ -9,7 +9,6 @@ abort "xbmcize <path>" unless ARGV.length == 1
 def transform(type)
   type == 'S' ? 0 : 100 + type.bytes.first - 64
 end
-#  
 
 location = ARGV.first
 files = Dir["#{location}/**/* - episode [A-Z]*.*"].entries
@@ -23,4 +22,3 @@ files.reject{|f| f.match /.*\[\(XS-[^\)]*\)\]/ }.tap{|fs| p fs.inspect}.each do 
     p "cannot process #{file} because #{$!}"
   end
 end
-

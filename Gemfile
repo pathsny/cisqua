@@ -9,6 +9,8 @@ gem 'rest-client'
 gem 'nokogiri'
 gem 'invariant'
 gem 'logging'
+gem 'amazing_print'
+gem 'solid_assert'
 
 group :test do
   gem 'rspec'
