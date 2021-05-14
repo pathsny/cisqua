@@ -9,7 +9,7 @@ options_file = nil
 
 options_file = nil
 OptionParser.new do |opts|
-  opts.banner = "Usage: console -n anidb"
+  opts.banner = "Usage: post_process"
   opts.on("-oOPTIONS", "--options=OPTIONS", "location of options config") do |o|
     options_file = o
   end
