@@ -100,16 +100,18 @@ module Renamer
 
     def ensure_nfo(location, info)
       nfo_path = File.join(location, 'tvshow.nfo')
-      File.open(nfo_path, 'w') do |f|
-        f.write("aid=#{info[:file][:aid]}")
-      end if !File.exist?(nfo_path) && options[:create_nfo_files]
+      return if File.exist?(nfo_path) || !options[:create_nfo_files]
+
+      Loggers::Renamer.debug("Creating #{nfo_path}. #{@options[:dry_run_mode] ? ' DRY RUN' : ''}")
+      File.open(nfo_path, 'w') { |f| f.write("aid=#{info[:file][:aid]}") } unless options[:dry_run_mode]
     end
 
     def ensure_anidb_id_file(location, info)
       idfile_path = File.join(location, 'anidb.id')
-      File.open(idfile_path, 'w') do |f|
-        f.write("#{info[:file][:aid]}\n")
-      end if !File.exist?(idfile_path) && options[:create_nfo_files]
+      return if File.exist?(idfile_path) || !options[:create_anidb_id_files]
+
+      Loggers::Renamer.debug("Creating #{idfile_path}. #{@options[:dry_run_mode] ? ' DRY RUN' : ''}")
+      File.open(idfile_path, 'w') { |f| f.write("#{info[:file][:aid]}\n") } unless options[:dry_run_mode]
     end
 
     def update_symlinks_for(ainfo, folder, location)
@@ -120,8 +122,8 @@ module Renamer
       incorrect_locations.each do |l|
         s = File.join(l, folder)
         if File.symlink?(s)
-          File.unlink(s)
-          Loggers::Renamer.info "deleting symlink #{s} to #{location}"
+          File.unlink(s) unless options[:dry_run_mode]
+          Loggers::Renamer.info "deleting symlink #{s} to #{location} DRY RUN"
         end
       end
       if correct_location && !File.symlink?("#{correct_location}/#{folder}")

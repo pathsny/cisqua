@@ -16,12 +16,16 @@ OptionParser.new do |opts|
   opts.on("-t", "--test", "run for testing") do
     test_mode = true
   end
+  opts.on("--dry-run", "Dry Run. Does not move any files, create any directories or create symlinks") do
+    script_options[:dry_run_mode] = true
+  end
   opts.on("--debug", "Overrides log level in options and sets it to debug") do
     script_options[:log_level] = :debug
   end
 end.parse!
 options = ScriptOptions.load_options(options_file)
 options[:log_level] = script_options[:log_level] if script_options.has_key?(:log_level)
+options[:renamer][:dry_run_mode] = script_options[:dry_run_mode] if script_options.has_key?(:dry_run_mode)
 
 Loggers.set_log_level_from_option(options[:log_level])
 PostProcessor.run(test_mode, options)

@@ -51,6 +51,8 @@
     :host: plexhost
     :port: plexport
     :section: plexlibrarysection
+  # when dry_run_mode is set, no files are moved and no directories are created
+  :dry_run_mode: false
 # set this to false if you want the base directory left alone. Otherwise this removes all directories that can be
 # safely removed. i.e either they're empty or contain only empty directories
 :clean_up_empty_dirs: true

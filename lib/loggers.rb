@@ -39,12 +39,14 @@ Logging.logger.root.add_appenders 'stdout', 'logfile', 'parseable_logfile'
 module Loggers
   PostProcessor = Logging.logger['PostProcessor']
   Renamer = Logging.logger['Renamer']
+  Symlinker = Logging.logger['Symlinker']
   UDPClient = Logging.logger['UDPClient']
   CreateLinks = Logging.logger['CreateLinks']
   FindDuplicates = Logging.logger['FindDuplicates']
   NFOize = Logging.logger['NFOize']
   PlexAnidbIdize = Logging.logger['PlexAnidbIdize']
   BadFiles = Logging.logger['BadFiles']
+  VideoFileMover = Logging.logger['VideoFileMover']
 
   def self.set_log_level_from_option(log_level_option)
     log_level = log_level_option.to_sym rescue :debug
