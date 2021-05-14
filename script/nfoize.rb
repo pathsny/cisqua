@@ -23,7 +23,7 @@ OptionParser.new do |opts|
 end.parse!
 options = ScriptOptions.load_options(options_file)
 
-raise 'incorrect usage unless' source_path && destination
+raise 'incorrect usage' unless source_path && destination
 
 Loggers::NFOize.info { "moving done to #{destination}" }
 FileUtils.mkdir_p destination
