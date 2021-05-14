@@ -9,6 +9,7 @@ module Renamer
     def initialize(options)
       @options = options
       @mover = VideoFileMover.new(options)
+      @symlinker = Symlinker.new(options)
       @name_generator = NameGenerator.new(method(:generate_name))
       @atleast_one_success = false
     end
@@ -139,7 +140,7 @@ module Renamer
     end
 
     def symlink(source, dest, name)
-      Symlinker.relative_with_name(source, dest, name)
+      @symlinker.relative_with_name(source, dest, name)
     rescue Exception => e
       Loggers::Renamer.warn e.inspect
       raise

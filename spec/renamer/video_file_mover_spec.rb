@@ -4,6 +4,7 @@ describe Renamer::VideoFileMover do
   let(:source_dir) { "/deep/source".tap { |d| FileUtils.mkdir_p(d) } }
   let(:dest_dir) {"/deep/dest"}
   let (:source_video) { create_source_file("#{source_dir}/file_1.mkv") }
+  let(:symlinker) { Renamer::Symlinker.new(dry_run_mode: false)}
 
   shared_examples "file mover" do |matcher_name|
 
@@ -65,8 +66,8 @@ describe Renamer::VideoFileMover do
       sub_file = create_source_file("#{source_dir}/file_1.sub")
       symlink_dir = "/deep/inner/symlinks"
       FileUtils.mkdir_p symlink_dir
-      Renamer::Symlinker.relative_with_name(source_video[:path], symlink_dir, "file_1.mkv")
-      Renamer::Symlinker.relative_with_name(sub_file[:path], symlink_dir, "file_1.sub")
+      symlinker.relative_with_name(source_video[:path], symlink_dir, "file_1.mkv")
+      symlinker.relative_with_name(sub_file[:path], symlink_dir, "file_1.sub")
       subject.process(source_video[:path], dest_dir, :new_name => "myfile", :update_links_from => "/deep/inner")
       expect(source_video).to be_moved_to("#{dest_dir}/myfile.mkv")
       expect(File.join(symlink_dir, "file_1.mkv")).to be_symlink_to("#{dest_dir}/myfile.mkv")
