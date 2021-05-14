@@ -57,7 +57,7 @@ module Renamer
     end
 
     def post_rename_actions
-      if (@atleast_one_success && options[:plex_scan_library_files])
+      if (@atleast_one_success)
         plex_scan_library_files(options[:plex_scan_library_files])
       end
     end
@@ -146,6 +146,7 @@ module Renamer
     end
 
     def plex_scan_library_files(plex_opt)
+      return unless plex_opt
       uri = URI::HTTP.build(
         host: plex_opt[:host],
         port: plex_opt[:port],
