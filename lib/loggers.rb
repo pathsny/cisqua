@@ -55,4 +55,10 @@ module Loggers
     end
     Logging.logger.root.level = log_level
   end
+
+  def self.custom_log_file(path)
+    Logging.logger.root.remove_appenders('parseable_logfile', 'logfile')
+    Logging.appenders.file('logfile', filename: path, layout: Logging.layouts.pattern({}))
+    Logging.logger.root.add_appenders('logfile')
+  end
 end

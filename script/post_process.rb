@@ -4,17 +4,15 @@ require File.expand_path('helpers/load_options', __dir__)
 require 'optparse'
 
 Thread.abort_on_exception = true
-test_mode = false
 
 script_options = {}
-options_file = nil
 OptionParser.new do |opts|
   opts.banner = "Usage: post_process"
   opts.on("-oOPTIONS", "--options=OPTIONS", "location of options config") do |o|
-    options_file = o
+    script_options[:options_file] = o
   end
   opts.on("-t", "--test", "run for testing") do
-    test_mode = true
+    script_options[:test_mode] = true
   end
   opts.on("--dry-run", "Dry Run. Does not move any files, create any directories or create symlinks") do
     script_options[:dry_run_mode] = true
@@ -22,10 +20,14 @@ OptionParser.new do |opts|
   opts.on("--debug", "Overrides log level in options and sets it to debug") do
     script_options[:log_level] = :debug
   end
+  opts.on('--logfile=PATH', "does not log to default log files and instead logs to provided path") do |path|
+    script_options[:logfile] = path
+  end
 end.parse!
-options = ScriptOptions.load_options(options_file)
-options[:log_level] = script_options[:log_level] if script_options.has_key?(:log_level)
-options[:renamer][:dry_run_mode] = script_options[:dry_run_mode] if script_options.has_key?(:dry_run_mode)
+options = ScriptOptions.load_options(script_options[:options_file])
+options[:log_level] = script_options[:log_level] if script_options.key?(:log_level)
+options[:renamer][:dry_run_mode] = script_options[:dry_run_mode] if script_options.key?(:dry_run_mode)
 
 Loggers.set_log_level_from_option(options[:log_level])
-PostProcessor.run(test_mode, options)
+Loggers.custom_log_file(script_options[:logfile]) if script_options.key?(:logfile)
+PostProcessor.run(script_options[:test_mode] || false, options)
