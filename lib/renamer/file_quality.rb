@@ -1,5 +1,5 @@
 # represents the quality of a specific file. This can be used to compare
-# files. However, it is only meaningful to compare files of the same show, 
+# files. However, it is only meaningful to compare files of the same show,
 # episode and group.
 class Source
   include Comparable
@@ -11,21 +11,21 @@ class Source
       @all_instances.find {|i| i.name == name}.tap do |inst|
         assert(!inst.nil?, "#{name} is not a valid source")
       end
-    end  
+    end
     private
     def make_instance(name, score)
-      allocate.tap do |inst| 
+      allocate.tap do |inst|
         inst.instance_variable_set(:@name, name)
         inst.instance_variable_set(:@score, score)
         @all_instances.push(inst)
-      end  
+      end
     end
   end
 
   def <=>(other)
     return 0 if self == UNKNOWN || other == UNKNOWN
     return score <=> other.score
-  end  
+  end
 
   UNKNOWN = make_instance("unknown", nil)
   CAMCORDER = make_instance("camcorder", 1)
@@ -37,7 +37,7 @@ class Source
   LD = make_instance("LD", 3)
   HKDVD = make_instance("HKDVD", 3)
   WWW = make_instance("www", 3)
-  HDTV = make_instance("HDTV", 4)    
+  HDTV = make_instance("HDTV", 4)
   DVD = make_instance("DVD", 4)
   HD_DVD = make_instance("HD-DVD", 5)
   BLU_RAY = make_instance("Blu-ray", 5)
@@ -46,7 +46,7 @@ class Source
   attr_reader :score
 end
 
-class Quality 
+class Quality
   include Comparable
   attr_reader :name
   @all_instances = []
@@ -56,20 +56,20 @@ class Quality
       @all_instances.find {|i| i.name == name}.tap do |inst|
         assert(!inst.nil?, "#{name} is not a valid source")
       end
-    end  
+    end
     private
     def make_instance(name, score)
-      allocate.tap do |inst| 
+      allocate.tap do |inst|
         inst.instance_variable_set(:@name, name)
         inst.instance_variable_set(:@score, score)
         @all_instances.push(inst)
-      end  
+      end
     end
   end
 
   def <=>(other)
     return score <=> other.score
-  end  
+  end
 
   EYECANCER = make_instance("eyecancer", 1)
   VERY_LOW = make_instance("very low", 2)
@@ -86,7 +86,7 @@ class VideoResolution
   include Comparable
   PATTERN = /^(\d+)x(\d+)$/
 
-  attr_reader :width, :height 
+  attr_reader :width, :height
 
   def initialize(res_string)
     m = PATTERN.match(res_string)
@@ -96,9 +96,9 @@ class VideoResolution
 
   def <=>(other)
     consistent_comparison(width <=> other.width, height <=> other.height)
-  end  
-end    
-  
+  end
+end
+
 
 class FileQuality
   include Comparable
@@ -128,10 +128,11 @@ class FileQuality
         quality <=> other.quality,
         res <=> other.res
       )
-  end  
+  end
 end
 
 def consistent_comparison(*comps)
+  # return 0 if you have atleast two comparisons that are of opposite signs (i.e -1 and 1)
   return 0 if (comps & [-1, 1]).sort == [-1, 1]
   comps.reduce(:|)
-end  
+end

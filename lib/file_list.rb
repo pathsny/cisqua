@@ -6,12 +6,12 @@ def file_list(options)
 end
 
 def symlink_for(target, basedir)
-  Dir.glob(File.join("#{basedir}","**/*.*"),File::FNM_CASEFOLD).select do |n| 
-    File.symlink?(n) && 
-    File.expand_path(File.readlink(n), File.dirname(n)) == target 
+  Dir.glob(File.join("#{basedir}","**/*.*"), File::FNM_CASEFOLD).select do |n|
+    File.symlink?(n) &&
+    File.expand_path(File.readlink(n), File.dirname(n)) == target
   end
-end  
+end
 
 def extension_glob(extensions)
   extensions.gsub(/(\w*)\s+(\w*)/, '\1,\2')
-end  
+end

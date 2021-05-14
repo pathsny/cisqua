@@ -54,7 +54,7 @@ describe Renamer::Renamer do
       it { expect(@response.type).to eq(:duplicate) }
       it { expect(@response.destination).to eq(dest) }
       it { expect(source_video).to_not be_moved }
-    end  
+    end
   end
 
   describe :process_duplicate_set do
@@ -77,12 +77,12 @@ describe Renamer::Renamer do
       FileUtils.mkdir_p('/path/to/anime/somewhere/deep')
       File.symlink("../../../files/Anime Name/#{dest_file_name}", old_symlink_loc)
       File.symlink("../files/Anime Name/#{dest_file_name}", additional_source_symlink)
-    end  
+    end
 
     shared_examples "handles junk and duplicates" do
       it { expect(junk_video).to be_moved_to_with_source_symlink(File.join(junk_loc, dest_file_name)) }
       it { expect(dup_video).to be_moved_to_with_source_symlink(File.join(dup_loc, dest_file_name)) }
-    end  
+    end
 
     context "when keep_current is true" do
       before(:each) do
@@ -119,5 +119,5 @@ describe Renamer::Renamer do
       it { expect(old_symlink_loc).to be_symlink_to(File.join(junk_loc, dest_file_name_suff_1)) }
       it { expect(File.exist?(File.join(dest_dir, 'tvshow.nfo'))).to be true }
     end
-  end  
+  end
 end

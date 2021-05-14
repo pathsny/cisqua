@@ -4,12 +4,12 @@ describe Renamer::DuplicateResolver do
   def resolve(current, duplicates)
     Renamer::DuplicateResolver.resolve(current, duplicates).tap do |resolved|
       expect(resolved[:selected]).to(eq(current)) if resolved[:keep_current]
-    end  
+    end
   end
 
   def make_fid
     Faker::Number.number(5).to_i
-  end          
+  end
 
   def make_item(file_params, fid = nil)
     info = {:fid => fid || make_fid, :anime => {}, :file => common_file.merge(file_params)}
@@ -22,7 +22,7 @@ describe Renamer::DuplicateResolver do
 
   def wierdly_similar_item(item)
     make_item(item.info[:file])
-  end  
+  end
 
   let(:sources) { Renamer::DuplicateResolver::Sources }
   let(:quality) { Renamer::DuplicateResolver::Quality }
@@ -35,7 +35,7 @@ describe Renamer::DuplicateResolver do
   let(:camcorder) { make_item(current_info.merge(:source => 'camcorder')) }
   let(:vhs_with_version_3) { make_item(current_info.merge(:source => 'VHS', :version => 3))}
   let(:hdtv_with_eyecancer) { make_item(current_info.merge(:source => 'HDTV', :quality => 'eyecancer')) }
-  let(:vcd_with_very_high) { make_item(current_info.merge(:source => 'VCD', :quality => 'very high')) } 
+  let(:vcd_with_very_high) { make_item(current_info.merge(:source => 'VCD', :quality => 'very high')) }
   let(:blu_ray) { make_item(current_info.merge(:source => 'Blu-ray')) }
 
   context "when all the dups are clones of the current" do
@@ -47,12 +47,12 @@ describe Renamer::DuplicateResolver do
   end
 
   context "when the dups are worse than the current item" do
-    let(:resolved) { resolve(current, [camcorder, version_1, vhs_with_version_3])} 
+    let(:resolved) { resolve(current, [camcorder, version_1, vhs_with_version_3])}
 
     it "keeps current" do
-      expect(resolve(current, [version_1])[:keep_current]).to be true 
-      expect(resolve(current, [camcorder])[:keep_current]).to be true 
-      expect(resolved[:keep_current]).to be true 
+      expect(resolve(current, [version_1])[:keep_current]).to be true
+      expect(resolve(current, [camcorder])[:keep_current]).to be true
+      expect(resolved[:keep_current]).to be true
     end
 
     it "rejects the worse dups" do
@@ -74,7 +74,7 @@ describe Renamer::DuplicateResolver do
 
     it "junks items that are worse than current" do
       expect(resolved[:junk]).to match_array([version_1, clone_1])
-    end  
+    end
 
     it "marks as dup, those items which are not worse than the current item" do
       expect(resolved[:dups]).to match_array([hdtv_with_eyecancer, vcd_with_very_high, wierdly_similar])
@@ -100,7 +100,7 @@ describe Renamer::DuplicateResolver do
 
     it "selects one best item if it has clones and junks the others" do
       blu_ray_clone = clone_item(blu_ray)
-      resolved = resolve(current, [blu_ray_clone, blu_ray]) 
+      resolved = resolve(current, [blu_ray_clone, blu_ray])
       expect(resolved[:keep_current]).to be false
       expect(resolved[:selected]).to be blu_ray_clone
       expect(resolved[:junk]).to match_array([blu_ray])
@@ -114,5 +114,5 @@ describe Renamer::DuplicateResolver do
       expect(resolved[:junk]).to match_array([hdtv_with_eyecancer])
       expect(resolved[:dups]).to match_array([vcd_with_very_high])
     end
-  end  
+  end
 end
