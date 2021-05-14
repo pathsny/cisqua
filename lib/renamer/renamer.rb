@@ -16,17 +16,17 @@ module Renamer
 
     attr_reader :options
 
-    def try_process(work_item)
+    def try_process(work_item, override_options = {})
       unless work_item.info
         response = @mover.process(work_item.file, options[:unknown_location],
-          :unambiguous => true
+          {:unambiguous => true, **override_options},
         ) if options[:unknown_location]
         assert(response.type == :success, "moving unknown files should not fail")
         return Response.unknown(response.destination)
       end
 
       location, path, name = generate_location(work_item.info)
-      process_file(name, work_item, location, path)
+      process_file(name, work_item, location, path, override_options)
     rescue
       Loggers::Renamer.error "error naming #{work_item.file} from #{work_item.info.inspect} with #{$!}"
       raise
@@ -82,8 +82,8 @@ module Renamer
       )
     end
 
-    def process_file(name, work_item, location, path)
-      @mover.process(work_item.file, location, :new_name => name).tap do |response|
+    def process_file(name, work_item, location, path, override_options = {})
+      @mover.process(work_item.file, location, {new_name: name, **override_options}).tap do |response|
         if response.type == :success
           @atleast_one_success = true
           ensure_nfo(location, work_item.info)
