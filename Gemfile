@@ -11,6 +11,7 @@ gem 'invariant'
 gem 'logging'
 gem 'amazing_print'
 gem 'solid_assert'
+gem 'irb'
 
 group :test do
   gem 'rspec'
@@ -22,7 +23,6 @@ end
 
 group :development do
   gem 'rerun', '0.10.0'
-  gem 'irb'
   gem 'capistrano'
   gem 'capistrano-rsync-bladrak'
   gem 'ed25519'
