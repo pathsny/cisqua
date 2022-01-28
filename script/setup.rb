@@ -20,9 +20,3 @@ FileUtils.cp(File.join(root_dir, 'script/helpers/options.yml.bak'), options_file
 Dir.chdir(root_dir) {
   raise "could not run bundler" unless system "bundle install"
 }
-
-if ARGV[0] == 'dev' then
-  Dir.chdir(File.join(root_dir, 'web/public')) {
-    raise "could not run npm" unless system "npm install"
-  }
-end

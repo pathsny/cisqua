@@ -49,8 +49,6 @@ end
 
 set :linked_dirs, fetch(:linked_dirs, []).push('data', 'tmp/pids', 'tmp/sockets', 'log', 'bundler_home')
 
-set :puma_rackup, -> { File.join(current_path, 'web', 'config.ru') }
-
 # Default value for default_env is {}
 # set :default_env, { path: "/opt/ruby/bin:$PATH" }
 

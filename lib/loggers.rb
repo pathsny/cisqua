@@ -18,7 +18,6 @@ Logging.color_scheme(:colorful, {
 Logging.appenders.stdout(
   'stdout',
   :layout => Logging.layouts.pattern({:color_scheme => :colorful}),
-
 )
 Logging.appenders.file('logfile',
   :filename => File.expand_path('../../log/anidb.log', __FILE__),

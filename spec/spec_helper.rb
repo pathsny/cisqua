@@ -3,7 +3,6 @@ require 'rspec'
 require 'faker'
 require 'fakefs/spec_helpers'
 require 'date'
-require 'timecop'
 
 require_relative '../lib/libs'
 require 'rspec/logging_helper'

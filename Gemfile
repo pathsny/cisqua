@@ -4,29 +4,23 @@ ruby File.read(ruby_version_path, mode: 'rb').chomp
 source 'https://rubygems.org'
 
 gem 'json'
-gem 'puma'
-gem 'rest-client'
-gem 'nokogiri'
 gem 'invariant'
 gem 'logging'
 gem 'amazing_print'
 gem 'solid_assert'
 gem 'irb'
+gem 'rest-client'
 
 group :test do
   gem 'rspec'
   gem 'mocha'
   gem 'faker'
   gem 'fakefs'
-  gem 'timecop'
 end
 
 group :development do
-  gem 'rerun', '0.10.0'
   gem 'capistrano'
   gem 'capistrano-rsync-bladrak'
-  gem 'ed25519'
-  gem 'bcrypt_pbkdf'
   gem 'capistrano-bundler'
   gem 'capistrano-rbenv'
   gem 'capistrano-rbenv-install', '~> 1.2.0'
