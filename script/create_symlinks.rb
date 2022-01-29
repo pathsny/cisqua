@@ -23,7 +23,8 @@ r_options = options[:renamer]
 
 mylist = REXML::Document.new File.new("#{mylist_location}/mylist.xml")
 
-all_folders = Dir["#{r_options[:output_location]}/**"].sort
+output_location = File.absolute_path(r_options[:output_location], ROOT_FOLDER)
+all_folders = Dir["#{output_location}/**"].sort
 first_folder = ARGV[1]
 folders = first_folder ? all_folders.drop_while {|k| File.basename(k) != first_folder} : all_folders
 abort "nothing to do" if folders.empty?
@@ -48,7 +49,7 @@ end
 
 syms = r_options[:create_symlinks]
 symlink_folders = [:movies, :incomplete_series, :complete_series, :incomplete_other, :complete_other].map { |k|
-  Dir["#{syms[k]}/**"].map {|f| File.basename(f)}
+  Dir["#{File.absolute_path(syms[k], ROOT_FOLDER)}/**"].map {|f| File.basename(f)}
 }.reduce([]) {|acc, arr| acc | arr}
 all_folder_names = all_folder.map {|f| File.basename(f)}
 Loggers::CreateLinks.error { "something is wrong #{all_folder_names} does not map to #{symlink_folders}" } unless symlink_folders.size == all_folder_names.size && (symlink_folders & all_folder_names == symlink_folders)

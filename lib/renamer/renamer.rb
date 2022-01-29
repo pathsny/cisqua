@@ -8,6 +8,7 @@ module Renamer
   class Renamer
     def initialize(options)
       @options = options
+      @output_location = File.absolute_path(options[:output_location], ROOT_FOLDER)
       @mover = VideoFileMover.new(options)
       @symlinker = Symlinker.new(options)
       @name_generator = NameGenerator.new(method(:generate_name))
@@ -18,9 +19,10 @@ module Renamer
 
     def try_process(work_item, override_options = {})
       unless work_item.info
-        response = @mover.process(work_item.file, options[:unknown_location],
+        unknown_location = File.absolute_path(options[:unknown_location], ROOT_FOLDER)
+        response = @mover.process(work_item.file, unknown_location,
           {:unambiguous => true, **override_options},
-        ) if options[:unknown_location]
+        )
         assert(response.type == :success, "moving unknown files should not fail")
         return Response.unknown(response.destination)
       end
@@ -44,11 +46,13 @@ module Renamer
       result[:dups].each(&dup)
 
       if !result[:keep_current]
-        resp = @mover.process(existing.file, options[:junk_duplicate_location],
+        junk_duplicate_location = File.absolute_path(options[:junk_duplicate_location], ROOT_FOLDER)
+        fix_symlinks_root = File.absolute_path(options[:fix_symlinks_root], ROOT_FOLDER)
+        resp = @mover.process(existing.file, junk_duplicate_location,
           :new_name => name,
           :unambiguous => true,
           :symlink_source => false,
-          :update_links_from => options[:fix_symlinks_root]
+          :update_links_from => fix_symlinks_root,
         )
         assert(resp.type == :success, "moving the existing file should not fail")
         process_file(name, result[:selected], location, path).tap {|r|
@@ -69,14 +73,16 @@ module Renamer
     end
 
     def move_to_junk(name, work_item)
-      @mover.process(work_item.file, options[:junk_duplicate_location],
+      junk_duplicate_location = File.absolute_path(options[:junk_duplicate_location], ROOT_FOLDER)
+      @mover.process(work_item.file, junk_duplicate_location,
         :new_name => name,
         :unambiguous => true
       )
     end
 
     def move_to_dup(name, work_item)
-      @mover.process(work_item.file, options[:duplicate_location],
+      duplicate_location = File.absolute_path(options[:duplicate_location], ROOT_FOLDER)
+      @mover.process(work_item.file, duplicate_location,
         :new_name => name,
         :unambiguous => true
       )
@@ -95,7 +101,7 @@ module Renamer
 
     def generate_location(info)
       path, name = @name_generator.generate_name_and_path(info)
-      [File.join(options[:output_location], path), path, name]
+      [File.join(@output_location, path), path, name]
     end
 
     def ensure_nfo(location, info)
@@ -115,8 +121,11 @@ module Renamer
     end
 
     def update_symlinks_for(ainfo, folder, location)
-      all_locations = [:movies, :incomplete_series, :complete_series,
-        :incomplete_other, :complete_other, :adult_location].map {|k| options[:create_symlinks][k] }.compact
+      symlink_types = [:movies, :incomplete_series, :complete_series,
+        :incomplete_other, :complete_other, :adult_location]
+      all_locations = symlink_types.map do |k|
+        File.absolute_path(options[:create_symlinks][k], ROOT_FOLDER)
+      end.compact
       correct_location = decide_symlink_location(ainfo)
       incorrect_locations = all_locations.reject{|a| a == correct_location }
       incorrect_locations.each do |l|
@@ -134,11 +143,12 @@ module Renamer
 
     def decide_symlink_location(ainfo)
       symlink_locations = options[:create_symlinks]
-      return symlink_locations[:adult_location] if ainfo[:is_18_restricted] == "1"
-      return symlink_locations[:movies] if ainfo[:type] == "Movie"
-      type = ["Web", "TV Series", "OVA", "TV Special"].include?(ainfo[:type]) ? :series : :other
+      return File.absolute_path(symlink_locations[:adult_location], ROOT_FOLDER) if ainfo[:is_18_restricted] == '1'
+      return File.absolute_path(symlink_locations[:movies], ROOT_FOLDER) if ainfo[:type] == 'Movie'
+
+      type = ['Web', 'TV Series', 'OVA', 'TV Special'].include?(ainfo[:type]) ? :series : :other
       status = ainfo[:ended] && ainfo[:completed] ? :complete : :incomplete
-      symlink_locations["#{status}_#{type}".to_sym]
+      File.absolute_path(symlink_locations["#{status}_#{type}".to_sym], ROOT_FOLDER)
     end
 
     def symlink(source, dest, name)

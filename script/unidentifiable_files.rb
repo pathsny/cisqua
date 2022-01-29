@@ -97,7 +97,8 @@ def test_names(folder, movie)
 end
 
 
-all_folders = Dir["#{r_options[:output_location]}/**"].sort
+output_location = File.absolute_path(r_options[:output_location], ROOT_FOLDER)
+all_folders = Dir["#{output_location}/**"].sort
 all_folders.each do |folder|
   aid = File.read("#{folder}/tvshow.nfo").match(/^aid=(\d+)$/)[1]
   movie = mylist.elements["myList/animeList/anime[@id = '#{aid}']"].attributes['type'] == 'Movie'

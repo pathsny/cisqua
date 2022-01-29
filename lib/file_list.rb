@@ -1,5 +1,5 @@
 def file_list(options)
-  basedir = options[:basedir]
+  basedir = File.absolute_path(options[:basedir], ROOT_FOLDER)
   extensions = options[:extensions] == :all ? '*' : "{#{extension_glob options[:extensions]}}"
   Dir.glob(File.join("#{basedir}","#{'**/' if options[:recursive]}*.#{extensions}"),File::FNM_CASEFOLD).
     reject {|n| File.symlink? n }

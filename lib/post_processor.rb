@@ -1,4 +1,4 @@
-require File.expand_path('../libs', __FILE__)
+require File.expand_path('libs', __dir__)
 require 'resolv-replace'
 
 class PostProcessor
@@ -85,7 +85,8 @@ class PostProcessor
       [scanner, info_getter, rename_worker].each(&:join)
 
       return unless options[:clean_up_empty_dirs]
-      basedir = options[:scanner][:basedir]
+
+      basedir = File.absolute_path(options[:scanner][:basedir], ROOT_FOLDER)
       raise 'empty basedir' unless basedir
 
       system "find /#{basedir} -type f -name \"tvshow.nfo\" -delete"

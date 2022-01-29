@@ -44,7 +44,7 @@ class MovieRenamerFoPlex
   end
 
   def run
-    root_folder = @options.dig(:renamer, :create_symlinks, :movies)
+    root_folder = File.absolute_path(@options.dig(:renamer, :create_symlinks, :movies), ROOT_FOLDER)
     Loggers::RenameMoviesForPlex.info { "processing files in #{root_folder}" }
     Loggers::RenameMoviesForPlex.info { 'DryRun mode is on '} if @script_options[:dry_run_mode]
     all_folders = Dir[File.join(root_folder, '**')].sort
@@ -57,10 +57,12 @@ class MovieRenamerFoPlex
 
   def plex_rename(movie)
     # check if its a old name or renamed file
+    fix_symlinks_root = File.absolute_path(@options[:renamer][:fix_symlinks_root], ROOT_FOLDER)
+
     if /\[\(X/.match(movie)
       work_item = WorkItem.new(movie, extract_info_from_name_assuming_old_scheme(movie))
       @options[:renamer][:dry_run_mode] = @script_options[:dry_run_mode]
-      resp = @renamer.try_process(work_item, update_links_from: @options[:renamer][:fix_symlinks_root])
+      resp = @renamer.try_process(work_item, update_links_from: fix_symlinks_root)
       assert(resp.type == :success, "could not move #{movie}")
       Loggers::RenameMoviesForPlex.info { "moved #{movie} to #{resp.destination}" }
     else
@@ -69,7 +71,7 @@ class MovieRenamerFoPlex
 
       #we dont expect any changes since this file should be named correctly
       @options[:renamer][:dry_run_mode] = true
-      resp = @renamer.try_process(work_item, update_links_from: @options[:renamer][:fix_symlinks_root])
+      resp = @renamer.try_process(work_item, update_links_from: fix_symlinks_root)
       assert(resp.type == :success, "could not generate new name for #{movie}")
       assert(resp.destination == movie, "location of #{movie} was unexpectedly changed to #{resp.destination}")
       Loggers::RenameMoviesForPlex.info { "did not have to rename #{movie}" }

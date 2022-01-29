@@ -15,13 +15,14 @@ options = ScriptOptions.load_options(options_file)
 
 r_options = options[:renamer]
 
-Loggers::PlexAnidbIdize.info { "processing files in #{r_options[:output_location]}" }
+output_location = File.absolute_path(r_options[:output_location], ROOT_FOLDER)
+Loggers::PlexAnidbIdize.info { "processing files in #{output_location}" }
 if !(r_options[:create_anidb_id_files])
   Loggers::PlexAnidbIdize.info {"Nothing to do since create_anidb_id_files is false"}
   exit
 end
 
-all_folders = Dir["#{r_options[:output_location]}/**"].sort
+all_folders = Dir["#{output_location}/**"].sort
 all_folders.each do |f|
   match_data = File.read("#{f}/tvshow.nfo").match(/^aid=(\d+)\s*$/)
   raise "did not match for #{f}" unless match_data
