@@ -17,11 +17,3 @@ group :test do
   gem 'faker'
   gem 'fakefs'
 end
-
-group :development do
-  gem 'capistrano'
-  gem 'capistrano-rsync-bladrak'
-  gem 'capistrano-bundler'
-  gem 'capistrano-rbenv'
-  gem 'capistrano-rbenv-install', '~> 1.2.0'
-end
