@@ -143,7 +143,7 @@ module Renamer
 
     def symlink(source, dest, name)
       @symlinker.relative_with_name(source, dest, name)
-    rescue Exception => e
+    rescue StandardError => e
       Loggers::Renamer.warn e.inspect
       raise
     end
