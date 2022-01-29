@@ -49,12 +49,12 @@ class PostProcessor
           res = renamer.try_process(work_item)
           case res.type
           when :success
-            Loggers::PostProcessor.info "#{work_item.file} was successfully processed to #{res.destination}"
+            Loggers::PostProcessor.info "MOVING \n\t#{work_item.file} ===>\n\t#{res.destination}"
             success[res.destination] = work_item
           when :unknown
-            Loggers::PostProcessor.info "file #{work_item.file} is unknown #{"and moved to #{res.destination}" if res.destination}"
+            Loggers::PostProcessor.info "UNKNOWN file\n\t#{work_item.file}#{"  ===>\n\t#{res.destination}" if res.destination}"
           when :duplicate
-            Loggers::PostProcessor.info "#{work_item.file} is a duplicate of #{res.destination}"
+            Loggers::PostProcessor.info "DUPLICATE file \n\t#{work_item.file} <=>\n\t#{res.destination}"
             dups[res.destination] = dups[res.destination] || []
             dups[res.destination].push(work_item)
           end

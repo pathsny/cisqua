@@ -123,12 +123,12 @@ module Renamer
         s = File.join(l, folder)
         if File.symlink?(s)
           File.unlink(s) unless options[:dry_run_mode]
-          Loggers::Renamer.info "deleting symlink #{s} to #{location} DRY RUN"
+          Loggers::Renamer.info "DELETING symlink #{'DRY RUN' if options[:dry_run_mode]}\n\t#{s}  <--X\n\t#{location}"
         end
       end
       if correct_location && !File.symlink?("#{correct_location}/#{folder}")
         symlink(location, correct_location, folder)
-        Loggers::Renamer.info "symlinking #{location} to #{correct_location}/#{folder}"
+        Loggers::Renamer.info "SYMLINKING \n\t#{location} <---\n\t#{correct_location}/#{folder}"
       end
     end
 
