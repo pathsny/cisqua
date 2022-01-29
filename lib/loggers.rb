@@ -20,11 +20,11 @@ Logging.appenders.stdout(
   :layout => Logging.layouts.pattern({:color_scheme => :colorful}),
 )
 Logging.appenders.file('logfile',
-  :filename => File.expand_path('../../log/anidb.log', __FILE__),
+  :filename => File.expand_path('../../data/log/anidb.log', __FILE__),
   :layout => Logging.layouts.pattern({}),
 )
 
-parseable_logfile = File.expand_path('../../log/anidb_json.log', __FILE__)
+parseable_logfile = File.expand_path('../../data/log/anidb_json.log', __FILE__)
 
 Logging.appenders.file('parseable_logfile',
   :filename => parseable_logfile,
