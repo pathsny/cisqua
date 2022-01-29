@@ -8,7 +8,7 @@ describe Renamer::DuplicateResolver do
   end
 
   def make_fid
-    Faker::Number.number(5).to_i
+    Faker::Number.number(digits: 5).to_i
   end
 
   def make_item(file_params, fid = nil)
