@@ -2,38 +2,16 @@ require 'logging'
 
 Logging.logger.root.level = :debug
 
-default_scheme = Logging::ColorScheme[:default]
-
 Logging.color_scheme(:colorful, {
-  :levels => {
-    :info  => :green,
-    :warn  => :yellow,
-    :error => :red,
-    :fatal => [:white, :on_red]
+  levels: {
+    info: :green,
+    warn: :yellow,
+    error: :red,
+    fatal: [:white, :on_red]
   },
-  :date => :cyan,
-  :logger => :magenta,
+  date: :cyan,
+  logger: :magenta,
 })
-
-Logging.appenders.stdout(
-  'stdout',
-  :layout => Logging.layouts.pattern({:color_scheme => :colorful}),
-)
-Logging.appenders.file('logfile',
-  :filename => File.expand_path('../../data/log/anidb.log', __FILE__),
-  :layout => Logging.layouts.pattern({}),
-)
-
-parseable_logfile = File.expand_path('../../data/log/anidb_json.log', __FILE__)
-
-Logging.appenders.file('parseable_logfile',
-  :filename => parseable_logfile,
-  :layout => Logging.layouts.json(:items => %w[timestamp level logger message pid]),
-)
-
-Logging.define_singleton_method(:parseable_logfile) { parseable_logfile }
-
-Logging.logger.root.add_appenders 'stdout', 'logfile', 'parseable_logfile'
 
 module Loggers
   PostProcessor = Logging.logger['PostProcessor']
@@ -55,9 +33,42 @@ module Loggers
     Logging.logger.root.level = log_level
   end
 
-  def self.custom_log_file(path)
+  def self.setup_log_file(log_file_path, parseable_logfile_path = nil)
     Logging.logger.root.remove_appenders('parseable_logfile', 'logfile')
-    Logging.appenders.file('logfile', filename: path, layout: Logging.layouts.pattern({}))
+    Logging.appenders.file(
+      'logfile',
+      filename: log_file_path,
+      layout: Logging.layouts.pattern({ color_scheme: :colorful }),
+    )
     Logging.logger.root.add_appenders('logfile')
+    return unless parseable_logfile_path
+
+    Logging.appenders.file(
+      'parseable_logfile',
+      filename: parseable_logfile_path,
+      layout: Logging.layouts.json(items: %w[timestamp level logger message pid]),
+    )
   end
 end
+
+Logging.appenders.stdout(
+  'stdout',
+  layout: Logging.layouts.pattern({ color_scheme: :colorful }),
+)
+
+Loggers.setup_log_file(
+  File.expand_path('../data/log/anidb.log', __dir__),
+  File.expand_path('../data/log/anidb_json.log', __dir__),
+)
+
+# Logging.appenders.file('logfile',
+#   :filename => File.expand_path('../../data/log/anidb.log', __FILE__),
+#   :layout => ),
+# )
+
+# parseable_logfile = File.expand_path('../../data/log/anidb_json.log', __FILE__)
+
+
+Logging.define_singleton_method(:parseable_logfile) { parseable_logfile }
+
+Logging.logger.root.add_appenders 'stdout', 'logfile', 'parseable_logfile'

@@ -29,5 +29,8 @@ options[:log_level] = script_options[:log_level] if script_options.key?(:log_lev
 options[:renamer][:dry_run_mode] = script_options[:dry_run_mode] if script_options.key?(:dry_run_mode)
 
 Loggers.set_log_level_from_option(options[:log_level])
-Loggers.custom_log_file(script_options[:logfile]) if script_options.key?(:logfile)
+if script_options.key?(:logfile) || script_options[:test_mode]
+  logfile_path = script_options[:logfile] || File.expand_path('../data/test_data/anidb.log', __dir__)
+  Loggers.setup_log_file(logfile_path)
+end
 PostProcessor.run(script_options[:test_mode] || false, options)

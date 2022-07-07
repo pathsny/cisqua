@@ -52,9 +52,9 @@ class PostProcessor
             Loggers::PostProcessor.info "MOVING \n\t#{work_item.file} ===>\n\t#{res.destination}"
             success[res.destination] = work_item
           when :unknown
-            Loggers::PostProcessor.info "UNKNOWN file\n\t#{work_item.file}#{"  ===>\n\t#{res.destination}" if res.destination}"
+            Loggers::PostProcessor.warn "UNKNOWN file\n\t#{work_item.file}#{"  ===>\n\t#{res.destination}" if res.destination}"
           when :duplicate
-            Loggers::PostProcessor.info "DUPLICATE file \n\t#{work_item.file} <=>\n\t#{res.destination}"
+            Loggers::PostProcessor.warn "DUPLICATE file \n\t#{work_item.file} <=>\n\t#{res.destination}"
             dups[res.destination] = dups[res.destination] || []
             dups[res.destination].push(work_item)
           end
