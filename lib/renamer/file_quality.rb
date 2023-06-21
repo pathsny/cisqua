@@ -117,7 +117,7 @@ class FileQuality
     @source = Source.new(options[:source])
     @res = VideoResolution.new(options[:video_resolution])
     assert(
-      @version.is_a?(Integer) && 1 <= @version && @version <= 5,
+      @version.is_a?(Integer) && @version >= 1 && @version <= 5,
       'quality requires a valid version'
     )
   end
@@ -126,7 +126,7 @@ class FileQuality
 
   def <=>(other)
     source_cmp = source <=> other.source
-    if source_cmp == 0
+    if source_cmp.zero?
       consistent_comparison(
         quality <=> other.quality,
         version <=> other.version,

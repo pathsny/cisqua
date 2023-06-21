@@ -30,13 +30,13 @@ module Renamer
         sorted_rest = rest.sort(&method(:compare_items)).reverse
 
         make_result = lambda do |selected, others|
-          junk, dups = others.partition { |r| compare_items(selected, r) > 0 }
+          junk, dups = others.partition { |r| compare_items(selected, r).positive? }
           { junk: clones + junk, keep_current: original == selected, dups:, selected: }
         end
 
         if sorted_rest.empty?
           make_result[original, sorted_rest]
-        elsif compare_items(original, sorted_rest.first) < 0
+        elsif compare_items(original, sorted_rest.first).negative?
           make_result[sorted_rest.first, sorted_rest.drop(1)]
         else
           make_result[original, sorted_rest]

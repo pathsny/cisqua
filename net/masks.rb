@@ -32,14 +32,14 @@ module Net
     # unused                  => 0x00000004,
     # unused                  => 0x00000002,
     date_aid_record_updated: 0x00000001
-  }
+  }.freeze
 
   FILE_AMASKS_ORDER = %i[
     anime_total_episodes highest_episode_number year type related_aid_list related_aid_type category_list
     romaji_name kanji_name english_name other_name short_name_list synonym_list
     epno ep_english_name ep_romaji_name ep_kanji_name ep_rating ep_vote_count
     group_name group_short_name date_aid_record_updated
-  ]
+  ].freeze
 
   FILE_FMASKS = {
     # unused             => 0x80000000,
@@ -74,14 +74,14 @@ module Net
     # unused             => 0x00000004,
     # unused             => 0x00000002,
     anidb_file_name: 0x00000001
-  }
+  }.freeze
 
   FILE_FMASKS_ORDER = %i[
     aid eid gid mylist_id other_episodes is_deprecated state
     size ed2k md5 sha1 crc32
     quality source audio_codec_list audio_bitrate_list video_codec video_bitrate video_resolution file_type
     dub_language sub_language length description aired_date anidb_file_name
-  ]
+  ].freeze
 
   FILE_STATE_MASKS = {
     crc_ok: 0x01,
@@ -92,19 +92,19 @@ module Net
     file_v5: 0x20,
     uncensored: 0x40,
     censored: 0x80
-  }
+  }.freeze
 
   CRC_STATES = {
     name: :crc_status,
     default: :crc_unchecked,
     keys: %i[crc_ok crc_err]
-  }
+  }.freeze
 
   CENSORED_STATES = {
     name: :censored,
     default: :unknown,
     keys: %i[uncensored censored]
-  }
+  }.freeze
 
   VERSION_STATES = {
     name: :version,
@@ -117,9 +117,9 @@ module Net
       file_v4: 4,
       file_v5: 5
     }
-  }
+  }.freeze
 
-  STATE_PARTS = [CRC_STATES, CENSORED_STATES, VERSION_STATES]
+  STATE_PARTS = [CRC_STATES, CENSORED_STATES, VERSION_STATES].freeze
 
   ANIME_AMASKS = {
     aid: 0x80000000000000,
@@ -178,7 +178,7 @@ module Net
     # unused                 => 0x00000000000004,
     # unused                 => 0x00000000000002,
     # unused                 => 0x00000000000001,
-  }
+  }.freeze
 
   ANIME_AMASKS_ORDER = %i[
     aid dateflags year type related_aid_list related_aid_type category_list category_weight_list
@@ -188,5 +188,5 @@ module Net
     anime_planet_id ANN_id allcinema_id AnimeNfo_id date_record_updated
     character_id_list creator_id_list main_creator_id_list main_creator_name_list
     specials_count credits_count other_count trailer_count parody_count
-  ]
+  ].freeze
 end

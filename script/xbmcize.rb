@@ -1,5 +1,6 @@
 # renames all specials with xbmc metadata
 
+require 'English'
 require 'rubygems'
 require 'fileutils'
 require File.expand_path('lib/libs', __dir__)
@@ -20,5 +21,5 @@ files.reject { |f| f.match(/.*\[\(XS-[^)]*\)\]/) }.tap { |fs| p fs.inspect }.eac
   FileUtils.mv file, new_name
   p "renamed #{file} to #{new_name}"
 rescue StandardError
-  p "cannot process #{file} because #{$!}"
+  p "cannot process #{file} because #{$ERROR_INFO}"
 end

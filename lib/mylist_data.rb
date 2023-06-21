@@ -26,7 +26,7 @@ class MylistData
   end
 
   def complete?
-    @count > 0 && normal_episodes.size == @count
+    @count.positive? && normal_episodes.size == @count
   end
 
   private

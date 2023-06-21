@@ -1,3 +1,4 @@
+require 'English'
 require_relative '../../rename_rules'
 require 'fileutils'
 require 'pathname'
@@ -29,7 +30,7 @@ module Renamer
       location, path, name = generate_location(work_item.info)
       process_file(name, work_item, location, path, override_options)
     rescue StandardError
-      Loggers::Renamer.error "error naming #{work_item.file} from #{work_item.info.inspect} with #{$!}"
+      Loggers::Renamer.error "error naming #{work_item.file} from #{work_item.info.inspect} with #{$ERROR_INFO}"
       raise
     end
 

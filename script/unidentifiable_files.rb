@@ -1,5 +1,6 @@
 # identifies duplicate files and unknown files
 
+require 'English'
 require 'rexml/document'
 require 'optparse'
 require File.expand_path('helpers/load_options', __dir__)
@@ -52,8 +53,8 @@ def s_pattern_fix(folder_name)
                  }]
 end
 
-Duplicates = {}
-Unknown = []
+Duplicates = {}.freeze
+Unknown = [].freeze
 
 def try_fix(folder, movie)
   folder_name = File.basename(folder)
@@ -76,13 +77,13 @@ def try_fix(folder, movie)
     end
   end
 rescue StandardError
-  Loggers::BadFiles.error { "error working with #{folder} #{$!}" }
+  Loggers::BadFiles.error { "error working with #{folder} #{$ERROR_INFO}" }
 end
 
 def test_names(folder, movie)
   folder_name = File.basename(folder)
   files = Dir["#{folder}/*"].reject do |file|
-    /^[^.]*$/.match(file) || File.basename(file) == 'tvshow.nfo' || Duplicates.has_key?(file)
+    /^[^.]*$/.match(file) || File.basename(file) == 'tvshow.nfo' || Duplicates.key?(file)
   end
   patterns = movie ? m_pattern(folder_name) : s_pattern(folder_name)
   files.each do |file|

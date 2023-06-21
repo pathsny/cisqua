@@ -63,13 +63,13 @@ class PostProcessor
         end
         dups.each do |k, _|
           # rescan the duplicates unless we have it in the success map
-          scan_queue << k unless success.has_key?(k)
+          scan_queue << k unless success.key?(k)
         end
         scan_queue << :end
 
         # resolve duplicates immideately for when we have all the info
         dups.each do |k, items|
-          next unless success.has_key?(k)
+          next unless success.key?(k)
 
           renamer.process_duplicate_set(
             WorkItem.new(k, success[k].info), items

@@ -34,7 +34,7 @@ module Renamer
       mk_dest = -> { File.join(location, new_name + suffix + ext) }
       destination = mk_dest.call
       while move_options[:unambiguous] && is_duplicate_destination(old_path, destination)
-        suffix = ".#{suffix[1..-1].to_i + 1}"
+        suffix = ".#{suffix[1..].to_i + 1}"
         destination = mk_dest.call
       end
       destination

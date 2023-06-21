@@ -84,7 +84,7 @@ class LRUHash
   end
 
   def has_key?(key)
-    @h.has_key? key
+    @h.key? key
   end
 
   alias key? has_key?
@@ -253,7 +253,7 @@ class LRUHash
   # be larger than zero.
   def normalize_max(n)
     n = n.to_i
-    raise ArgumentError, 'Invalid max_size: %p' % n unless n.is_a?(Integer) && n > 0
+    raise ArgumentError, 'Invalid max_size: %p' % n unless n.is_a?(Integer) && n.positive?
 
     n
   end

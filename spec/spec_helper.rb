@@ -89,7 +89,7 @@ RSpec::Matchers.define :be_moved_to_without_source_symlink do |expected|
       unless !File.symlink?(actual[:path]) || resolve_symlink(actual[:path]) != expected
 
     actual_content = read_file(expected)
-    err_msg = "#{expected} was not moved correctly. " +
+    err_msg = "#{expected} was not moved correctly. " \
               "expected content #{actual[:content]} but was #{actual_content}"
     break err_msg unless actual[:content] == actual_content
   end
@@ -118,7 +118,7 @@ RSpec::Matchers.define :be_moved_to_with_source_symlink do |expected|
     break "#{expected} should exist" unless File.exist?(expected)
 
     actual_content = read_file(expected)
-    err_msg = "#{expected} was not moved correctly. " +
+    err_msg = "#{expected} was not moved correctly. " \
               "expected content #{actual[:content]} but was #{actual_content}"
     break err_msg unless actual[:content] == actual_content
   end

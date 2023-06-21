@@ -5,13 +5,13 @@ describe Renamer::NameGenerator do
     end
 
     failure_message do |actual|
-      "expected that #{actual} would be renamed to to #{expected}," +
+      "expected that #{actual} would be renamed to to #{expected}," \
         " but it was renamed to #{subject.generate_name_and_path(actual)}"
     end
   end
 
   def make_path_and_name(s)
-    [s, s + '.mkv']
+    [s, "#{s}.mkv"]
   end
 
   subject { Renamer::NameGenerator.new(method(:make_path_and_name)) }

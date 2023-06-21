@@ -7,7 +7,7 @@ require_relative 'masks'
 
 module Net
   PROTOVER = 3
-  CLIENTNAME = 'anidbruby'
+  CLIENTNAME = 'anidbruby'.freeze
   CLIENTVER = 1
 
   # eval(File.read(File.dirname(__FILE__) + "/masks"))
@@ -15,27 +15,27 @@ module Net
   ANIME_AMASKS_ORDER.delete(:aid)
 
   DEFAULT_FILE_FFIELDS =  %i[aid eid gid length quality video_resolution
-                             source sub_language dub_language state]
+                             source sub_language dub_language state].freeze
   DEFAULT_FILE_AFIELDS =  %i[type year highest_episode_number
                              english_name romaji_name epno ep_english_name
-                             ep_romaji_name group_name group_short_name]
+                             ep_romaji_name group_name group_short_name].freeze
   DEFAULT_ANIME_AFIELDS = %i[aid dateflags year type romaji_name english_name
                              episodes highest_episode_number air_date end_date
-                             is_18_restricted]
+                             is_18_restricted].freeze
   EPISODE_FIELDS =        %i[eid aid length rating votes epno
-                             english_name romaji_name kanji_name aired]
+                             english_name romaji_name kanji_name aired].freeze
   GROUP_FIELDS =          %i[gid rating votes acount fcount name
-                             short_name irc_channel irc_server url picname]
+                             short_name irc_channel irc_server url picname].freeze
   MYLIST_FIELDS =         %i[lid fid eid aid gid date state viewdate
-                             storage source other filestate]
-  MULTI_MYLIST_FIELDS =   %i[title episodes unknown_ep_list hdd_ep_list cd_ep_list deleted_ep_list]
+                             storage source other filestate].freeze
+  MULTI_MYLIST_FIELDS =   %i[title episodes unknown_ep_list hdd_ep_list cd_ep_list deleted_ep_list].freeze
 
   MYLIST_STATES = {
     unknown: 0,
     hdd: 1,
     cd: 2,
     deleted: 3
-  }
+  }.freeze
 
   MYLIST_FILE_STATES = {
     original: 0,
@@ -48,11 +48,11 @@ module Net
     theaters: 14,
     streamed: 15,
     other: 100
-  }
+  }.freeze
 
   FILE_STATES = {
 
-  }
+  }.freeze
 
   class AniDBUDP
     class Error               < RuntimeError; end
@@ -80,7 +80,7 @@ module Net
           @tag = Regexp.last_match(1).to_i
           @code = Regexp.last_match(2).to_i
           @text = Regexp.last_match(3)
-          @lines = msg[1..-1]
+          @lines = msg[1..]
         else
           @code = nil
           @lines = msg
@@ -128,7 +128,7 @@ module Net
             ed2k_hash << OpenSSL::Digest::MD4.digest(block)
           end
           # on size of modulo block size, append another md4 hash of a blank string
-          ed2k_hash << OpenSSL::Digest.digest('MD4', '') if (file_size % ed2k_block) == 0
+          ed2k_hash << OpenSSL::Digest.digest('MD4', '') if (file_size % ed2k_block).zero?
         end
         # finally
         ed2k_hash = OpenSSL::Digest::MD4.hexdigest(ed2k_hash)
@@ -523,7 +523,7 @@ module Net
     private
 
     def process_auth(replies)
-      if replies.count == 0
+      if replies.count.zero?
         @sid = nil
         @dead = true
       else
@@ -596,7 +596,7 @@ module Net
           h[:anime][k] = lr.shift if anime_fields.include? k
         end
         if file_fields.include?(:state)
-          states = FILE_STATE_MASKS.select { |_state, m| h[:file][:state].to_i & m != 0 }
+          states = FILE_STATE_MASKS.reject { |_state, m| (h[:file][:state].to_i & m).zero? }
           STATE_PARTS.each do |state_part|
             part_value = (states.keys & state_part[:keys]).first || state_part[:default]
             part_value = state_part[:map][part_value] if state_part[:map]
@@ -647,7 +647,7 @@ module Net
         h = { episode: {} }
         lr = reply.lines[0].split(/\|/)
         h[:eid] = lr.shift.to_i
-        EPISODE_FIELDS[1..-1].each do |k|
+        EPISODE_FIELDS[1..].each do |k|
           h[:episode][k] = lr.shift
         end
         h
@@ -666,7 +666,7 @@ module Net
         h = { group: {} }
         lr = reply.lines[0].split(/\|/)
         h[:gid] = lr.shift.to_i
-        GROUP_FIELDS[1..-1].each do |k|
+        GROUP_FIELDS[1..].each do |k|
           h[:group][k] = lr.shift
         end
         h
@@ -734,10 +734,10 @@ module Net
         h = {}
         lr = reply.lines[0].split(/\|/)
         h[:lid] = lr.shift.to_i
-        MYLIST_FIELDS[1..-1].each do |k|
+        MYLIST_FIELDS[1..].each do |k|
           h[k] = lr.shift
         end
-        if (h[:viewdate].to_i > 0 ? 1 : 0) != viewed.to_i ||
+        if (h[:viewdate].to_i.positive? ? 1 : 0) != viewed.to_i ||
            h[:state].to_i != MYLIST_STATES[state].to_i
           -h[:lid] # Hack !
         else
@@ -901,7 +901,7 @@ module Net
   end
 end
 
-if $0 == __FILE__
+if $PROGRAM_NAME == __FILE__
   $DEBUG = true
   $local = true
   t = Net::AniDBUDP.new('localhost', 9000, 9001)

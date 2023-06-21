@@ -32,7 +32,7 @@ class Anidb
     params = %i[host port localport user pass nat].map { |k| @options[k] }
     logger = Loggers::UDPClient
     logger.instance_eval("def proto(v = '') ; self.debug v ; end", __FILE__, __LINE__)
-    Net::AniDBUDP.new(*params, logger).tap { |client| client.connect }
+    Net::AniDBUDP.new(*params, logger).tap(&:connect)
   end
 
   def update_mylist_with(info)
@@ -41,15 +41,15 @@ class Anidb
   end
 
   def retrieve_show_details(aid)
-    @cache['anime_' + aid] ||= anime(aid)
+    @cache["anime_#{aid}"] ||= anime(aid)
   end
 
   def fetch_mylist_data(aid, episodes)
-    @cache['mylist_' + aid] ||= create_mylist_data(aid, episodes)
+    @cache["mylist_#{aid}"] ||= create_mylist_data(aid, episodes)
   end
 
   def fetch_episode_no(eid)
-    @cache['episode_' + eid] ||= episode(eid)[:episode][:epno]
+    @cache["episode_#{eid}"] ||= episode(eid)[:episode][:epno]
   end
 
   def create_mylist_data(aid, episodes)
@@ -60,7 +60,7 @@ class Anidb
 
   def identify_file(name, size, ed2k)
     search_file(name, size, ed2k).tap do |info|
-      @cache['episode_' + info[:file][:eid]] = info[:anime][:epno] if info
+      @cache["episode_#{info[:file][:eid]}"] = info[:anime][:epno] if info
       Loggers::PostProcessor.debug "file #{name} identified as #{info.inspect}"
     end
   end
