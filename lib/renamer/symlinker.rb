@@ -19,7 +19,7 @@ module Renamer
         Loggers::Symlinker.debug("Creating #{source_dir}. #{@options[:dry_run_mode] ? ' DRY RUN' : ''}")
         FileUtils.mkdir_p(source_dir) unless @options[:dry_run_mode]
       end
-      (Pathname.new target).relative_path_from (Pathname.new source_dir)
+      (Pathname.new target).relative_path_from(Pathname.new(source_dir))
     end
 
     def make_symlink(old_name, new_name)

@@ -3,7 +3,7 @@
 require 'socket'
 require 'openssl'
 require 'timeout'
-require_relative 'masks.rb'
+require_relative 'masks'
 
 module Net
   PROTOVER = 3
@@ -14,122 +14,125 @@ module Net
 
   ANIME_AMASKS_ORDER.delete(:aid)
 
-  DEFAULT_FILE_FFIELDS =  [ :aid, :eid, :gid, :length, :quality, :video_resolution,
-                            :source, :sub_language, :dub_language, :state ]
-  DEFAULT_FILE_AFIELDS =  [ :type, :year, :highest_episode_number,
-                            :english_name, :romaji_name, :epno, :ep_english_name,
-                            :ep_romaji_name, :group_name, :group_short_name ]
-  DEFAULT_ANIME_AFIELDS = [ :aid, :dateflags, :year, :type, :romaji_name, :english_name,
-                            :episodes, :highest_episode_number, :air_date, :end_date,
-                            :is_18_restricted ]
-  EPISODE_FIELDS =        [ :eid, :aid, :length, :rating, :votes, :epno,
-                            :english_name, :romaji_name, :kanji_name, :aired ]
-  GROUP_FIELDS =          [ :gid, :rating, :votes, :acount, :fcount, :name,
-                            :short_name, :irc_channel, :irc_server, :url, :picname ]
-  MYLIST_FIELDS =         [ :lid, :fid, :eid, :aid, :gid, :date, :state, :viewdate,
-                            :storage, :source, :other, :filestate ]
-  MULTI_MYLIST_FIELDS =   [ :title, :episodes, :unknown_ep_list, :hdd_ep_list, :cd_ep_list, :deleted_ep_list]
+  DEFAULT_FILE_FFIELDS =  %i[aid eid gid length quality video_resolution
+                             source sub_language dub_language state]
+  DEFAULT_FILE_AFIELDS =  %i[type year highest_episode_number
+                             english_name romaji_name epno ep_english_name
+                             ep_romaji_name group_name group_short_name]
+  DEFAULT_ANIME_AFIELDS = %i[aid dateflags year type romaji_name english_name
+                             episodes highest_episode_number air_date end_date
+                             is_18_restricted]
+  EPISODE_FIELDS =        %i[eid aid length rating votes epno
+                             english_name romaji_name kanji_name aired]
+  GROUP_FIELDS =          %i[gid rating votes acount fcount name
+                             short_name irc_channel irc_server url picname]
+  MYLIST_FIELDS =         %i[lid fid eid aid gid date state viewdate
+                             storage source other filestate]
+  MULTI_MYLIST_FIELDS =   %i[title episodes unknown_ep_list hdd_ep_list cd_ep_list deleted_ep_list]
 
   MYLIST_STATES = {
-    :unknown     => 0,
-    :hdd         => 1,
-    :cd          => 2,
-    :deleted     => 3,
+    unknown: 0,
+    hdd: 1,
+    cd: 2,
+    deleted: 3
   }
 
   MYLIST_FILE_STATES = {
-    :original    => 0,
-    :invalid     => 1,
-    :self_edited => 2,
-    :self_ripped => 10,
-    :dvd         => 11,
-    :vhs         => 12,
-    :tv          => 13,
-    :theaters    => 14,
-    :streamed    => 15,
-    :other       => 100,
+    original: 0,
+    invalid: 1,
+    self_edited: 2,
+    self_ripped: 10,
+    dvd: 11,
+    vhs: 12,
+    tv: 13,
+    theaters: 14,
+    streamed: 15,
+    other: 100
   }
 
   FILE_STATES = {
 
   }
-  
+
   class AniDBUDP
-    class Error               < Exception   ; end
+    class Error               < RuntimeError; end
 
-    class BannedError         < Error       ; end
+    class BannedError         < Error; end
 
-    class ParameterError      < Error       ; end
+    class ParameterError      < Error; end
 
-    class ClientError         < Error       ; end
-    class ClientAuthError     < ClientError ; end
-    class ClientAccessError   < ClientError ; end
-    class ClientBannedError   < ClientError ; end
-    class ClientOutdatedError < ClientError ; end
-    class ClientSessionError  < ClientError ; end
+    class ClientError         < Error; end
+    class ClientAuthError     < ClientError; end
+    class ClientAccessError   < ClientError; end
+    class ClientBannedError   < ClientError; end
+    class ClientOutdatedError < ClientError; end
+    class ClientSessionError  < ClientError; end
 
-    class ServerError         < Error       ; end
-    class ServerTimeout       < ServerError ; end
-    class ServerOfflineError  < ServerError ; end
+    class ServerError         < Error; end
+    class ServerTimeout       < ServerError; end
+    class ServerOfflineError  < ServerError; end
 
     class Reply
       attr_accessor :tag, :code, :text, :lines
 
       def initialize(msg)
         if msg[0] =~ /^radb(\d+) (\d+) (.*)$/
-          @tag = $1.to_i
-          @code = $2.to_i
-          @text = $3
+          @tag = Regexp.last_match(1).to_i
+          @code = Regexp.last_match(2).to_i
+          @text = Regexp.last_match(3)
           @lines = msg[1..-1]
         else
           @code = nil
           @lines = msg
-          @text = ""
+          @text = ''
           @tag = nil
         end
       end
 
       def to_s
         lines_str = @lines.empty? ? '' : "(#{@lines.join(' / ')})"
-        "#{@code} : #{@text}#{lines_str}" 
+        "#{@code} : #{@text}#{lines_str}"
       end
     end
 
     class << self
       def escape(v)
         case v
-        when true  then "1"
-        when false then "0"
-        when nil   then ""
+        when true  then '1'
+        when false then '0'
+        when nil   then ''
         else            v.to_s.gsub(/&/, '&amp;').gsub(/\n/, '<br />')
         end
       end
+
       def unescape(v)
-        v.to_s.gsub(/<br ?\/>/, "\n").gsub(/`/, "'")
+        v.to_s.gsub(%r{<br ?/>}, "\n").gsub(/`/, "'")
       end
+
       def unescape!(v)
         v = v.to_s unless v.is_a? String
-        v.gsub!(/<br ?\/>/, "\n")
+        v.gsub!(%r{<br ?/>}, "\n")
         v.gsub!(/`/, "'")
         v
       end
+
       def ed2k_file_hash(file_name)
-        #ed2k block size is 9500 KiB
+        # ed2k block size is 9500 KiB
         ed2k_block = 9500 * 1024
-        ed2k_hash = ""
+        ed2k_hash = ''
         file_size = nil
         File.open(file_name, 'rb') do |f|
-          file_size = f.stat.size #while at it, fetch the size of the file
-          while block = f.read(ed2k_block) do
-            #hashes are concatenated md4 per block size for ed2k hash
+          file_size = f.stat.size # while at it, fetch the size of the file
+          while block = f.read(ed2k_block)
+            # hashes are concatenated md4 per block size for ed2k hash
             ed2k_hash << OpenSSL::Digest::MD4.digest(block)
           end
-          #on size of modulo block size, append another md4 hash of a blank string
-          ed2k_hash << OpenSSL::Digest::MD4.digest("") if(file_size % ed2k_block) == 0
+          # on size of modulo block size, append another md4 hash of a blank string
+          ed2k_hash << OpenSSL::Digest.digest('MD4', '') if (file_size % ed2k_block) == 0
         end
-        #finally
+        # finally
         ed2k_hash = OpenSSL::Digest::MD4.hexdigest(ed2k_hash)
-        [ file_size, ed2k_hash ]
+        [file_size, ed2k_hash]
       end
     end
 
@@ -150,9 +153,9 @@ module Net
       if logger.nil?
         @logger = Object.new
         if $DEBUG
-          @logger.instance_eval("def proto(v = '') ; puts v ; end")
+          @logger.instance_eval("def proto(v = '') ; puts v ; end", __FILE__, __LINE__)
         else
-          @logger.instance_eval("def proto(v = '') ; end")
+          @logger.instance_eval("def proto(v = '') ; end", __FILE__, __LINE__)
         end
       else
         @logger = logger
@@ -160,8 +163,9 @@ module Net
     end
 
     def connect(user = nil, pass = nil, nat = false)
-      raise ServerOfflineError.new("Trying to send a command to a dead server") if @dead
-      @sock = UDPSocket.new()
+      raise ServerOfflineError, 'Trying to send a command to a dead server' if @dead
+
+      @sock = UDPSocket.new
       @sock.bind('0.0.0.0', @localport)
       @sock.connect(@host, @port)
       @connected = true
@@ -170,7 +174,7 @@ module Net
       @pass = pass if pass
     end
 
-    def disconnect()
+    def disconnect
       @sock.shutdown if @connected
       @connected = false
       @sock = nil
@@ -188,10 +192,8 @@ module Net
       @dead
     end
 
-    def keep_alive()
-      if @connected && (Time.now - @last_activity) > 120
-        uptime
-      end
+    def keep_alive
+      uptime if @connected && (Time.now - @last_activity) > 120
     end
 
     # PING
@@ -200,10 +202,10 @@ module Net
     #   {int4 port} (when nat=1)
     def ping
       if @nat
-        command("PING",
-                :nat => 1)
+        command('PING',
+                nat: 1)
       else
-        command("PING")
+        command('PING')
       end
     end
 
@@ -229,29 +231,28 @@ module Net
     # 505 ILLEGAL INPUT OR ACCESS DENIED
     # 601 ANIDB OUT OF SERVICE - TRY AGAIN LATER
     def auth
-      if @user.nil? || @pass.nil?
-        raise ParameterError.new("Need username and password to connect")
-      end
+      raise ParameterError, 'Need username and password to connect' if @user.nil? || @pass.nil?
+
       replies = nil
       @sid = nil
       1.upto(3) do
-        replies = raw_command("AUTH",
-                              :user => @user,
-                              :pass => @pass,
-                              :protover => PROTOVER,
-                              :client => CLIENTNAME,
-                              :clientver => CLIENTVER,
-                              :nat => @nat ? 1 : 0,
-                              :enc => 'UTF-8',
-                              :imgserver => 0)
+        replies = raw_command('AUTH',
+                              user: @user,
+                              pass: @pass,
+                              protover: PROTOVER,
+                              client: CLIENTNAME,
+                              clientver: CLIENTVER,
+                              nat: @nat ? 1 : 0,
+                              enc: 'UTF-8',
+                              imgserver: 0)
         process_auth(replies)
         break if @sid || @dead
       end
       if @sid.nil?
-        @logger.proto "Authentication failed : #{replies.join("--")}"
+        @logger.proto "Authentication failed : #{replies.join('--')}"
         @authenticated = false
         @dead = true
-        raise ServerOfflineError.new("Authentication failed - unable to find SID")
+        raise ServerOfflineError, 'Authentication failed - unable to find SID'
       end
     end
 
@@ -260,7 +261,7 @@ module Net
     # 208 UPTIME
     #   {int4 udpserver uptime in milliseconds}
     def uptime
-      raw_command("UPTIME")
+      raw_command('UPTIME')
     end
 
     # FILE
@@ -280,8 +281,8 @@ module Net
     def file(fid,
              file_fields = DEFAULT_FILE_FFIELDS,
              anime_fields = DEFAULT_FILE_AFIELDS)
-      file_any(:fid, [ fid ], file_fields, anime_fields) \
-        if(fid && fid.to_i != 0)
+      file_any(:fid, [fid], file_fields, anime_fields) \
+        if fid && fid.to_i != 0
     end
 
     # FILE
@@ -292,8 +293,8 @@ module Net
     def search_file(name, size, ed2k,
                     file_fields = DEFAULT_FILE_FFIELDS,
                     anime_fields = DEFAULT_FILE_AFIELDS)
-      file_any(:ed2k, [ name, size, ed2k ], file_fields, anime_fields) \
-        if(size && ed2k && size.to_i != 0 && ed2k != '')
+      file_any(:ed2k, [name, size, ed2k], file_fields, anime_fields) \
+        if size && ed2k && size.to_i != 0 && ed2k != ''
     end
 
     # FILE
@@ -303,10 +304,10 @@ module Net
     #  &fmask={hexstr fmask}
     #  &amask={hexstr amask}
     def file_by_ids(aid, gid, epno,
-             file_fields = DEFAULT_FILE_FFIELDS,
-             anime_fields = DEFAULT_FILE_AFIELDS)
-      file_any(:aid, [ aid, gid, epno ], file_fields, anime_fields) \
-        if(aid && gid && epno && aid.to_i != 0 && gid.to_i != 0 && epno.strip != '0' && epno.strip != '00')
+                    file_fields = DEFAULT_FILE_FFIELDS,
+                    anime_fields = DEFAULT_FILE_AFIELDS)
+      file_any(:aid, [aid, gid, epno], file_fields, anime_fields) \
+        if aid && gid && epno && aid.to_i != 0 && gid.to_i != 0 && epno.strip != '0' && epno.strip != '00'
     end
 
     # ANIME
@@ -319,8 +320,8 @@ module Net
     # 330 NO SUCH ANIME
     def anime(aid,
               anime_fields = DEFAULT_ANIME_AFIELDS)
-      anime_any(:aid, [ aid ], anime_fields) \
-        if(aid && aid.to_i != 0)
+      anime_any(:aid, [aid], anime_fields) \
+        if aid && aid.to_i != 0
     end
 
     # ANIME
@@ -328,8 +329,8 @@ module Net
     # [&amask={hexstr}]
     def search_anime(name,
                      anime_fields = DEFAULT_ANIME_AFIELDS)
-      anime_any(:aname, [ name ], anime_fields) \
-        if(name && name.strip != '')
+      anime_any(:aname, [name], anime_fields) \
+        if name && name.strip != ''
     end
 
     # EPISODE
@@ -348,16 +349,16 @@ module Net
     #  |{int4 aired}
     # 340 NO SUCH EPISODE
     def episode(eid)
-      episode_any(:eid, [ eid ]) \
-        if(eid && eid.to_i != 0)
+      episode_any(:eid, [eid]) \
+        if eid && eid.to_i != 0
     end
 
     # EPISODE
     #    aid={int4 anime id}
     #   &epno={int4 episode number}
     def search_episode(aid, epno)
-      episode_any(:aidno, [ aid, epno ]) \
-        if(aid && epno && aid.to_i != 0 && epno.strip != '0' && epno.strip != '00')
+      episode_any(:aidno, [aid, epno]) \
+        if aid && epno && aid.to_i != 0 && epno.strip != '0' && epno.strip != '00'
     end
 
     # GROUP
@@ -377,14 +378,15 @@ module Net
     #   |{str picname}
     # 350 NO SUCH GROUP
     def group(gid)
-      group_any(:gid, [ gid ]) \
-        if(gid && gid.to_i != 0)
+      group_any(:gid, [gid]) \
+        if gid && gid.to_i != 0
     end
+
     # GROUP
     #    gname={str group name}
     def search_group(name)
-      group_any(:name, [ name ]) \
-        if(name && name.strip != '')
+      group_any(:name, [name]) \
+        if name && name.strip != ''
     end
 
     # MYLIST
@@ -405,27 +407,27 @@ module Net
     #   |{int2 filestate}
     # 321 NO SUCH ENTRY
     def mylist(lid)
-      mylist_any(:lid, [ lid ]) \
-        if(lid && lid.to_i != 0)
+      mylist_any(:lid, [lid]) \
+        if lid && lid.to_i != 0
     end
 
     # MYLIST
     #    fid={int4 fid}
     def mylist_by_fid(fid)
-      mylist_any(:fid, [ fid ]) \
-        if(fid && fid.to_i != 0)
+      mylist_any(:fid, [fid]) \
+        if fid && fid.to_i != 0
     end
 
     # MYLIST
     #    fid={int4 fid}
     def mylist_by_ed2k(size, ed2k)
-      mylist_any(:ed2k, [ size, ed2k ]) \
-        if(size && ed2k && size.to_i != 0 && ed2k.strip != '')
+      mylist_any(:ed2k, [size, ed2k]) \
+        if size && ed2k && size.to_i != 0 && ed2k.strip != ''
     end
-    
+
     def mylist_by_aid(aid)
-      mylist_any(:aid, [aid]) if (aid && aid.to_i != 0) 
-    end  
+      mylist_any(:aid, [aid]) if aid && aid.to_i != 0
+    end
 
     # MYLISTADD
     #    fid={int4 fid}
@@ -448,8 +450,9 @@ module Net
     # 311 MYLIST ENTRY EDITED
     # 411 NO SUCH MYLIST ENTRY
     def mylist_add(fid, edit = false, viewed = 0, state = :hdd, source = nil, storage = nil)
-      return unless(fid && fid.to_i != 0)
-      mylist_add_any(:fid, [ fid ], edit, viewed, state, source, storage)
+      return unless fid && fid.to_i != 0
+
+      mylist_add_any(:fid, [fid], edit, viewed, state, source, storage)
     end
 
     # MYLISTADD
@@ -463,8 +466,9 @@ module Net
     #  [&other={str other}]
     #  [&edit={boolean edit}]
     def mylist_add_by_ed2k(size, ed2k, edit = false, viewed = 0, state = :hdd, source = nil, storage = nil)
-      return unless(size && ed2k && size.to_i != 0 && ed2k.strip != '')
-      mylist_add_any(:ed2k, [ size, ed2k ], edit, viewed, state, source, storage)
+      return unless size && ed2k && size.to_i != 0 && ed2k.strip != ''
+
+      mylist_add_any(:ed2k, [size, ed2k], edit, viewed, state, source, storage)
     end
 
     # MYLISTDEL
@@ -474,86 +478,76 @@ module Net
     #    {int4 number of entries}
     # 411 NO SUCH MYLIST ENTRY
     def mylist_del(lid)
-      return unless(lid && lid.to_i != 0)
+      return unless lid && lid.to_i != 0
+
       reply = command('MYLISTDEL',
-                      :lid => lid)
-      if reply.code == 211
-        reply.lines[0].to_i
-      else
-        nil
-      end
+                      lid:)
+      reply.lines[0].to_i if reply.code == 211
     end
 
     # MYLISTDEL
     #    fid={int4 fid}
     def mylist_del_by_fid(fid)
-      return unless(fid && fid.to_i != 0)
+      return unless fid && fid.to_i != 0
+
       reply = command('MYLISTDEL',
-                      :fid => fid)
-      if reply.code == 211
-        reply.lines[0].to_i
-      else
-        nil
-      end
+                      fid:)
+      reply.lines[0].to_i if reply.code == 211
     end
 
     # MYLISTDEL
     #    size={int4 size}
     #   &ed2k={str ed2k hash}
     def mylist_del_by_ed2k(size, ed2k)
-      return unless(size && ed2k && size.to_i != 0 && ed2k.strip != '')
+      return unless size && ed2k && size.to_i != 0 && ed2k.strip != ''
+
       reply = command('MYLISTDEL',
-                      :size => size,
-                      :ed2k => ed2k)
-      if reply.code == 211
-        reply.lines[0].to_i
-      else
-        nil
-      end
+                      size:,
+                      ed2k:)
+      reply.lines[0].to_i if reply.code == 211
     end
 
     # LOGOUT
     #
     # 203 LOGGED OUT
     # 403 NOT LOGGED IN
-    def logout()
+    def logout
       if @sid
         raw_command('LOGOUT')
-        @logger.proto "Logged out."
+        @logger.proto 'Logged out.'
         @authenticated = false
         @sid = nil
       end
     end
 
     private
+
     def process_auth(replies)
       if replies.count == 0
         @sid = nil
         @dead = true
       else
-        c = replies.select { |r| [ 200, 201 ].include? r.code }
+        c = replies.select { |r| [200, 201].include? r.code }
         case c.count
         when 0
           @sid = nil
           @dead = true
-          if replies.find { |r| r.code == 500 }
-            raise ClientAuthError.new("Authentication failed.")
-          end
+          raise ClientAuthError, 'Authentication failed.' if replies.find { |r| r.code == 500 }
         when 1
           @sid = find_sid(c[0])
           @authenticated = true
         else
           c.reverse.each do |r|
             sid = find_sid(r)
-            if sid
-              lr = exchange("UPTIME s=#{sid};tag=radb#{@tag}", @tag)
-              @tag += 1
-              if lr.find { |re| re.code == 208 }
-                @sid = sid
-                @authenticated = true
-                break
-              end
-            end
+            next unless sid
+
+            lr = exchange("UPTIME s=#{sid};tag=radb#{@tag}", @tag)
+            @tag += 1
+            next unless lr.find { |re| re.code == 208 }
+
+            @sid = sid
+            @authenticated = true
+            break
           end
         end
       end
@@ -561,191 +555,169 @@ module Net
 
     def file_any(type, pars, file_fields, anime_fields)
       fmask = file_fields.inject(0) do |m, k|
-        begin
-          m += FILE_FMASKS[k]
-        rescue Exception => e
-          raise ParameterError.new("FILE file field #{k} unrecognized. #{e.message}")
-        end
+        m += FILE_FMASKS[k]
+      rescue Exception => e
+        raise ParameterError, "FILE file field #{k} unrecognized. #{e.message}"
       end
       amask = anime_fields.inject(0) do |m, k|
-        begin
-          m += FILE_AMASKS[k]
-        rescue Exception => e
-          raise ParameterError.new("FILE anime field #{k} unrecognized. #{e.message}")
-        end
+        m += FILE_AMASKS[k]
+      rescue Exception => e
+        raise ParameterError, "FILE anime field #{k} unrecognized. #{e.message}"
       end
       reply = case type
-      when :fid
-        command('FILE',
-                :fid   => pars[0],
-                :fmask => '%08x' % [ fmask ],
-                :amask => '%08x' % [ amask ])
-      when :ed2k
-        command('FILE',
-                :size  => pars[1],
-                :ed2k  => pars[2],
-                :fmask => '%08x' % [ fmask ],
-                :amask => '%08x' % [ amask ])
-      when :aid
-        command('FILE',
-                :aid   => pars[0],
-                :gid   => pars[1],
-                :epno  => pars[2],
-                :fmask => '%08x' % [ fmask ],
-                :amask => '%08x' % [ amask ])
+              when :fid
+                command('FILE',
+                        fid: pars[0],
+                        fmask: format('%08x', fmask),
+                        amask: format('%08x', amask))
+              when :ed2k
+                command('FILE',
+                        size: pars[1],
+                        ed2k: pars[2],
+                        fmask: format('%08x', fmask),
+                        amask: format('%08x', amask))
+              when :aid
+                command('FILE',
+                        aid: pars[0],
+                        gid: pars[1],
+                        epno: pars[2],
+                        fmask: format('%08x', fmask),
+                        amask: format('%08x', amask))
 
-      end
+              end
       if reply.code == 220
-        h = { :file => {}, :anime => {}}
+        h = { file: {}, anime: {} }
         lr = reply.lines[0].split(/\|/)
         h[:fid] = lr.shift.to_i
         FILE_FMASKS_ORDER.each do |k|
-          if file_fields.include? k
-            h[:file][k] = lr.shift
-          end
+          h[:file][k] = lr.shift if file_fields.include? k
         end
         FILE_AMASKS_ORDER.each do |k|
-          if anime_fields.include? k
-            h[:anime][k] = lr.shift
-          end
+          h[:anime][k] = lr.shift if anime_fields.include? k
         end
         if file_fields.include?(:state)
-          states = FILE_STATE_MASKS.select { |state, m| h[:file][:state].to_i & m != 0 }
+          states = FILE_STATE_MASKS.select { |_state, m| h[:file][:state].to_i & m != 0 }
           STATE_PARTS.each do |state_part|
             part_value = (states.keys & state_part[:keys]).first || state_part[:default]
             part_value = state_part[:map][part_value] if state_part[:map]
             h[:file][state_part[:name]] = part_value
-          end  
-        end  
+          end
+        end
         h
-      else
-        nil
       end
     end
 
     def anime_any(type, pars, anime_fields)
       amask = anime_fields.inject(0) do |m, k|
-        begin
-          m += ANIME_AMASKS[k]
-        rescue Exception => e
-          raise ParameterError.new("ANIME field #{k} unrecognized. #{e.message}")
-        end
+        m += ANIME_AMASKS[k]
+      rescue Exception => e
+        raise ParameterError, "ANIME field #{k} unrecognized. #{e.message}"
       end
       reply = if type == :aid
-        command('ANIME',
-                :aid   => pars[0],
-                :amask => '%08x' % [ amask ])
-      else
-        command('ANIME',
-                :aname => pars[0],
-                :amask => '%08x' % [ amask ])
-      end
+                command('ANIME',
+                        aid: pars[0],
+                        amask: format('%08x', amask))
+              else
+                command('ANIME',
+                        aname: pars[0],
+                        amask: format('%08x', amask))
+              end
       if reply.code == 230
-        h = { :anime => {}}
+        h = { anime: {} }
         lr = reply.lines[0].split(/\|/)
         h[:aid] = lr.shift.to_i
         ANIME_AMASKS_ORDER.each do |k|
-          if anime_fields.include? k
-            h[:anime][k] = lr.shift
-          end
+          h[:anime][k] = lr.shift if anime_fields.include? k
         end
         h[:anime][:ended] = h[:anime][:dateflags].to_i[4] == 1
         h
-      else
-        nil
       end
     end
 
     def episode_any(type, pars)
       reply = if type == :eid
-        command('EPISODE',
-                :eid   => pars[0])
-      else
-        command('EPISODE',
-                :aid  => pars[0],
-                :epno => pars[1])
-      end
+                command('EPISODE',
+                        eid: pars[0])
+              else
+                command('EPISODE',
+                        aid: pars[0],
+                        epno: pars[1])
+              end
       if reply.code == 240
-        h = { :episode => {}}
+        h = { episode: {} }
         lr = reply.lines[0].split(/\|/)
         h[:eid] = lr.shift.to_i
         EPISODE_FIELDS[1..-1].each do |k|
           h[:episode][k] = lr.shift
         end
         h
-      else
-        nil
       end
     end
 
     def group_any(type, pars)
       reply = if type == :gid
-        command('GROUP',
-                :gid   => pars[0])
-      else
-        command('GROUP',
-                :gname => pars[0])
-      end
+                command('GROUP',
+                        gid: pars[0])
+              else
+                command('GROUP',
+                        gname: pars[0])
+              end
       if reply.code == 250
-        h = { :group => {}}
+        h = { group: {} }
         lr = reply.lines[0].split(/\|/)
         h[:gid] = lr.shift.to_i
         GROUP_FIELDS[1..-1].each do |k|
           h[:group][k] = lr.shift
         end
         h
-      else
-        nil
       end
     end
 
     def mylist_any(type, pars)
       reply = case type
-      when :lid
-        command('MYLIST',
-                :lid   => pars[0])
-      when :fid
-        command('MYLIST',
-                :fid   => pars[0])
-      when :ed2k
-        command('MYLIST',
-                :size   => pars[0],
-                :ed2k   => pars[1])
-      when :name
-        command('MYLIST', 
-                :aname => pars[0])
-      when :aid
-        command('MYLIST',
-                :aid => pars[0])                    
-      end
+              when :lid
+                command('MYLIST',
+                        lid: pars[0])
+              when :fid
+                command('MYLIST',
+                        fid: pars[0])
+              when :ed2k
+                command('MYLIST',
+                        size: pars[0],
+                        ed2k: pars[1])
+              when :name
+                command('MYLIST',
+                        aname: pars[0])
+              when :aid
+                command('MYLIST',
+                        aid: pars[0])
+              end
       case reply.code
       when 221
-        mylist_response(reply, MYLIST_FIELDS).tap {|h| 
+        mylist_response(reply, MYLIST_FIELDS).tap do |h|
           h[:mylist][:lid] = h[:mylist][:lid].to_i
           h[:mylist][:single_episode] = true
-      }
+        end
       when 312
-        mylist_response(reply, MULTI_MYLIST_FIELDS).tap {|h| h[:mylist][:single_episode] = false}
-      else  
-        nil
+        mylist_response(reply, MULTI_MYLIST_FIELDS).tap { |h| h[:mylist][:single_episode] = false }
       end
     end
-    
+
     def mylist_response(reply, fields)
-      {:mylist => {}.tap do |h|
+      { mylist: {}.tap do |h|
         lr = reply.lines[0].split(/\|/)
         fields.each do |k|
           h[k] = lr.shift
         end
-      end }  
-    end  
+      end }
+    end
 
     def mylist_add_any(type, pars, edit = false, viewed = 0, state = :hdd, source = nil, storage = nil)
-      h = { :viewed => viewed,
-            :state => MYLIST_STATES[state],
-            :source => source,
-            :storage => storage,
-            :edit => edit }
+      h = { viewed:,
+            state: MYLIST_STATES[state],
+            source:,
+            storage:,
+            edit: }
       case type
       when :fid
         h[:fid] = pars[0]
@@ -773,18 +745,15 @@ module Net
         end
       when 311
         nil
-      else
-        nil
       end
     end
 
     def command(cmd, params = {})
-      raise ServerOfflineError.new("Trying to send a command to a dead server") if @dead
+      raise ServerOfflineError, 'Trying to send a command to a dead server' if @dead
+
       r = nil
       loop do
-        if !@authenticated && !['AUTH','LOGOUT','PING'].include?(cmd) 
-          auth
-        end
+        auth if !@authenticated && !%w[AUTH LOGOUT PING].include?(cmd)
         params[:s] = @sid if @sid
         params[:tag] = "radb#{@tag}"
         p = cmd + ' ' + params.collect do |k, v|
@@ -815,7 +784,8 @@ module Net
     public :command
 
     def raw_command(cmd, params = {})
-      raise ServerOfflineError.new("Trying to send a command to a dead server") if @dead
+      raise ServerOfflineError, 'Trying to send a command to a dead server' if @dead
+
       params[:s] = @sid if @sid
       params[:tag] = "radb#{@tag}"
       p = cmd + ' ' + params.collect do |k, v|
@@ -835,7 +805,7 @@ module Net
       lr
     end
 
-    def exchange(cmd, tag)
+    def exchange(cmd, _tag)
       @last_command = cmd
       lr = []
       found = false
@@ -843,29 +813,25 @@ module Net
       loop do
         send cmd
         Timeout.timeout(10, ServerTimeout) do
-          begin
-            msg = recv
-            r = Reply.new(msg)
-            lr << r
-            found = true # (r.code == 555 || r.tag.nil? || r.tag == tag)
-          rescue ServerTimeout
-            tries += 1
-          end
+          msg = recv
+          r = Reply.new(msg)
+          lr << r
+          found = true # (r.code == 555 || r.tag.nil? || r.tag == tag)
+        rescue ServerTimeout
+          tries += 1
         end
         break if found || tries > 4
       end
       if lr.empty?
-        raise ServerOfflineError.new("AniDB server does not respond")
+        raise ServerOfflineError, 'AniDB server does not respond'
       else
         Timeout.timeout(2.1, ServerTimeout) do
-          begin
-            loop do
-              msg = recv
-              r = Reply.new(msg)
-              lr << r
-            end
-          rescue ServerTimeout
+          loop do
+            msg = recv
+            r = Reply.new(msg)
+            lr << r
           end
+        rescue ServerTimeout
         end
         lr
       end
@@ -878,7 +844,7 @@ module Net
       @last_activity = Time.now
     end
 
-    def recv()
+    def recv
       fmsg, send = @sock.recvfrom(1400)
       @sock.flush
       @last_activity = Time.now
@@ -891,7 +857,7 @@ module Net
 
     def parse_reply(lr, tag)
       r = lr.find { |e| e.tag == tag }
-      r = lr.shift unless r
+      r ||= lr.shift
       lr.delete(r)
       lr.each do |e|
         @logger.proto "Discarding duplicate packet (#{e.inspect})."
@@ -900,39 +866,35 @@ module Net
       case r.code
       when 200..499
       when 500, 501
-        raise ClientAuthError.new("Authentication failed in reply to #{@last_command}")
+        raise ClientAuthError, "Authentication failed in reply to #{@last_command}"
       when 502, 505 # Conflict in the wiki
-        raise ClientAccessError.new("Access denied in reply to #{@last_command}")
+        raise ClientAccessError, "Access denied in reply to #{@last_command}"
       when 503
-        raise ClientOutdatedError.new("Client version too old")
+        raise ClientOutdatedError, 'Client version too old'
       when 504
         reason = r.text.sub(/^.*-/, '').strip
-        raise ClientBannedError.new("Client has been banned - #{reason}")
+        raise ClientBannedError, "Client has been banned - #{reason}"
       when 506
-        raise ClientSessionError.new("Wrong session key in reply to #{@last_command}")
+        raise ClientSessionError, "Wrong session key in reply to #{@last_command}"
       when 555
-        raise BannedError.new("User has been banned - #{r.lines.join(' ')}")
+        raise BannedError, "User has been banned - #{r.lines.join(' ')}"
       when 500..599
-        raise ClientError.new("Client error #{r} in reply to #{@last_command}")
+        raise ClientError, "Client error #{r} in reply to #{@last_command}"
       when 600..699
-        raise ServerError.new("Server error #{r}")
+        raise ServerError, "Server error #{r}"
       when nil
-        raise Error.new("Unparseable response : #{r}")
+        raise Error, "Unparseable response : #{r}"
       else
-        raise Error.new(r.to_s)
+        raise Error, r.to_s
       end
       r
     end
 
     def find_sid(reply)
       if @nat
-        if reply.text =~ /^([^\s]+) ([0-9.:]+)/
-          sid = $1
-        end
-      else
-        if reply.text =~ /^([^\s]+) /
-          sid = $1
-        end
+        sid = Regexp.last_match(1) if reply.text =~ /^([^\s]+) ([0-9.:]+)/
+      elsif reply.text =~ /^([^\s]+) /
+        sid = Regexp.last_match(1)
       end
       sid
     end
@@ -943,13 +905,17 @@ if $0 == __FILE__
   $DEBUG = true
   $local = true
   t = Net::AniDBUDP.new('localhost', 9000, 9001)
-  t.connect()
-  t.auth("toto", "toto")
-  h = Net::AniDBUDP.ed2k_file_hash("./W07.mkv")
-  s = File.stat("./W07.mkv").size
-  h = t.search_file("w07", s, h)
+  t.connect
+  t.auth('toto', 'toto')
+  h = Net::AniDBUDP.ed2k_file_hash('./W07.mkv')
+  s = File.stat('./W07.mkv').size
+  h = t.search_file('w07', s, h)
   p h
-  h = t.anime(h[:file][:aid]) rescue nil
+  h = begin
+    t.anime(h[:file][:aid])
+  rescue StandardError
+    nil
+  end
   p h
   t.logout
 end

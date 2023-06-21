@@ -17,6 +17,6 @@ FileUtils.mkdir(log_dir)
 
 FileUtils.cp(File.join(root_dir, 'script/helpers/options.yml.bak'), options_file) unless File.exist?(options_file)
 
-Dir.chdir(root_dir) {
-  raise "could not run bundler" unless system "bundle install"
-}
+Dir.chdir(root_dir) do
+  raise 'could not run bundler' unless system 'bundle install'
+end

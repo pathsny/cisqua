@@ -5,22 +5,22 @@ module Renamer
         clones_of_original, rest = duplicates.partition do |item|
           item.info[:fid] == original.info[:fid]
         end
-        rest_uniq = rest.uniq {|item| item.info[:fid] }
+        rest_uniq = rest.uniq { |item| item.info[:fid] }
         [clones_of_original + rest - rest_uniq, rest_uniq]
       end
 
       def verify_data(original, duplicates)
         assert(
-          duplicates.all? {|i| i.info[:file][:aid] == original.info[:file][:aid]},
-          "all files must be for the same anime"
+          duplicates.all? { |i| i.info[:file][:aid] == original.info[:file][:aid] },
+          'all files must be for the same anime'
         )
         assert(
-          duplicates.all? {|i| i.info[:file][:eid] == original.info[:file][:eid]},
-          "all files must be for the same episode"
+          duplicates.all? { |i| i.info[:file][:eid] == original.info[:file][:eid] },
+          'all files must be for the same episode'
         )
         assert(
-          duplicates.all? {|i| i.info[:file][:gid] == original.info[:file][:gid]},
-          "all files must be for the same group"
+          duplicates.all? { |i| i.info[:file][:gid] == original.info[:file][:gid] },
+          'all files must be for the same group'
         )
       end
 
@@ -30,16 +30,16 @@ module Renamer
         sorted_rest = rest.sort(&method(:compare_items)).reverse
 
         make_result = lambda do |selected, others|
-          junk, dups = others.partition {|r| compare_items(selected, r) > 0}
-          {:junk => clones + junk, :keep_current => original == selected, :dups => dups, :selected => selected}
+          junk, dups = others.partition { |r| compare_items(selected, r) > 0 }
+          { junk: clones + junk, keep_current: original == selected, dups:, selected: }
         end
 
         if sorted_rest.empty?
           make_result[original, sorted_rest]
+        elsif compare_items(original, sorted_rest.first) < 0
+          make_result[sorted_rest.first, sorted_rest.drop(1)]
         else
-          return compare_items(original, sorted_rest.first) < 0 ?
-            make_result[sorted_rest.first, sorted_rest.drop(1)] :
-            make_result[original, sorted_rest]
+          make_result[original, sorted_rest]
         end
       end
 

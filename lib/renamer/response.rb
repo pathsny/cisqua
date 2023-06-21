@@ -4,8 +4,8 @@ module Renamer
       @type = type
       @destination = destination
     end
-    
-    attr_reader :type, :destination  
+
+    attr_reader :type, :destination
 
     class << self
       def unknown(destination)
@@ -15,10 +15,10 @@ module Renamer
       def success(destination)
         new(:success, destination)
       end
-      
+
       def duplicate(duplicate_of)
         new(:duplicate, duplicate_of)
-      end      
-    end  
-  end  
+      end
+    end
+  end
 end

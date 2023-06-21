@@ -1,5 +1,5 @@
 # Main entry point for rename script. Checks with anidb, adds to mylist etc
-require File.expand_path('../../lib/libs', __FILE__)
+require File.expand_path('../lib/libs', __dir__)
 require File.expand_path('helpers/load_options', __dir__)
 require 'optparse'
 
@@ -7,20 +7,20 @@ Thread.abort_on_exception = true
 
 script_options = {}
 OptionParser.new do |opts|
-  opts.banner = "Usage: post_process"
-  opts.on("-oOPTIONS", "--options=OPTIONS", "location of options config") do |o|
+  opts.banner = 'Usage: post_process'
+  opts.on('-oOPTIONS', '--options=OPTIONS', 'location of options config') do |o|
     script_options[:options_file] = o
   end
-  opts.on("-t", "--test", "run for testing") do
+  opts.on('-t', '--test', 'run for testing') do
     script_options[:test_mode] = true
   end
-  opts.on("--dry-run", "Dry Run. Does not move any files, create any directories or create symlinks") do
+  opts.on('--dry-run', 'Dry Run. Does not move any files, create any directories or create symlinks') do
     script_options[:dry_run_mode] = true
   end
-  opts.on("--debug", "Overrides log level in options and sets it to debug") do
+  opts.on('--debug', 'Overrides log level in options and sets it to debug') do
     script_options[:log_level] = :debug
   end
-  opts.on('--logfile=PATH', "does not log to default log files and instead logs to provided path") do |path|
+  opts.on('--logfile=PATH', 'does not log to default log files and instead logs to provided path') do |path|
     script_options[:logfile] = path
   end
 end.parse!

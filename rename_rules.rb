@@ -30,11 +30,12 @@ def group_name(anime)
 end
 
 def movie?(anime)
-  anime[:type] == "Movie"
+  anime[:type] == 'Movie'
 end
 
 def special?(anime)
   result = /^(?<spc_type>[A-Z])?\d+(?:-\d+)?$/.match anime[:epno]
-  raise "unknown" unless result
-  return !(result[:spc_type].nil?)
+  raise 'unknown' unless result
+
+  !result[:spc_type].nil?
 end

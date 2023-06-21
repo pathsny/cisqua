@@ -30,21 +30,21 @@ set :rsync_options, %w[
 ]
 
 namespace :rsync do
-    # Create an empty task to hook with. Implementation will be come next
-    task :stage_done
+  # Create an empty task to hook with. Implementation will be come next
+  task :stage_done
 
-    # Then add your hook
-    after :stage_done, :precompile do
-      public_dir = File.expand_path(File.join(fetch(:rsync_stage), 'web/public'))
-      shared_node_modules_dir = File.expand_path(File.join(fetch(:rsync_stage), '../node_modules'))
-      current_node_modules_dir = File.expand_path(File.join(public_dir, 'node_modules'))
+  # Then add your hook
+  after :stage_done, :precompile do
+    public_dir = File.expand_path(File.join(fetch(:rsync_stage), 'web/public'))
+    shared_node_modules_dir = File.expand_path(File.join(fetch(:rsync_stage), '../node_modules'))
+    current_node_modules_dir = File.expand_path(File.join(public_dir, 'node_modules'))
 
-      Dir.chdir public_dir do
-        FileUtils.mkdir_p shared_node_modules_dir
-        File.symlink(shared_node_modules_dir, current_node_modules_dir) unless File.symlink?(current_node_modules_dir)
-        # system("npm install && npm run build")
-      end
+    Dir.chdir public_dir do
+      FileUtils.mkdir_p shared_node_modules_dir
+      File.symlink(shared_node_modules_dir, current_node_modules_dir) unless File.symlink?(current_node_modules_dir)
+      # system("npm install && npm run build")
     end
+  end
 end
 
 set :linked_dirs, fetch(:linked_dirs, []).push('data', 'tmp/pids', 'tmp/sockets', 'log', 'bundler_home')
@@ -56,25 +56,22 @@ set :linked_dirs, fetch(:linked_dirs, []).push('data', 'tmp/pids', 'tmp/sockets'
 # set :keep_releases, 5
 
 namespace :deploy do
-
   def ensure_dir(dir_path)
-    unless test("[ -d #{dir_path} ]")
-      execute "mkdir -p #{dir_path}"
-    end
+    execute "mkdir -p #{dir_path}" unless test("[ -d #{dir_path} ]")
   end
 
   namespace :check do
-    after :directories, :setup_shared_infra  do
+    after :directories, :setup_shared_infra do
       on roles(:all) do
         ensure_dir File.join(shared_path, 'bundler_home')
-        data_path = File.join(shared_path, "data")
-        ensure_dir File.join(data_path, "db")
-        ensure_dir File.join(data_path, "http_anime_info_cache")
-        ensure_dir File.join(data_path, "udp_anime_info_cache/lock")
+        data_path = File.join(shared_path, 'data')
+        ensure_dir File.join(data_path, 'db')
+        ensure_dir File.join(data_path, 'http_anime_info_cache')
+        ensure_dir File.join(data_path, 'udp_anime_info_cache/lock')
 
-        options_path = File.join(data_path, "options.yml")
+        options_path = File.join(data_path, 'options.yml')
         unless test("[ -f #{options_path} ]")
-          local_options_bak = File.expand_path('../../script/helpers/options.yml.bak', __FILE__)
+          local_options_bak = File.expand_path('../script/helpers/options.yml.bak', __dir__)
           upload! local_options_bak, options_path
         end
       end
@@ -89,11 +86,9 @@ namespace :deploy do
       # end
     end
   end
-
 end
 
-
-desc "Check that we can access everything"
+desc 'Check that we can access everything'
 task :check_write_permissions do
   on roles(:all) do |host|
     if test("[ -w #{fetch(:deploy_to)} ]")
@@ -105,10 +100,10 @@ task :check_write_permissions do
 end
 
 # lib/capistrano/tasks/agent_forwarding.rake
-desc "Check if agent forwarding is working"
+desc 'Check if agent forwarding is working'
 task :forwarding do
   on roles(:all) do |h|
-    if test("env | grep SSH_AUTH_SOCK")
+    if test('env | grep SSH_AUTH_SOCK')
       info "Agent forwarding is up to #{h}"
     else
       error "Agent forwarding is NOT up to #{h}"

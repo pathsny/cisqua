@@ -12,7 +12,7 @@ class PostProcessor
       rename_queue = Queue.new
 
       def while_queue_has_items(queue)
-        until (item = queue.pop) == :end do
+        until (item = queue.pop) == :end
           yield item
         end
       end
@@ -26,9 +26,9 @@ class PostProcessor
 
       scanner = Thread.new do
         pipe_while_queue_has_items(scan_queue, info_queue) do |file|
-          ed2k_file_hash(file).tap {
-            |f, s, e| Loggers::PostProcessor.debug "file #{f} has ed2k hash #{e}"
-          }
+          ed2k_file_hash(file).tap do |f, _s, e|
+            Loggers::PostProcessor.debug "file #{f} has ed2k hash #{e}"
+          end
         end
       end
 
@@ -52,7 +52,9 @@ class PostProcessor
             Loggers::PostProcessor.info "MOVING \n\t#{work_item.file} ===>\n\t#{res.destination}"
             success[res.destination] = work_item
           when :unknown
-            Loggers::PostProcessor.warn "UNKNOWN file\n\t#{work_item.file}#{"  ===>\n\t#{res.destination}" if res.destination}"
+            Loggers::PostProcessor.warn "UNKNOWN file\n\t#{work_item.file}#{if res.destination
+                                                                              "  ===>\n\t#{res.destination}"
+                                                                            end}"
           when :duplicate
             Loggers::PostProcessor.warn "DUPLICATE file \n\t#{work_item.file} <=>\n\t#{res.destination}"
             dups[res.destination] = dups[res.destination] || []
@@ -65,14 +67,16 @@ class PostProcessor
         end
         scan_queue << :end
 
-        #resolve duplicates immideately for when we have all the info
+        # resolve duplicates immideately for when we have all the info
         dups.each do |k, items|
+          next unless success.has_key?(k)
+
           renamer.process_duplicate_set(
             WorkItem.new(k, success[k].info), items
-          ) if success.has_key?(k)
+          )
         end
 
-        #resolve duplicates as we get legacy info
+        # resolve duplicates as we get legacy info
         while_queue_has_items(rename_queue) do |work_item|
           renamer.process_duplicate_set(work_item, dups[work_item.file])
         end
@@ -80,7 +84,7 @@ class PostProcessor
         renamer.post_rename_actions
       end
 
-      files.each {|f| scan_queue << f }
+      files.each { |f| scan_queue << f }
 
       [scanner, info_getter, rename_worker].each(&:join)
 
@@ -91,7 +95,9 @@ class PostProcessor
 
       system "find /#{basedir} -type f -name \"tvshow.nfo\" -delete"
 
-      Dir["#{basedir}/**/*"].select { |d| File.directory? d }.sort{|a,b| b <=> a}.each {|d| Dir.rmdir(d) if Dir.entries(d).size ==  2}
+      Dir["#{basedir}/**/*"].select do |d|
+        File.directory? d
+      end.sort { |a, b| b <=> a }.each { |d| Dir.rmdir(d) if Dir.entries(d).size == 2 }
     end
   end
 end

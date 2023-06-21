@@ -1,7 +1,5 @@
 # LRU based Hash
 
-require 'enumerator'
-
 # Hash with LRU expiry policy.  There are at most max_size elements in a
 # LruHash.  When adding more elements old elements are removed according
 # to LRU policy.
@@ -82,7 +80,7 @@ class LRUHash
   end
 
   def values
-    @h.map {|k,n| n.value}
+    @h.map { |_k, n| n.value }
   end
 
   def has_key?(key)
@@ -94,7 +92,7 @@ class LRUHash
   alias include? has_key?
 
   def has_value?(value)
-    each_pair do |k, v|
+    each_pair do |_k, v|
       return true if value.eql? v
     end
 
@@ -104,7 +102,7 @@ class LRUHash
   alias value? has_value?
 
   def values_at(*key_list)
-    key_list.map {|k| self[k]}
+    key_list.map { |k| self[k] }
   end
 
   def assoc(key)
@@ -132,7 +130,7 @@ class LRUHash
 
   def store(key, value)
     # same optimization as in Hash
-    key = key.dup.freeze if String === key && !key.frozen?
+    key = key.dup.freeze if key.is_a?(String) && !key.frozen?
 
     n = @h[key]
 
@@ -167,30 +165,26 @@ class LRUHash
   def max_size=(limit)
     limit = normalize_max(limit)
 
-    while size > limit
-      delete_oldest
-    end
+    delete_oldest while size > limit
 
     @max_size = limit
   end
 
   def clear
-    until empty?
-      delete_oldest
-    end
+    delete_oldest until empty?
 
     self
   end
 
   def to_s
     s = nil
-    each_pair {|k, v| (s ? (s << ', ') : s = '{') << k.to_s << '=>' << v.to_s}
+    each_pair { |k, v| (s ? (s << ', ') : s = '{') << k.to_s << '=>' << v.to_s }
     s ? (s << '}') : '{}'
   end
 
   alias inspect to_s
 
-  FETCH = Proc.new {|k| raise KeyError, 'key not found'}
+  FETCH = proc { |_k| raise KeyError, 'key not found' }
 
   # A single node in the doubly linked LRU list of nodes
   Node = Struct.new :key, :value, :pred, :succ do
@@ -218,6 +212,7 @@ class LRUHash
   end
 
   private
+
   # iterate nodes
   def each_node
     n = @head.succ
@@ -248,7 +243,8 @@ class LRUHash
   # remove the oldest node returning the node
   def delete_oldest
     n = @tail.pred
-    raise "Cannot delete from empty hash" if @head.equal? n
+    raise 'Cannot delete from empty hash' if @head.equal? n
+
     remove_node n
   end
 
@@ -257,7 +253,8 @@ class LRUHash
   # be larger than zero.
   def normalize_max(n)
     n = n.to_i
-    raise ArgumentError, 'Invalid max_size: %p' % n unless Integer === n && n > 0
+    raise ArgumentError, 'Invalid max_size: %p' % n unless n.is_a?(Integer) && n > 0
+
     n
   end
 end
