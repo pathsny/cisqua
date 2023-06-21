@@ -84,10 +84,13 @@ class PostProcessor
         renamer.post_rename_actions
       end
 
+      scanner.abort_on_exception = true
+      info_getter.abort_on_exception = true
+      rename_worker.abort_on_exception = true
+
       files.each { |f| scan_queue << f }
 
       [scanner, info_getter, rename_worker].each(&:join)
-
       return unless options[:clean_up_empty_dirs]
 
       basedir = File.absolute_path(options[:scanner][:basedir], ROOT_FOLDER)

@@ -3,8 +3,6 @@ require File.expand_path('../lib/libs', __dir__)
 require File.expand_path('helpers/load_options', __dir__)
 require 'optparse'
 
-Thread.abort_on_exception = true
-
 script_options = {}
 OptionParser.new do |opts|
   opts.banner = 'Usage: post_process'
