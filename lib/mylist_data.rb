@@ -12,7 +12,7 @@ class MylistData
   end
 
   def add(ep)
-    @episodes.add ep =~ /^\d+$/ ? ep.to_i : ep
+    @episodes.add ep.to_s =~ /^\d+$/ ? ep.to_i : ep
   end
 
   def normal_episodes

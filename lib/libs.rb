@@ -1,3 +1,5 @@
+ENV['OPENSSL_CONF'] = File.expand_path('.add_provider_conf', __dir__)
+
 require 'amazing_print'
 require 'yaml'
 require_relative '../external/lru_hash'
