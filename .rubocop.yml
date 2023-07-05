@@ -90,6 +90,9 @@ Style/MutableConstant:
     - 'script/unidentifiable_files.rb'
 Style/ParallelAssignment:
   Enabled: false
+Style/SymbolArray:
+  Exclude:
+    - 'integration_spec/post_processor_spec.rb'
 Style/TrailingCommaInArguments:
   EnforcedStyleForMultiline: comma
 Style/TrailingCommaInHashLiteral:
