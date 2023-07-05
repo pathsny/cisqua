@@ -4,6 +4,8 @@ require 'resolv-replace'
 class PostProcessor
   class << self
     def run(test_client, options)
+      log_start_banner
+
       @test_client = test_client
       files = file_list(options[:scanner])
 
@@ -102,6 +104,20 @@ class PostProcessor
         .select { |d| File.directory?(d) }
         .sort { |a, b| b <=> a }
         .each { |d| Dir.rmdir(d) if Dir.empty?(d) }
+
+      log_end_banner
+    end
+
+    def log_start_banner
+      Loggers::PostProcessor.info('=========================================')
+      Loggers::PostProcessor.info("Starting Fresh Run at #{Time.now}")
+      Loggers::PostProcessor.info('=========================================')
+    end
+
+    def log_end_banner
+      Loggers::PostProcessor.info('=========================================')
+      Loggers::PostProcessor.info('Completed Job')
+      Loggers::PostProcessor.info('=========================================')
     end
   end
 end
