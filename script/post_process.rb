@@ -30,5 +30,6 @@ Loggers.log_level = (options[:log_level])
 if script_options.key?(:logfile) || script_options[:test_mode]
   logfile_path = script_options[:logfile] || File.expand_path('../data/test_data/anidb.log', __dir__)
   Loggers.setup_log_file(logfile_path)
+  options[:renamer][:plex_scan_library_files] = nil
 end
 PostProcessor.run(script_options[:test_mode] || false, options)
