@@ -60,16 +60,9 @@ Logging.appenders.stdout(
 )
 
 Loggers.setup_log_file(
-  File.expand_path('../data/log/anidb.log', __dir__),
-  File.expand_path('../data/log/anidb_json.log', __dir__),
+  File.expand_path('../../data/log/anidb.log', __dir__),
+  File.expand_path('../../data/log/anidb_json.log', __dir__),
 )
-
-# Logging.appenders.file('logfile',
-#   :filename => File.expand_path('../../data/log/anidb.log', __FILE__),
-#   :layout => ),
-# )
-
-# parseable_logfile = File.expand_path('../../data/log/anidb_json.log', __FILE__)
 
 Logging.define_singleton_method(:parseable_logfile) { parseable_logfile }
 

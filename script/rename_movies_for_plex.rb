@@ -1,7 +1,6 @@
 # Rename movie files from old format to more plex friendly format
 
 require File.expand_path('../lib/libs', __dir__)
-require File.expand_path('helpers/load_options', __dir__)
 require 'optparse'
 require 'solid_assert'
 SolidAssert.enable_assertions

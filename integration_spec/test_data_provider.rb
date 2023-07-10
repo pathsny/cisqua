@@ -1,4 +1,3 @@
-require_relative('../script/helpers/load_options')
 require_relative('../lib/libs')
 require_relative('test_data_type')
 require 'singleton'

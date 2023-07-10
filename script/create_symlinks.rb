@@ -2,7 +2,6 @@
 # the anidb ids of anime. the argument passed in is the first folder to start from (to allow resuming)
 
 require File.expand_path('../lib/libs', __dir__)
-require File.expand_path('helpers/load_options', __dir__)
 require 'rexml/document'
 require 'optparse'
 

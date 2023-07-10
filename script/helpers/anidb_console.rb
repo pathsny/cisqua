@@ -1,7 +1,6 @@
 # console for debugging
 require 'yaml'
 require 'optparse'
-require File.expand_path('load_options', __dir__)
 
 options_file = nil
 OptionParser.new do |opts|
@@ -10,7 +9,7 @@ OptionParser.new do |opts|
     options_file = o
   end
 end.parse!
-options = ScriptOptions.load_options(options_file)
 require File.expand_path('../../lib/libs', __dir__)
+options = ScriptOptions.load_options(options_file)
 
 Client = Net::AniDBUDP.new(*(%i[host port localport user pass nat].map { |k| options[:anidb][k] }))

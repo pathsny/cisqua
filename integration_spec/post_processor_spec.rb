@@ -1,4 +1,3 @@
-require_relative('../script/helpers/load_options')
 require_relative('test_data_provider')
 
 # Integration test for the entire post processing function

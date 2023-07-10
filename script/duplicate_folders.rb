@@ -1,7 +1,6 @@
 # identify duplicate folders with the same show
 
 require File.expand_path('../lib/libs', __dir__)
-require File.expand_path('helpers/load_options', __dir__)
 require 'optparse'
 
 options_file = nil

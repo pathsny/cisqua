@@ -3,7 +3,6 @@
 require 'English'
 require 'rexml/document'
 require 'optparse'
-require File.expand_path('helpers/load_options', __dir__)
 require File.expand_path('../lib/libs', __dir__)
 options_file = nil
 mylist_location = nil
