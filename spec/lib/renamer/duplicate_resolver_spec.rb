@@ -26,7 +26,7 @@ describe Renamer::DuplicateResolver do
 
   def make_item(file_params, fid = nil)
     info = { fid: fid || make_fid, anime: {}, file: common_file.merge(file_params) }
-    WorkItem.new(Faker::Lorem.sentence, info)
+    WorkItem.new(file: Faker::Lorem.sentence, info:)
   end
 
   def clone_item(item)

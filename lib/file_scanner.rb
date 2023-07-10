@@ -29,7 +29,7 @@ class FileScanner
       end
       # finally
       ed2k_hash = file_size >= ed2k_block ? OpenSSL::Digest::MD4.hexdigest(ed2k_hash) : ed2k_hash.unpack1('H*')
-      [file_name, file_size, ed2k_hash]
+      [file_size, ed2k_hash]
     end
   end
 end

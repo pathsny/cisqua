@@ -1,7 +1,7 @@
 describe Renamer::Renamer do
   include FakeFS::SpecHelpers
 
-  subject { Renamer::Renamer.new(options[:renamer]) }
+  subject { described_class.new(options[:renamer]) }
 
   before do
     Renamer::NameGenerator.any_instance
@@ -19,10 +19,10 @@ describe Renamer::Renamer do
   let(:symlink_loc) { '/path/to/incomplete tv series, oav and web' }
   let(:incorrect_symlink_loc) { '/path/to/complete tv series, oav and web' }
 
-  describe :try_process do
+  context 'when running try_process' do
     context 'when the file is unknown' do
       before do
-        @response = subject.try_process(WorkItem.new(source_video[:path], nil))
+        @response = subject.try_process(unknown_work_item(source_video[:path]))
       end
 
       it { expect(@response.type).to eq(:unknown) }
@@ -34,7 +34,7 @@ describe Renamer::Renamer do
       before do
         FileUtils.mkdir_p(incorrect_symlink_loc)
         File.symlink('../files/Anime Name', File.join(incorrect_symlink_loc, 'Anime Name'))
-        @response = subject.try_process(WorkItem.new(source_video[:path], DUMMY_INFO))
+        @response = subject.try_process(dummy_work_item(source_video[:path]))
       end
 
       it { expect(@response.type).to eq(:success) }
@@ -48,7 +48,7 @@ describe Renamer::Renamer do
       before do
         FileUtils.mkdir_p(dest_dir)
         FileUtils.touch(dest)
-        @response = subject.try_process(WorkItem.new(source_video[:path], DUMMY_INFO))
+        @response = subject.try_process(dummy_work_item(source_video[:path]))
       end
 
       it { expect(@response.type).to eq(:duplicate) }
@@ -57,14 +57,14 @@ describe Renamer::Renamer do
     end
   end
 
-  describe :process_duplicate_set do
+  context 'when running process_duplicate_set' do
     let(:dest_video) { create_source_file(dest) }
     let(:junk_video) { create_source_file('/path/to/src_dir/junk_file.mkv') }
     let(:dup_video) { create_source_file('/path/to/src_dir/dup_file.mkv') }
-    let(:source_item) { WorkItem.new(source_video[:path], DUMMY_INFO) }
-    let(:dest_item) { WorkItem.new(dest_video[:path], DUMMY_INFO) }
-    let(:junk_item) { WorkItem.new(junk_video[:path], DUMMY_INFO) }
-    let(:dup_item) { WorkItem.new(dup_video[:path], DUMMY_INFO) }
+    let(:source_item) { dummy_work_item(source_video[:path]) }
+    let(:dest_item) { dummy_work_item(dest_video[:path]) }
+    let(:junk_item) { dummy_work_item(junk_video[:path]) }
+    let(:dup_item) { dummy_work_item(dup_video[:path]) }
     let(:junk_loc) { '/path/to/duplicate_junk' }
     let(:dup_loc) { '/path/to/duplicate' }
     let(:old_symlink_dir) { '/path/to/anime/somewhere/deep' }

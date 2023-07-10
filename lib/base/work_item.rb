@@ -1,4 +1,10 @@
-WorkItem = Struct.new('WorkItem', :file, :info) do
+WorkItem = Struct.new(
+  'WorkItem',
+  :file,
+  :info,
+  :renamer_status,
+  keyword_init: true,
+) do
   def quality
     @quality ||= make_quality
   end

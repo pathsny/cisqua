@@ -26,6 +26,16 @@ end
 OPTIONS_BAK = YAML.load_file(File.expand_path('../script/helpers/options.yml.bak', __dir__))
 DUMMY_INFO = YAML.load_file(File.expand_path('dummy_info.yml', __dir__))
 
+def dummy_work_item(file_name)
+  file = WorkItemFile.new(name: file_name)
+  WorkItem.new(file:, info: DUMMY_INFO)
+end
+
+def unknown_work_item(file_name)
+  file = WorkItemFile.new(name: file_name)
+  WorkItem.new(file:)
+end
+
 def write_file(name, content)
   File.write(name, content)
 end

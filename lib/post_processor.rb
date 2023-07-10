@@ -4,11 +4,8 @@ require 'resolv-replace'
 class PostProcessor
   class << self
     def run(test_client, options)
-      log_start_banner
-
-      @test_client = test_client
       files = FileScanner.file_list(options[:scanner])
-
+      log_start_banner
       scan_queue = Queue.new
       info_queue = Queue.new
       rename_queue = Queue.new
@@ -27,18 +24,25 @@ class PostProcessor
       end
 
       scanner = Thread.new do
-        pipe_while_queue_has_items(scan_queue, info_queue) do |file|
-          FileScanner.ed2k_file_hash(file).tap do |f, _s, e|
-            Loggers::PostProcessor.debug "file #{f} has ed2k hash #{e}"
+        pipe_while_queue_has_items(scan_queue, info_queue) do |w|
+          w.tap do |work_item|
+            file = work_item.file
+            size, ed2k = FileScanner.ed2k_file_hash(file.name)
+            Loggers::PostProcessor.debug "file #{file.name} has ed2k hash #{ed2k}"
+            file.size_bytes = size
+            file.ed2k = ed2k
           end
         end
       end
 
       info_getter = Thread.new do
-        anidb_api_klass = @test_client ? CachingAnidb : Anidb
+        anidb_api_klass = test_client ? CachingAnidb : Anidb
         anidb_api = anidb_api_klass.new(options[:anidb])
-        pipe_while_queue_has_items(info_queue, rename_queue) do |data|
-          WorkItem.new(data.first, anidb_api.process(*data))
+        pipe_while_queue_has_items(info_queue, rename_queue) do |w|
+          w.tap do |work_item|
+            file = work_item.file
+            work_item.info = anidb_api.process(file.name, file.ed2k, file.size_bytes)
+          end
         end
       end
 
@@ -51,21 +55,27 @@ class PostProcessor
           res = renamer.try_process(work_item)
           case res.type
           when :success
-            Loggers::PostProcessor.info "MOVING \n\t#{work_item.file} ===>\n\t#{res.destination}"
+            Loggers::PostProcessor.info(
+              "MOVING \n\t#{work_item.file.name} ===>\n\t#{res.destination}",
+            )
             success[res.destination] = work_item
           when :unknown
-            Loggers::PostProcessor.warn "UNKNOWN file\n\t#{work_item.file}#{if res.destination
-                                                                              "  ===>\n\t#{res.destination}"
-            end}"
+            dest_string = res.destination ? "  ===>\n\t#{res.destination}" : ''
+            Loggers::PostProcessor.warn(
+              "UNKNOWN file\n\t#{work_item.file.name}#{dest_string}",
+            )
           when :duplicate
-            Loggers::PostProcessor.warn "DUPLICATE file \n\t#{work_item.file} <=>\n\t#{res.destination}"
+            Loggers::PostProcessor.warn(
+              "DUPLICATE file \n\t#{work_item.file.name} <=>\n\t#{res.destination}",
+            )
             dups[res.destination] = dups[res.destination] || []
             dups[res.destination].push(work_item)
           end
         end
         dups.each do |k, _|
+          work_item = WorkItem.new(file: WorkItemFile.new(name: k))
           # rescan the duplicates unless we have it in the success map
-          scan_queue << k unless success.key?(k)
+          scan_queue << work_item unless success.key?(k)
         end
         scan_queue << :end
 
@@ -74,13 +84,17 @@ class PostProcessor
           next unless success.key?(k)
 
           renamer.process_duplicate_set(
-            WorkItem.new(k, success[k].info), items
+            WorkItem.new(
+              file: WorkItemFile.new(name: k),
+              info: success[k].info,
+            ),
+            items,
           )
         end
 
         # resolve duplicates as we get legacy info
         while_queue_has_items(rename_queue) do |work_item|
-          renamer.process_duplicate_set(work_item, dups[work_item.file])
+          renamer.process_duplicate_set(work_item, dups[work_item.file.name])
         end
 
         renamer.post_rename_actions
@@ -90,7 +104,10 @@ class PostProcessor
       info_getter.abort_on_exception = true
       rename_worker.abort_on_exception = true
 
-      files.each { |f| scan_queue << f }
+      files.each do |f|
+        work_item = WorkItem.new(file: WorkItemFile.new(name: f))
+        scan_queue << work_item
+      end
 
       [scanner, info_getter, rename_worker].each(&:join)
       return unless options[:clean_up_empty_dirs]

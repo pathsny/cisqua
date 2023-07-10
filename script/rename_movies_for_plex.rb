@@ -59,14 +59,17 @@ class MovieRenamerFoPlex
     fix_symlinks_root = File.absolute_path(@options[:renamer][:fix_symlinks_root], ROOT_FOLDER)
 
     if /\[\(X/.match(movie)
-      work_item = WorkItem.new(movie, extract_info_from_name_assuming_old_scheme(movie))
+      work_item = WorkItem.new(
+        file: movie,
+        name: extract_info_from_name_assuming_old_scheme(movie),
+      )
       @options[:renamer][:dry_run_mode] = @script_options[:dry_run_mode]
       resp = @renamer.try_process(work_item, update_links_from: fix_symlinks_root)
       assert(resp.type == :success, "could not move #{movie}")
       Loggers::RenameMoviesForPlex.info { "moved #{movie} to #{resp.destination}" }
     else
       info = extract_info_from_name_assuming_current_scheme(movie)
-      work_item = WorkItem.new(movie, info)
+      work_item = WorkItem.new(file: movie, info:)
 
       # we dont expect any changes since this file should be named correctly
       @options[:renamer][:dry_run_mode] = true

@@ -22,7 +22,7 @@ module Renamer
       unless work_item.info
         unknown_location = File.absolute_path(options[:unknown_location], ROOT_FOLDER)
         response = @mover.process(
-          work_item.file,
+          work_item.file.name,
           unknown_location,
           { unambiguous: true, **override_options },
         )
@@ -54,7 +54,7 @@ module Renamer
       junk_duplicate_location = File.absolute_path(options[:junk_duplicate_location], ROOT_FOLDER)
       fix_symlinks_root = File.absolute_path(options[:fix_symlinks_root], ROOT_FOLDER)
       resp = @mover.process(
-        existing.file,
+        existing.file.name,
         junk_duplicate_location,
         new_name: name,
         unambiguous: true,
@@ -80,7 +80,7 @@ module Renamer
     def move_to_junk(name, work_item)
       junk_duplicate_location = File.absolute_path(options[:junk_duplicate_location], ROOT_FOLDER)
       @mover.process(
-        work_item.file,
+        work_item.file.name,
         junk_duplicate_location,
         new_name: name,
         unambiguous: true,
@@ -90,7 +90,7 @@ module Renamer
     def move_to_dup(name, work_item)
       duplicate_location = File.absolute_path(options[:duplicate_location], ROOT_FOLDER)
       @mover.process(
-        work_item.file,
+        work_item.file.name,
         duplicate_location,
         new_name: name,
         unambiguous: true,
@@ -99,7 +99,7 @@ module Renamer
 
     def process_file(name, work_item, location, path, override_options = {})
       @mover.process(
-        work_item.file,
+        work_item.file.name,
         location,
         { new_name: name, **override_options },
       ).tap do |response|

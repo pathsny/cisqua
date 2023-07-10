@@ -31,4 +31,5 @@ if script_options.key?(:logfile) || script_options[:test_mode]
   Loggers.setup_log_file(logfile_path)
   options[:renamer][:plex_scan_library_files] = nil
 end
+
 PostProcessor.run(script_options[:test_mode] || false, options)
