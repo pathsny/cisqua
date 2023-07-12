@@ -75,7 +75,7 @@ describe Renamer::VideoFileMover do
   end
 
   context 'without source symlinks' do
-    subject { Renamer::VideoFileMover.new(subtitle_extensions: 'srt sub') }
+    subject { described_class.new(subtitle_extensions: 'srt sub') }
 
     it_behaves_like 'file mover', :be_moved_to_without_source_symlink
 
@@ -87,7 +87,7 @@ describe Renamer::VideoFileMover do
 
   context 'with source symlinks' do
     subject do
-      Renamer::VideoFileMover.new(
+      described_class.new(
         subtitle_extensions: 'srt sub',
         symlink_source: true,
       )

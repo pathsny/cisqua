@@ -14,7 +14,7 @@ describe Renamer::NameGenerator do
     [name_part, "#{name_part}.mkv"]
   end
 
-  subject { Renamer::NameGenerator.new(method(:make_path_and_name)) }
+  subject { described_class.new(method(:make_path_and_name)) }
 
   it { expect('fate/stay').to rename_to ['fate stay', 'fate stay.mkv'] }
   it { expect('macross: the movie').to rename_to ['macross the movie', 'macross the movie.mkv'] }

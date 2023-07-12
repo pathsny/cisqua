@@ -41,8 +41,6 @@
     :complete_other: /path/to/complete other, music video etc
     # set this to a non null value if adult shows should be symlinked to a folder
     :adult_location: /path/to/store
-  # this is useful if you use xbmc. an nfo file is created in each folder to identify the anime.
-  :create_nfo_files: true
   # needed to make sure plex identifies anime
   :create_anidb_id_files: true
   # needed to update plex server after files have been renamed.

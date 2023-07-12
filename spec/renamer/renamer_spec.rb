@@ -42,7 +42,6 @@ describe Renamer::Renamer do
       it { expect(source_video).to be_moved_to_with_source_symlink(dest) }
       it { expect(File.join(symlink_loc, 'Anime Name')).to be_symlink_to(dest_dir) }
       it { expect(File.join(incorrect_symlink_loc, 'Anime Name')).not_to be_symlink_to(dest_dir) }
-      it { expect(File.exist?(File.join(dest_dir, 'tvshow.nfo'))).to be true }
     end
 
     context 'when the file is a duplicate' do
@@ -120,7 +119,6 @@ describe Renamer::Renamer do
       it { expect(source_video).to be_moved_to_with_source_symlink(dest) }
       it { expect(dest_video).to be_moved_to_without_source_symlink(File.join(junk_loc, dest_file_name_suff_1)) }
       it { expect(old_symlink_loc).to be_symlink_to(File.join(junk_loc, dest_file_name_suff_1)) }
-      it { expect(File.exist?(File.join(dest_dir, 'tvshow.nfo'))).to be true }
     end
   end
 end

@@ -105,7 +105,6 @@ module Renamer
       ).tap do |response|
         if response.type == :success
           @atleast_one_success = true
-          ensure_nfo(location, work_item.info)
           ensure_anidb_id_file(location, work_item.info)
           update_symlinks_for(work_item.info[:anime], path, location) if options[:create_symlinks]
         end
@@ -115,14 +114,6 @@ module Renamer
     def generate_location(info)
       path, name = @name_generator.generate_name_and_path(info)
       [File.join(@output_location, path), path, name]
-    end
-
-    def ensure_nfo(location, info)
-      nfo_path = File.join(location, 'tvshow.nfo')
-      return if File.exist?(nfo_path) || !options[:create_nfo_files]
-
-      Loggers::Renamer.debug("Creating #{nfo_path}. #{@options[:dry_run_mode] ? ' DRY RUN' : ''}")
-      File.write(nfo_path, "aid=#{info[:file][:aid]}") unless options[:dry_run_mode]
     end
 
     def ensure_anidb_id_file(location, info)
