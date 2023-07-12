@@ -7,7 +7,7 @@ class PostProcessor
       log_start_banner
 
       @test_client = test_client
-      files = file_list(options[:scanner])
+      files = FileScanner.file_list(options[:scanner])
 
       scan_queue = Queue.new
       info_queue = Queue.new
@@ -28,7 +28,7 @@ class PostProcessor
 
       scanner = Thread.new do
         pipe_while_queue_has_items(scan_queue, info_queue) do |file|
-          ed2k_file_hash(file).tap do |f, _s, e|
+          FileScanner.ed2k_file_hash(file).tap do |f, _s, e|
             Loggers::PostProcessor.debug "file #{f} has ed2k hash #{e}"
           end
         end

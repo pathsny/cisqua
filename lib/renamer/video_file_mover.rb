@@ -65,5 +65,12 @@ module Renamer
         @symlinker.relative(new_path, old_link)
       end
     end
+
+    def symlink_for(target, basedir)
+      Dir.glob(File.join(basedir.to_s, '**/*.*'), File::FNM_CASEFOLD).select do |n|
+        File.symlink?(n) &&
+          File.expand_path(File.readlink(n), File.dirname(n)) == target
+      end
+    end
   end
 end

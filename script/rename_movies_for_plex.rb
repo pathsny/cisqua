@@ -49,7 +49,7 @@ class MovieRenamerFoPlex
     Loggers::RenameMoviesForPlex.info { 'DryRun mode is on ' } if @script_options[:dry_run_mode]
     all_folders = Dir[File.join(root_folder, '**')]
     all_folders.each do |movie_folder|
-      files = file_list(@options[:scanner].merge(basedir: File.realpath(movie_folder)))
+      files = FileScanner.file_list(@options[:scanner].merge(basedir: File.realpath(movie_folder)))
       files.each { |movie| plex_rename(File.realpath(movie)) }
     end
     @errors.each { |e| Loggers::RenameMoviesForPlex.error(e) }
