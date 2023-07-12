@@ -7,7 +7,7 @@ def ed2k_file_hash(file_name)
   file_size = nil
   File.open(file_name, 'rb') do |f|
     file_size = f.stat.size # while at it, fetch the size of the file
-    while block = f.read(ed2k_block)
+    while (block = f.read(ed2k_block))
       # hashes are concatenated md4 per block size for ed2k hash
       ed2k_hash << OpenSSL::Digest::MD4.digest(block)
     end

@@ -21,8 +21,11 @@ module Renamer
     def try_process(work_item, override_options = {})
       unless work_item.info
         unknown_location = File.absolute_path(options[:unknown_location], ROOT_FOLDER)
-        response = @mover.process(work_item.file, unknown_location,
-                                  { unambiguous: true, **override_options })
+        response = @mover.process(
+          work_item.file,
+          unknown_location,
+          { unambiguous: true, **override_options },
+        )
         assert(response.type == :success, 'moving unknown files should not fail')
         return Response.unknown(response.destination)
       end
@@ -30,7 +33,9 @@ module Renamer
       location, path, name = generate_location(work_item.info)
       process_file(name, work_item, location, path, override_options)
     rescue StandardError
-      Loggers::Renamer.error "error naming #{work_item.file} from #{work_item.info.inspect} with #{$ERROR_INFO}"
+      Loggers::Renamer.error(
+        "error naming #{work_item.file.name} from #{work_item.info.inspect} with #{$ERROR_INFO}",
+      )
       raise
     end
 
@@ -44,19 +49,21 @@ module Renamer
       dup = curried_method(:move_to_dup)[name]
       result[:junk].each(&junk)
       result[:dups].each(&dup)
+      return if result[:keep_current]
 
-      unless result[:keep_current]
-        junk_duplicate_location = File.absolute_path(options[:junk_duplicate_location], ROOT_FOLDER)
-        fix_symlinks_root = File.absolute_path(options[:fix_symlinks_root], ROOT_FOLDER)
-        resp = @mover.process(existing.file, junk_duplicate_location,
-                              new_name: name,
-                              unambiguous: true,
-                              symlink_source: false,
-                              update_links_from: fix_symlinks_root)
-        assert(resp.type == :success, 'moving the existing file should not fail')
-        process_file(name, result[:selected], location, path).tap do |r|
-          assert(r.type == :success, 'we just cleared the location')
-        end
+      junk_duplicate_location = File.absolute_path(options[:junk_duplicate_location], ROOT_FOLDER)
+      fix_symlinks_root = File.absolute_path(options[:fix_symlinks_root], ROOT_FOLDER)
+      resp = @mover.process(
+        existing.file,
+        junk_duplicate_location,
+        new_name: name,
+        unambiguous: true,
+        symlink_source: false,
+        update_links_from: fix_symlinks_root,
+      )
+      assert(resp.type == :success, 'moving the existing file should not fail')
+      process_file(name, result[:selected], location, path).tap do |r|
+        assert(r.type == :success, 'we just cleared the location')
       end
     end
 
@@ -72,20 +79,30 @@ module Renamer
 
     def move_to_junk(name, work_item)
       junk_duplicate_location = File.absolute_path(options[:junk_duplicate_location], ROOT_FOLDER)
-      @mover.process(work_item.file, junk_duplicate_location,
-                     new_name: name,
-                     unambiguous: true)
+      @mover.process(
+        work_item.file,
+        junk_duplicate_location,
+        new_name: name,
+        unambiguous: true,
+      )
     end
 
     def move_to_dup(name, work_item)
       duplicate_location = File.absolute_path(options[:duplicate_location], ROOT_FOLDER)
-      @mover.process(work_item.file, duplicate_location,
-                     new_name: name,
-                     unambiguous: true)
+      @mover.process(
+        work_item.file,
+        duplicate_location,
+        new_name: name,
+        unambiguous: true,
+      )
     end
 
     def process_file(name, work_item, location, path, override_options = {})
-      @mover.process(work_item.file, location, { new_name: name, **override_options }).tap do |response|
+      @mover.process(
+        work_item.file,
+        location,
+        { new_name: name, **override_options },
+      ).tap do |response|
         if response.type == :success
           @atleast_one_success = true
           ensure_nfo(location, work_item.info)
@@ -105,7 +122,7 @@ module Renamer
       return if File.exist?(nfo_path) || !options[:create_nfo_files]
 
       Loggers::Renamer.debug("Creating #{nfo_path}. #{@options[:dry_run_mode] ? ' DRY RUN' : ''}")
-      File.open(nfo_path, 'w') { |f| f.write("aid=#{info[:file][:aid]}") } unless options[:dry_run_mode]
+      File.write(nfo_path, "aid=#{info[:file][:aid]}") unless options[:dry_run_mode]
     end
 
     def ensure_anidb_id_file(location, info)
@@ -113,7 +130,7 @@ module Renamer
       return if File.exist?(idfile_path) || !options[:create_anidb_id_files]
 
       Loggers::Renamer.debug("Creating #{idfile_path}. #{@options[:dry_run_mode] ? ' DRY RUN' : ''}")
-      File.open(idfile_path, 'w') { |f| f.write("#{info[:file][:aid]}\n") } unless options[:dry_run_mode]
+      File.write(idfile_path, "#{info[:file][:aid]}\n") unless options[:dry_run_mode]
     end
 
     def update_symlinks_for(ainfo, folder, location)
@@ -131,10 +148,10 @@ module Renamer
           Loggers::Renamer.info "DELETING symlink #{'DRY RUN' if options[:dry_run_mode]}\n\t#{s}  <--X\n\t#{location}"
         end
       end
-      if correct_location && !File.symlink?("#{correct_location}/#{folder}")
-        symlink(location, correct_location, folder)
-        Loggers::Renamer.info "SYMLINKING \n\t#{location} <---\n\t#{correct_location}/#{folder}"
-      end
+      return if File.symlink?("#{correct_location}/#{folder}")
+
+      symlink(location, correct_location, folder)
+      Loggers::Renamer.info "SYMLINKING \n\t#{location} <---\n\t#{correct_location}/#{folder}"
     end
 
     def decide_symlink_location(ainfo)
@@ -160,7 +177,7 @@ module Renamer
       uri = URI::HTTP.build(
         host: plex_opt[:host],
         port: plex_opt[:port],
-        path: "/library/sections/#{plex_opt[:section]}/refresh"
+        path: "/library/sections/#{plex_opt[:section]}/refresh",
       ).to_s
       Loggers::Renamer.debug "updating plex at #{uri}"
       resp = RestClient.get(uri, params: { 'X-Plex-Token': plex_opt[:token] })

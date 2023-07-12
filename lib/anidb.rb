@@ -16,7 +16,6 @@ class Anidb
       info[:anime][:completed] = fetch_mylist_data(aid, info[:anime][:episodes]).tap do |m|
         m.add info[:anime][:epno]
       end.complete?
-      info
     end
   end
 
@@ -24,6 +23,10 @@ class Anidb
     maintain_rate_limit
     @client ||= make_client
     @client.__send__(method, *args)
+  end
+
+  def respond_to_missing?(method, *)
+    @client.respond_to?(method) || super
   end
 
   private

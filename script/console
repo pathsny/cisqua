@@ -1,7 +1,6 @@
 #!/usr/bin/env ruby
 # console for debugging.
 #    anidb loads a console with the udp client
-#    data loads a console with the database
 require 'optparse'
 name = nil
 OptionParser.new do |opts|
@@ -11,7 +10,7 @@ OptionParser.new do |opts|
   end
 end.parse!
 
-raise 'missing argument name ' unless name
+name = 'anidb' if name.nil?
 
 location = File.expand_path("../helpers/#{name}_console.rb", __FILE__)
 raise "#{name} is not a supported console type" unless File.exist?(location)

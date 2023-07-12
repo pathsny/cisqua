@@ -12,15 +12,15 @@ module Renamer
       def verify_data(original, duplicates)
         assert(
           duplicates.all? { |i| i.info[:file][:aid] == original.info[:file][:aid] },
-          'all files must be for the same anime'
+          'all files must be for the same anime',
         )
         assert(
           duplicates.all? { |i| i.info[:file][:eid] == original.info[:file][:eid] },
-          'all files must be for the same episode'
+          'all files must be for the same episode',
         )
         assert(
           duplicates.all? { |i| i.info[:file][:gid] == original.info[:file][:gid] },
-          'all files must be for the same group'
+          'all files must be for the same group',
         )
       end
 
@@ -34,9 +34,7 @@ module Renamer
           { junk: clones + junk, keep_current: original == selected, dups:, selected: }
         end
 
-        if sorted_rest.empty?
-          make_result[original, sorted_rest]
-        elsif compare_items(original, sorted_rest.first).negative?
+        if !sorted_rest.empty? && compare_items(original, sorted_rest.first).negative?
           make_result[sorted_rest.first, sorted_rest.drop(1)]
         else
           make_result[original, sorted_rest]

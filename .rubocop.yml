@@ -1,0 +1,105 @@
+require: rubocop-rspec
+
+Lint/ConstantDefinitionInBlock:
+  Exclude:
+    - 'spec/**/*.rb'
+Layout/EndAlignment:
+  EnforcedStyleAlignWith: start_of_line
+Layout/CaseIndentation:
+  EnforcedStyle: end
+Layout/FirstArgumentIndentation:
+  EnforcedStyle: consistent
+Layout/LineLength:
+  Exclude:
+    - 'script/xbmcize.rb'
+    - 'script/rename_movies_for_plex.rb'
+    - 'script/unidentifiable_files.rb'
+Layout/MultilineMethodCallIndentation:
+  EnforcedStyle: indented
+Metrics/AbcSize:
+  Max: 200
+Metrics/BlockLength:
+  Max: 200
+Metrics/ClassLength:
+  Max: 200
+Metrics/CyclomaticComplexity:
+  Max: 30
+Metrics/MethodLength:
+  Max: 200
+Metrics/PerceivedComplexity:
+  Max: 50
+Naming/MethodParameterName:
+  Enabled: false
+Naming/PredicateName:
+  Enabled: false
+Naming/VariableNumber:
+  Enabled: false
+RSpec/AnyInstance:
+  Enabled: false
+RSpec/BeforeAfterAll:
+  Enabled: false
+RSpec/DescribedClass:
+  Enabled: false
+RSpec/DescribeSymbol:
+  Enabled: false
+RSpec/EmptyExampleGroup:
+  Enabled: false
+RSpec/ExampleLength:
+  Exclude:
+    - 'spec/mylist_data_spec.rb'
+    - 'spec/renamer/duplicate_resolver_spec.rb'
+    - 'spec/renamer/video_file_mover_spec.rb'
+    - 'spec/renamer/file_quality_spec.rb'
+RSpec/ExpectActual:
+  Exclude:
+    - 'spec/renamer/name_generator_spec.rb'
+RSpec/IndexedLet:
+  Enabled: false
+RSpec/InstanceVariable:
+  Exclude:
+    - 'spec/renamer/renamer_spec.rb'
+RSpec/LeakyConstantDeclaration:
+  Enabled: false
+RSpec/MultipleDescribes:
+  Exclude:
+    - 'spec/renamer/file_quality_spec.rb'
+RSpec/MultipleExpectations:
+  Exclude:
+    - 'spec/renamer/video_file_mover_spec.rb'
+    - 'spec/renamer/file_quality_spec.rb'
+    - 'spec/renamer/duplicate_resolver_spec.rb'
+    - 'spec/mylist_data_spec.rb'
+RSpec/MultipleMemoizedHelpers:
+  Exclude:
+    - 'spec/renamer/duplicate_resolver_spec.rb'
+    - 'spec/renamer/renamer_spec.rb'
+RSpec/NamedSubject:
+  Enabled: false
+RSpec/NoExpectationExample:
+  Enabled: false
+Style/ClassVars:
+  Enabled: false
+Style/Documentation:
+  Enabled: false
+Style/FrozenStringLiteralComment:
+  Enabled: false
+Style/MultilineTernaryOperator:
+  Enabled: false
+Style/MutableConstant:
+  Exclude:
+    - 'script/unidentifiable_files.rb'
+Style/ParallelAssignment:
+  Enabled: false
+Style/TrailingCommaInArguments:
+  EnforcedStyleForMultiline: comma
+Style/TrailingCommaInHashLiteral:
+  EnforcedStyleForMultiline: comma
+Style/TrailingCommaInArrayLiteral:
+  EnforcedStyleForMultiline: comma
+AllCops:
+  NewCops: enable
+  Exclude:
+    - 'external/**/*.rb'
+    - 'net/**/*.rb'
+    - 'bin/**/*'
+

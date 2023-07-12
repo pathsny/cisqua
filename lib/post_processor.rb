@@ -54,7 +54,7 @@ class PostProcessor
           when :unknown
             Loggers::PostProcessor.warn "UNKNOWN file\n\t#{work_item.file}#{if res.destination
                                                                               "  ===>\n\t#{res.destination}"
-                                                                            end}"
+            end}"
           when :duplicate
             Loggers::PostProcessor.warn "DUPLICATE file \n\t#{work_item.file} <=>\n\t#{res.destination}"
             dups[res.destination] = dups[res.destination] || []
@@ -95,9 +95,10 @@ class PostProcessor
 
       system "find /#{basedir} -type f -name \"tvshow.nfo\" -delete"
 
-      Dir["#{basedir}/**/*"].select do |d|
-        File.directory? d
-      end.sort { |a, b| b <=> a }.each { |d| Dir.rmdir(d) if Dir.entries(d).size == 2 }
+      Dir["#{basedir}/**/*"]
+        .select { |d| File.directory?(d) }
+        .sort { |a, b| b <=> a }
+        .each { |d| Dir.rmdir(d) if Dir.empty?(d) }
     end
   end
 end

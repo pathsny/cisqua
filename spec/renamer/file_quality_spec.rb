@@ -1,6 +1,6 @@
 RSpec::Matchers.define :be_equivalent_to do |expected|
   match do |actual|
-    (expected <=> actual) == 0
+    (expected <=> actual).zero?
   end
 end
 
@@ -81,14 +81,15 @@ describe FileQuality do
     end
 
     it 'ranks as equal file qualities where resolution, version and quality move in different directions' do
-      expect(FileQuality.new(common_info)).to be_equivalent_to FileQuality.new(common_info.merge(
-                                                                                 video_resolution: '1920x1080', version: 1
-                                                                               ))
+      expect(FileQuality.new(common_info)).to be_equivalent_to FileQuality.new(
+        common_info.merge(video_resolution: '1920x1080', version: 1),
+      )
     end
 
     it 'remains true for sources that are not equal but of the same score' do
-      expect(FileQuality.new(common_info)).to be > FileQuality.new(common_info.merge(quality: 'med',
-                                                                                     source: 'HKDVD'))
+      expect(FileQuality.new(common_info)).to be > FileQuality.new(
+        common_info.merge(quality: 'med', source: 'HKDVD'),
+      )
     end
   end
 
@@ -106,18 +107,24 @@ describe FileQuality do
     end
 
     it 'ranks as equal file qualities where resolution and/or quality move in the opposite direction of source' do
-      expect(FileQuality.new(common_info)).to be_equivalent_to FileQuality.new(common_info.merge(source: 'VHS',
-                                                                                                 video_resolution: '1920x1080'))
-      expect(FileQuality.new(common_info)).to be_equivalent_to FileQuality.new(common_info.merge(source: 'Blu-ray',
-                                                                                                 quality: 'low'))
-      expect(FileQuality.new(common_info)).to be_equivalent_to FileQuality.new(common_info.merge(source: 'Blu-ray',
-                                                                                                 quality: 'low', video_resolution: '1920x1080'))
+      expect(FileQuality.new(common_info)).to be_equivalent_to FileQuality.new(
+        common_info.merge(source: 'VHS', video_resolution: '1920x1080'),
+      )
+      expect(FileQuality.new(common_info)).to be_equivalent_to FileQuality.new(
+        common_info.merge(source: 'Blu-ray', quality: 'low'),
+      )
+      expect(FileQuality.new(common_info)).to be_equivalent_to FileQuality.new(
+        common_info.merge(source: 'Blu-ray', quality: 'low', video_resolution: '1920x1080'),
+      )
     end
 
     it 'ignores version' do
-      expect(FileQuality.new(common_info)).to be > FileQuality.new(common_info.merge(source: 'VHS', version: 3))
-      expect(FileQuality.new(common_info)).to be < FileQuality.new(common_info.merge(source: 'Blu-ray',
-                                                                                     version: 1))
+      expect(FileQuality.new(common_info)).to be > FileQuality.new(
+        common_info.merge(source: 'VHS', version: 3),
+      )
+      expect(FileQuality.new(common_info)).to be < FileQuality.new(
+        common_info.merge(source: 'Blu-ray', version: 1),
+      )
     end
   end
 end

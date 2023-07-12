@@ -12,13 +12,13 @@ module Renamer
 
     # ensure that a name can be used on a filesystem
     def escape(name)
-      valid_chars = %w(\w \. \- \[ \] \( \) &).join('')
+      valid_chars = %w(\w \. \- \[ \] \( \) &).join
       invalid_rg = "[^#{valid_chars}\s]"
       name.gsub(Regexp.new("#{invalid_rg}(?![#{valid_chars}])"), '')
-          .gsub(Regexp.new("\\s#{invalid_rg}"), ' ')
-          .gsub(Regexp.new(invalid_rg), ' ')
-          .strip.squeeze(' ')
-          .sub(/\.$/, '')
+        .gsub(Regexp.new("\\s#{invalid_rg}"), ' ')
+        .gsub(Regexp.new(invalid_rg), ' ')
+        .strip.squeeze(' ')
+        .sub(/\.$/, '')
     end
   end
 end

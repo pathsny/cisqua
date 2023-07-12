@@ -7,10 +7,10 @@ Logging.color_scheme(:colorful, {
                          info: :green,
                          warn: :yellow,
                          error: :red,
-                         fatal: %i[white on_red]
+                         fatal: %i[white on_red],
                        },
                        date: :cyan,
-                       logger: :magenta
+                       logger: :magenta,
                      })
 
 module Loggers
@@ -24,8 +24,9 @@ module Loggers
   PlexAnidbIdize = Logging.logger['PlexAnidbIdize']
   BadFiles = Logging.logger['BadFiles']
   VideoFileMover = Logging.logger['VideoFileMover']
+  App = Logging.logger['App']
 
-  def self.set_log_level_from_option(log_level_option)
+  def self.log_level=(log_level_option)
     log_level = begin
       log_level_option.to_sym
     rescue StandardError
@@ -40,7 +41,7 @@ module Loggers
     Logging.appenders.file(
       'logfile',
       filename: log_file_path,
-      layout: Logging.layouts.pattern({ color_scheme: :colorful })
+      layout: Logging.layouts.pattern({ color_scheme: :colorful }),
     )
     Logging.logger.root.add_appenders('logfile')
     return unless parseable_logfile_path
@@ -48,19 +49,19 @@ module Loggers
     Logging.appenders.file(
       'parseable_logfile',
       filename: parseable_logfile_path,
-      layout: Logging.layouts.json(items: %w[timestamp level logger message pid])
+      layout: Logging.layouts.json(items: %w[timestamp level logger message pid]),
     )
   end
 end
 
 Logging.appenders.stdout(
   'stdout',
-  layout: Logging.layouts.pattern({ color_scheme: :colorful })
+  layout: Logging.layouts.pattern({ color_scheme: :colorful }),
 )
 
 Loggers.setup_log_file(
   File.expand_path('../data/log/anidb.log', __dir__),
-  File.expand_path('../data/log/anidb_json.log', __dir__)
+  File.expand_path('../data/log/anidb_json.log', __dir__),
 )
 
 # Logging.appenders.file('logfile',

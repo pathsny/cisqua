@@ -2,7 +2,7 @@ def file_list(options)
   basedir = File.absolute_path(options[:basedir], ROOT_FOLDER)
   extensions = options[:extensions] == :all ? '*' : "{#{extension_glob options[:extensions]}}"
   Dir.glob(File.join(basedir.to_s, "#{'**/' if options[:recursive]}*.#{extensions}"), File::FNM_CASEFOLD)
-     .reject { |n| File.symlink? n }
+    .reject { |n| File.symlink? n }
 end
 
 def symlink_for(target, basedir)

@@ -51,15 +51,18 @@ module Renamer
     # moves a file from `old_path` to `new_path`.
     # Optionally generates a symlink back to old_path if specified with options
     def move_file(old_path, new_path, move_options)
-      Loggers::VideoFileMover.debug "moving #{old_path} to #{new_path} with #{move_options}.#{@options[:dry_run_mode] ? ' DRY RUN' : ''}"
+      dry_run = @options[:dry_run_mode] ? ' DRY RUN' : ''
+      Loggers::VideoFileMover.debug(
+        "moving #{old_path} to #{new_path} with #{move_options}.#{dry_run}",
+      )
       FileUtils.mv(old_path, new_path) unless @options[:dry_run_mode]
       @symlinker.relative(new_path, old_path) if @options.merge(move_options)[:symlink_source] && old_path != new_path
-      if move_options[:update_links_from]
-        symlink_for(old_path, move_options[:update_links_from]).each do |old_link|
-          Loggers::VideoFileMover.debug "removing old symlink from #{old_link} to #{old_path}"
-          FileUtils.rm(old_link) unless @options[:dry_run_mode]
-          @symlinker.relative(new_path, old_link)
-        end
+      return unless move_options[:update_links_from]
+
+      symlink_for(old_path, move_options[:update_links_from]).each do |old_link|
+        Loggers::VideoFileMover.debug "removing old symlink from #{old_link} to #{old_path}"
+        FileUtils.rm(old_link) unless @options[:dry_run_mode]
+        @symlinker.relative(new_path, old_link)
       end
     end
   end

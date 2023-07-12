@@ -16,7 +16,7 @@ options = ScriptOptions.load_options(options_file)
 r_options = options[:renamer]
 
 output_location = File.absolute_path(r_options[:output_location], ROOT_FOLDER)
-all_folders = Dir["#{output_location}/**"].sort
+all_folders = Dir["#{output_location}/**"]
 aid_folder_hash = all_folders.group_by do |f|
   match_data = File.read("#{f}/tvshow.nfo").match(/^aid=(\d+)\s*$/)
   raise "did not match for #{f}" unless match_data

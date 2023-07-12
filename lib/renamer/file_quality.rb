@@ -118,7 +118,7 @@ class FileQuality
     @res = VideoResolution.new(options[:video_resolution])
     assert(
       @version.is_a?(Integer) && @version >= 1 && @version <= 5,
-      'quality requires a valid version'
+      'quality requires a valid version',
     )
   end
 
@@ -130,13 +130,13 @@ class FileQuality
       consistent_comparison(
         quality <=> other.quality,
         version <=> other.version,
-        res <=> other.res
+        res <=> other.res,
       )
     else
       consistent_comparison(
         source_cmp,
         quality <=> other.quality,
-        res <=> other.res
+        res <=> other.res,
       )
     end
   end

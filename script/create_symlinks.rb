@@ -22,9 +22,10 @@ options = ScriptOptions.load_options(options_file)
 r_options = options[:renamer]
 
 mylist = REXML::Document.new File.new("#{mylist_location}/mylist.xml")
+SYMLINK_SYMBOLS = %i[movies incomplete_series complete_series incomplete_other complete_other].freeze
 
 output_location = File.absolute_path(r_options[:output_location], ROOT_FOLDER)
-all_folders = Dir["#{output_location}/**"].sort
+all_folders = Dir["#{output_location}/**"]
 first_folder = ARGV[1]
 folders = first_folder ? all_folders.drop_while { |k| File.basename(k) != first_folder } : all_folders
 abort 'nothing to do' if folders.empty?
@@ -49,11 +50,14 @@ rescue StandardError
 end
 
 syms = r_options[:create_symlinks]
-symlink_folders = %i[movies incomplete_series complete_series incomplete_other complete_other].map do |k|
+symlink_folder_contents = SYMLINK_SYMBOLS.map do |k|
   Dir["#{File.absolute_path(syms[k], ROOT_FOLDER)}/**"].map { |f| File.basename(f) }
-end.reduce([]) { |acc, arr| acc | arr }
+end
+unique_folders_in_symlink_directories = symlink_folder_contents.flatten.uniq
 all_folder_names = all_folder.map { |f| File.basename(f) }
-unless symlink_folders.size == all_folder_names.size && (symlink_folders & all_folder_names == symlink_folders)
+if unique_folders_in_symlink_directories.size != all_folder_names.size ||
+   all_folder_names != unique_folders_in_symlink_directories
+
   Loggers::CreateLinks.error do
     "something is wrong #{all_folder_names} does not map to #{symlink_folders}"
   end

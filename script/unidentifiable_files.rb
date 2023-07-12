@@ -25,7 +25,7 @@ mylist = REXML::Document.new File.new("#{mylist_location}/mylist.xml")
 def m_pattern(folder_name)
   extension = /\.[A-Za-z0-9]+$/
   end_part = /\s- (?:Complete Movie|Part \d+ of \d+|[^\[]*)(?:\s\[[\w&-.~\s!=]+\])? \[\(XS?-\d+(?:-\d+)?\)\]/
-  [Regexp.new("^#{Regexp.quote(folder_name)}\.?#{end_part.source}#{extension.source}")]
+  [Regexp.new("^#{Regexp.quote(folder_name)}.?#{end_part.source}#{extension.source}")]
 end
 
 def s_pattern(folder_name)
@@ -49,12 +49,12 @@ def s_pattern_fix(folder_name)
          2] }, { r: Regexp.new("(^#{f}\\.?\\s- episode [A-Z](\\d+))((?:\\[[\\w&-\\.~\\s!=]+\\])?\s\\[\\(XS-\\d+-\\2\\)\\]\\.[A-Za-z0-9]+$)"),
                  p: [2, ' ', 3] }, {
                    r: Regexp.new("(^#{f}\\.?\\s- episode \\d+)\s(\\.[A-Za-z0-9]+$)"),
-                   p: [1, 2]
+                   p: [1, 2],
                  }]
 end
 
-Duplicates = {}.freeze
-Unknown = [].freeze
+DUPLICATES = {}
+UNKNOWN = []
 
 def try_fix(folder, movie)
   folder_name = File.basename(folder)
@@ -65,10 +65,10 @@ def try_fix(folder, movie)
       m = p[:r].match File.basename(file)
       next unless m
 
-      new_name = p[:p].map { |part| part.is_a?(Integer) ? m[part] : part }.join('')
+      new_name = p[:p].map { |part| part.is_a?(Integer) ? m[part] : part }.join
       destination = File.join(File.dirname(file), new_name)
       if File.exist? destination
-        Duplicates[file] = destination
+        DUPLICATES[file] = destination
         Loggers::BadFiles.debug { "#{file} seems to be duplicate of #{destination}" }
       else
         Loggers::BadFiles.info { "renaming #{file} as #{destination}" }
@@ -83,19 +83,19 @@ end
 def test_names(folder, movie)
   folder_name = File.basename(folder)
   files = Dir["#{folder}/*"].reject do |file|
-    /^[^.]*$/.match(file) || File.basename(file) == 'tvshow.nfo' || Duplicates.key?(file)
+    /^[^.]*$/.match(file) || File.basename(file) == 'tvshow.nfo' || DUPLICATES.key?(file)
   end
   patterns = movie ? m_pattern(folder_name) : s_pattern(folder_name)
   files.each do |file|
     unless patterns.any? { |p| p.match File.basename(file) }
       Loggers::BadFiles.debug { "do not know file #{file} using #{patterns.inspect}" }
-      Unknown.push(file)
+      UNKNOWN.push(file)
     end
   end
 end
 
 output_location = File.absolute_path(r_options[:output_location], ROOT_FOLDER)
-all_folders = Dir["#{output_location}/**"].sort
+all_folders = Dir["#{output_location}/**"]
 all_folders.each do |folder|
   aid = File.read("#{folder}/tvshow.nfo").match(/^aid=(\d+)$/)[1]
   movie = mylist.elements["myList/animeList/anime[@id = '#{aid}']"].attributes['type'] == 'Movie'
@@ -103,8 +103,8 @@ all_folders.each do |folder|
   test_names(folder, movie)
 end
 
-File.open('duplicates.yml', 'w') { |f| f.write(Duplicates.to_yaml) }
-File.open('unknown.yml', 'w') { |f| f.write(Unknown.to_yaml) }
+File.write('duplicates.yml', DUPLICATES.to_yaml)
+File.write('unknown.yml', UNKNOWN.to_yaml)
 
-Loggers::BadFiles.info { Duplicates.inspect }
-Loggers::BadFiles.info { Unknown.inspect }
+Loggers::BadFiles.info { DUPLICATES.inspect }
+Loggers::BadFiles.info { UNKNOWN.inspect }

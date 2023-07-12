@@ -1,5 +1,5 @@
-require 'yaml'
 require 'amazing_print'
+require 'yaml'
 require_relative '../external/lru_hash'
 
 ROOT_FOLDER = File.expand_path(File.join(__dir__, '..'))

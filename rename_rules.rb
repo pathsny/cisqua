@@ -5,7 +5,31 @@
 # anime_name - Complete Movie or anime_name - Part 1 of 3.
 # here is a sample of the "info" you will get if you want to change the name format.
 
-# {:fid=>271926, :file=>{:length=>"1778", :quality=>"high", :video_resolution=>"640x480", :source=>"LD", :sub_language=>"none", :gid=>"0", :dub_language=>"japanese", :eid=>"26772", :aid=>"1179"}, :anime=>{:type=>"OVA", :ep_romaji_name=>"", :highest_episode_number=>"2", :group_name=>"raw/unknown", :english_name=>"", :group_short_name=>"raw", :romaji_name=>"Bounty Dog: Getsumen no Ibu", :year=>"1994-1994", :epno=>"1", :ep_english_name=>"Code 1"}}
+# {
+#   fid: 271_926,
+#   file: {
+#     length: '1778',
+#     quality: 'high',
+#     video_resolution: '640x480',
+#     source: 'LD',
+#     sub_language: 'none',
+#     gid: '0',
+#     dub_language: 'japanese',
+#     eid: '26772',
+#     aid: '1179',
+#   },
+#   anime: {
+#     type: 'OVA',
+#     ep_romaji_name: '',
+#     highest_episode_number: '2',
+#     group_name: 'raw/unknown',
+#     english_name: '',
+#     group_short_name: 'raw',
+#     romaji_name: 'Bounty Dog: Getsumen no Ibu',
+#     year: '1994-1994', epno: '1',
+#     ep_english_name: 'Code 1'
+#   },
+# }
 
 def generate_name(info)
   anime = info[:anime]

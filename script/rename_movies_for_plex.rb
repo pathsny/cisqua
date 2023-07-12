@@ -28,7 +28,7 @@ options[:log_level] = script_options[:log_level] if script_options.key?(:log_lev
 # we dont want to preserve the old files
 options[:renamer][:symlink_source] = false
 
-Loggers.set_log_level_from_option(options[:log_level])
+Loggers.log_level = options[:log_level]
 Loggers.custom_log_file(script_options[:logfile]) if script_options.key?(:logfile)
 
 module Loggers
@@ -47,7 +47,7 @@ class MovieRenamerFoPlex
     root_folder = File.absolute_path(@options.dig(:renamer, :create_symlinks, :movies), ROOT_FOLDER)
     Loggers::RenameMoviesForPlex.info { "processing files in #{root_folder}" }
     Loggers::RenameMoviesForPlex.info { 'DryRun mode is on ' } if @script_options[:dry_run_mode]
-    all_folders = Dir[File.join(root_folder, '**')].sort
+    all_folders = Dir[File.join(root_folder, '**')]
     all_folders.each do |movie_folder|
       files = file_list(@options[:scanner].merge(basedir: File.realpath(movie_folder)))
       files.each { |movie| plex_rename(File.realpath(movie)) }
@@ -92,12 +92,12 @@ class MovieRenamerFoPlex
     aid = File.read(File.join(File.dirname(movie), 'anidb.id')).strip
     {
       file: {
-        aid:
+        aid:,
       },
       anime: {
         type: 'Movie',
-        **movie_file_info
-      }
+        **movie_file_info,
+      },
     }
   end
 
@@ -109,10 +109,10 @@ class MovieRenamerFoPlex
     match = CURRENT_SCHEME_REGEX.match(remaining_name)
     if match
       return {
-        romaji_name: romaji_name,
+        romaji_name:,
         group_short_name: match[:group_short_name] || 'raw',
         epno: match[:epno] || '1',
-        ep_english_name: match[:ep_english_name]
+        ep_english_name: match[:ep_english_name],
       }
     end
     assert(match, "#{movie} did not match pattern")
@@ -140,7 +140,7 @@ class MovieRenamerFoPlex
       romaji_name:,
       group_short_name: match[:group_short_name] || 'raw',
       epno:,
-      ep_english_name: match[:ep_english_name]
+      ep_english_name: match[:ep_english_name],
     }
   end
 end

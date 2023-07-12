@@ -41,19 +41,19 @@ describe Renamer::VideoFileMover do
       expect(res.destination).to eq "#{dest_dir}/myfile.mkv"
     end
 
-    it 'should not move the files if there is already a file at the destination' do
+    it 'does not move the files if there is already a file at the destination' do
       sub_file_1 = create_source_file("#{source_dir}/file_1.sub")
       sub_file_2 = create_source_file("#{source_dir}/file_1.srt")
       FileUtils.mkdir_p dest_dir
       FileUtils.touch("#{dest_dir}/myfile.mkv")
       subject.process(source_video[:path], dest_dir, new_name: 'myfile')
-      expect(source_video).to_not be_moved
-      expect(sub_file_1).to_not be_moved
-      expect(sub_file_1).to_not be_moved
+      expect(source_video).not_to be_moved
+      expect(sub_file_1).not_to be_moved
+      expect(sub_file_2).not_to be_moved
     end
 
-    it 'should move files with a distinct suffix if moved unambiguously' do
-      sub_file = create_source_file("#{source_dir}/file_1.sub")
+    it 'moves files with a distinct suffix if moved unambiguously' do
+      _sub_file = create_source_file("#{source_dir}/file_1.sub")
       FileUtils.mkdir_p dest_dir
       FileUtils.touch("#{dest_dir}/myfile.mkv")
       FileUtils.touch("#{dest_dir}/myfile.1.mkv")
@@ -76,6 +76,7 @@ describe Renamer::VideoFileMover do
 
   context 'without source symlinks' do
     subject { Renamer::VideoFileMover.new(subtitle_extensions: 'srt sub') }
+
     it_behaves_like 'file mover', :be_moved_to_without_source_symlink
 
     it 'can create symlinks if overriden' do
@@ -88,9 +89,10 @@ describe Renamer::VideoFileMover do
     subject do
       Renamer::VideoFileMover.new(
         subtitle_extensions: 'srt sub',
-        symlink_source: true
+        symlink_source: true,
       )
     end
+
     it_behaves_like 'file mover', :be_moved_to_with_source_symlink
 
     it 'can avoid symlinks if overriden' do

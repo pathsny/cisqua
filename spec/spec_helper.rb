@@ -18,15 +18,15 @@ RSpec.configure do |config|
   config.capture_log_messages
 end
 
-def require_from_root(p)
-  require_relative File.join('..', p)
+def require_from_root(path)
+  require_relative File.join('..', path)
 end
 
 OPTIONS_BAK = YAML.load_file(File.expand_path('../script/helpers/options.yml.bak', __dir__))
 DUMMY_INFO = YAML.load_file(File.expand_path('dummy_info.yml', __dir__))
 
 def write_file(name, content)
-  File.open(name, 'w') { |f| f.write(content) }
+  File.write(name, content)
 end
 
 def read_file(name)

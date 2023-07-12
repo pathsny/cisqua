@@ -7,11 +7,11 @@ class CachingAnidb
   def initialize(options)
     @anidb_api = Anidb.new options
     @cache_dir_path = File.expand_path(File.join(
-                                         File.dirname(__FILE__),
-                                         '..',
-                                         'data',
-                                         'udp_anime_info_cache'
-                                       ))
+      File.dirname(__FILE__),
+      '..',
+      'data',
+      'udp_anime_info_cache',
+    ))
   end
 
   def cache_file_path(ed2k)
@@ -21,13 +21,13 @@ class CachingAnidb
   def process(*data)
     ed2k = data[2]
     f = cache_file_path(ed2k)
-    if !File.exist?(f)
+    if File.exist?(f)
+      YAML.load_file(f)
+    else
       FileUtils.mkdir_p(@cache_dir_path)
       @anidb_api.process(*data).tap do |info|
-        File.open(f, 'w') { |file| file.write(info.to_yaml) }
+        File.write(f, info.to_yaml)
       end
-    else
-      YAML.load_file(f)
     end
   end
 end

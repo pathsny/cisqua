@@ -60,7 +60,7 @@ nfo_creator = Thread.new do
     file, aid = info_queue.pop
     if aid
       dir = File.dirname(file)
-      File.open("#{dir}/tvshow.nfo", 'w') { |f| f.write("aid=#{aid}") }
+      File.write("#{dir}/tvshow.nfo", "aid=#{aid}")
       FileUtils.mv dir, destination
     else
       unknown << file

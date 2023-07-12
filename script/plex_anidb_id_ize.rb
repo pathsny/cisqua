@@ -22,7 +22,7 @@ unless r_options[:create_anidb_id_files]
   exit
 end
 
-all_folders = Dir["#{output_location}/**"].sort
+all_folders = Dir["#{output_location}/**"]
 all_folders.each do |f|
   match_data = File.read("#{f}/tvshow.nfo").match(/^aid=(\d+)\s*$/)
   raise "did not match for #{f}" unless match_data
@@ -30,7 +30,5 @@ all_folders.each do |f|
   idfile_path = File.join(f, 'anidb.id')
   next if File.exist?(idfile_path)
 
-  File.open(idfile_path, 'w') do |f|
-    f.write("#{match_data[1]}\n")
-  end
+  File.write(idfile_path, "#{match_data[1]}\n")
 end

@@ -1,14 +1,12 @@
-require 'set'
-
 class MylistData
   def initialize(count, params)
     data = if params[:single_episode]
-             [params[:epno]]
-           else
-             %i[unknown_ep_list hdd_ep_list cd_ep_list].map do |t|
-               params[t].split(',')
-             end.flatten
-           end
+      [params[:epno]]
+    else
+      %i[unknown_ep_list hdd_ep_list cd_ep_list].map do |t|
+        params[t].split(',')
+      end.flatten
+    end
     @episodes = process_ranges(data)
     @count = count
   end
@@ -40,6 +38,6 @@ class MylistData
         r
       end
     end
-    Set.new pieces.flatten.map { |k| k =~ /^\d+$/ ? k.to_i : k }
+    Set.new(pieces.flatten.map { |k| k =~ /^\d+$/ ? k.to_i : k })
   end
 end
