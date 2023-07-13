@@ -1,4 +1,5 @@
-require File.expand_path('../net/ranidb', __dir__)
+require File.join(ROOT_FOLDER, 'net/ranidb')
+require File.join(ROOT_FOLDER, 'external/lru_hash')
 
 class Anidb
   def initialize(options)

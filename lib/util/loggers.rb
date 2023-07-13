@@ -60,8 +60,8 @@ Logging.appenders.stdout(
 )
 
 Loggers.setup_log_file(
-  File.expand_path('../../data/log/anidb.log', __dir__),
-  File.expand_path('../../data/log/anidb_json.log', __dir__),
+  File.join(DATA_FOLDER, 'log/anidb.log'),
+  File.join(DATA_FOLDER, 'log/anidb_json.log'),
 )
 
 Logging.define_singleton_method(:parseable_logfile) { parseable_logfile }

@@ -1,5 +1,5 @@
 require 'English'
-require_relative '../../rename_rules'
+require File.join(ROOT_FOLDER, 'rename_rules')
 require 'fileutils'
 require 'pathname'
 require 'invariant'

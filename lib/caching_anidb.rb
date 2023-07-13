@@ -7,9 +7,7 @@ class CachingAnidb
   def initialize(options)
     @anidb_api = Anidb.new options
     @cache_dir_path = File.expand_path(File.join(
-      File.dirname(__FILE__),
-      '..',
-      'data',
+      DATA_FOLDER,
       'udp_anime_info_cache',
     ))
   end
