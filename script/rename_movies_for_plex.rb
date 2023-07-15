@@ -21,7 +21,7 @@ OptionParser.new do |opts|
     script_options[:logfile] = path
   end
 end.parse!
-options = ScriptOptions.load_options(script_options[:options_file])
+options = Options.load_options(script_options[:options_file])
 options[:log_level] = script_options[:log_level] if script_options.key?(:log_level)
 
 # we dont want to preserve the old files

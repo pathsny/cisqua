@@ -15,7 +15,7 @@ OptionParser.new do |opts|
     mylist_location = m
   end
 end.parse!
-options = ScriptOptions.load_options(options_file)
+options = Options.load_options(options_file)
 
 r_options = options[:renamer]
 

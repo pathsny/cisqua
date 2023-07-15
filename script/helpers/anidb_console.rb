@@ -10,6 +10,5 @@ OptionParser.new do |opts|
   end
 end.parse!
 require File.expand_path('../../lib/libs', __dir__)
-options = ScriptOptions.load_options(options_file)
-
+options = Options.load_options(options_file)
 Client = Net::AniDBUDP.new(*(%i[host port localport user pass nat].map { |k| options[:anidb][k] }))

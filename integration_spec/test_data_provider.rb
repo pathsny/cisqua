@@ -11,7 +11,7 @@ class TestDataProvider
   attr_reader :test_data, :options
 
   def initialize
-    @options = ScriptOptions.load_options(nil)
+    @options = Options.load_options(nil)
     test_info = JSON.load_file!(File.join(
       TEST_DATA_ROOT, 'test_data.json'
     ))

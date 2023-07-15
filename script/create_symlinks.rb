@@ -17,7 +17,7 @@ OptionParser.new do |opts|
   end
 end.parse!
 
-options = ScriptOptions.load_options(options_file)
+options = Options.load_options(options_file)
 r_options = options[:renamer]
 
 mylist = REXML::Document.new File.new("#{mylist_location}/mylist.xml")

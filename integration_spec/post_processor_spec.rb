@@ -3,7 +3,7 @@ require_relative('test_data_provider')
 # Integration test for the entire post processing function
 RSpec.configure do |_config|
   def options
-    @options ||= ScriptOptions.load_options(nil).tap do |options|
+    @options ||= Options.load_options(nil).tap do |options|
       options[:log_level] = :debug
       options[:renamer][:plex_scan_library_files] = nil
     end

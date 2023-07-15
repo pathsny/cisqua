@@ -10,7 +10,7 @@ OptionParser.new do |opts|
     options_file = o
   end
 end.parse!
-options = ScriptOptions.load_options(options_file)
+options = Options.load_options(options_file)
 
 r_options = options[:renamer]
 

@@ -21,7 +21,7 @@ OptionParser.new do |opts|
     script_options[:logfile] = path
   end
 end.parse!
-options = ScriptOptions.load_options(script_options[:options_file])
+options = Options.load_options(script_options[:options_file])
 options[:log_level] = script_options[:log_level] if script_options.key?(:log_level)
 options[:renamer][:dry_run_mode] = script_options[:dry_run_mode] if script_options.key?(:dry_run_mode)
 
