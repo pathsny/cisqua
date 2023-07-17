@@ -2,13 +2,27 @@
 require 'yaml'
 require 'optparse'
 
-options_file = nil
+C = Struct.new(:options_file, :options, :client).new
+
 OptionParser.new do |opts|
   opts.banner = 'Usage: create_symlinks -o <options file> -m <mylist_location>'
   opts.on('-oOPTIONS', '--options=OPTIONS', 'location of options config') do |o|
-    options_file = o
+    C.options_file = o
   end
 end.parse!
 require File.expand_path('../../lib/libs', __dir__)
-options = Options.load_options(options_file)
-Client = Net::AniDBUDP.new(*(%i[host port localport user pass nat].map { |k| options[:anidb][k] }))
+
+def r
+  Dir[File.join(ROOT_FOLDER, 'lib', '**/*')].each do |f|
+    load f unless File.directory?(f)
+  end
+
+  C.options = Options.load_options(C.options_file)
+  api_options = C.options.api_client
+
+  C.client = Net::AniDBUDP.new(
+    *(%i[host port localport user pass nat].map { |k| api_options[:anidb][k] }),
+  )
+end
+
+r
