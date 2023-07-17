@@ -11,11 +11,12 @@ gem 'logging'
 gem 'rest-client'
 gem 'solid_assert'
 
-group :test do
+group :development do
   gem 'fakefs'
   gem 'faker'
   gem 'mocha'
   gem 'rspec'
   gem 'rubocop', require: false
   gem 'rubocop-rspec', require: false
+  gem 'solargraph'
 end
