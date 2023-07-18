@@ -53,7 +53,7 @@ module Net
   FILE_STATES = {
 
   }
-  
+
   class AniDBUDP
     class Error               < Exception   ; end
 
@@ -91,7 +91,7 @@ module Net
 
       def to_s
         lines_str = @lines.empty? ? '' : "(#{@lines.join(' / ')})"
-        "#{@code} : #{@text}#{lines_str}" 
+        "#{@code} : #{@text}#{lines_str}"
       end
     end
 
@@ -172,6 +172,7 @@ module Net
 
     def disconnect()
       @sock.shutdown if @connected
+      @sock.close if @sock
       @connected = false
       @sock = nil
     end
@@ -289,10 +290,10 @@ module Net
     #  &ed2k={str ed2khash}
     #  &fmask={hexstr fmask}
     #  &amask={hexstr amask}
-    def search_file(name, size, ed2k,
+    def search_file(ed2k, size,
                     file_fields = DEFAULT_FILE_FFIELDS,
                     anime_fields = DEFAULT_FILE_AFIELDS)
-      file_any(:ed2k, [ name, size, ed2k ], file_fields, anime_fields) \
+      file_any(:ed2k, [ ed2k, size ], file_fields, anime_fields) \
         if(size && ed2k && size.to_i != 0 && ed2k != '')
     end
 
@@ -422,10 +423,10 @@ module Net
       mylist_any(:ed2k, [ size, ed2k ]) \
         if(size && ed2k && size.to_i != 0 && ed2k.strip != '')
     end
-    
+
     def mylist_by_aid(aid)
-      mylist_any(:aid, [aid]) if (aid && aid.to_i != 0) 
-    end  
+      mylist_any(:aid, [aid]) if (aid && aid.to_i != 0)
+    end
 
     # MYLISTADD
     #    fid={int4 fid}
@@ -583,7 +584,7 @@ module Net
       when :ed2k
         command('FILE',
                 :size  => pars[1],
-                :ed2k  => pars[2],
+                :ed2k  => pars[0],
                 :fmask => '%08x' % [ fmask ],
                 :amask => '%08x' % [ amask ])
       when :aid
@@ -615,8 +616,8 @@ module Net
             part_value = (states.keys & state_part[:keys]).first || state_part[:default]
             part_value = state_part[:map][part_value] if state_part[:map]
             h[:file][state_part[:name]] = part_value
-          end  
-        end  
+          end
+        end
         h
       else
         nil
@@ -712,33 +713,33 @@ module Net
                 :size   => pars[0],
                 :ed2k   => pars[1])
       when :name
-        command('MYLIST', 
+        command('MYLIST',
                 :aname => pars[0])
       when :aid
         command('MYLIST',
-                :aid => pars[0])                    
+                :aid => pars[0])
       end
       case reply.code
       when 221
-        mylist_response(reply, MYLIST_FIELDS).tap {|h| 
+        mylist_response(reply, MYLIST_FIELDS).tap {|h|
           h[:mylist][:lid] = h[:mylist][:lid].to_i
           h[:mylist][:single_episode] = true
       }
       when 312
         mylist_response(reply, MULTI_MYLIST_FIELDS).tap {|h| h[:mylist][:single_episode] = false}
-      else  
+      else
         nil
       end
     end
-    
+
     def mylist_response(reply, fields)
       {:mylist => {}.tap do |h|
         lr = reply.lines[0].split(/\|/)
         fields.each do |k|
           h[k] = lr.shift
         end
-      end }  
-    end  
+      end }
+    end
 
     def mylist_add_any(type, pars, edit = false, viewed = 0, state = :hdd, source = nil, storage = nil)
       h = { :viewed => viewed,
@@ -782,7 +783,7 @@ module Net
       raise ServerOfflineError.new("Trying to send a command to a dead server") if @dead
       r = nil
       loop do
-        if !@authenticated && !['AUTH','LOGOUT','PING'].include?(cmd) 
+        if !@authenticated && !['AUTH','LOGOUT','PING'].include?(cmd)
           auth
         end
         params[:s] = @sid if @sid
@@ -947,7 +948,7 @@ if $0 == __FILE__
   t.auth("toto", "toto")
   h = Net::AniDBUDP.ed2k_file_hash("./W07.mkv")
   s = File.stat("./W07.mkv").size
-  h = t.search_file("w07", s, h)
+  h = t.search_file("w07", h, s)
   p h
   h = t.anime(h[:file][:aid]) rescue nil
   p h

@@ -20,8 +20,21 @@ module StrictInitialize
   end
 end
 
+ScannerOptions = Struct.new(
+  # the location where you keep your anime to be scanned
+  :basedir,
+  # list of file extensions to scan
+  :extensions,
+  # if this is false. Only the top level files of each directory in the basedir are scanned.
+  # if this is true, all the files are picked up recursively
+  :recursive,
+  keyword_init: true,
+) do
+  include StrictInitialize
+end
+
 # configuration details for the api
-APIOptions = Struct.new(
+AnidbOptions = Struct.new(
   :port,
   :host,
   :localport,
@@ -33,16 +46,12 @@ APIOptions = Struct.new(
   include StrictInitialize
 end
 
-ScannerOptions = Struct.new(
-  # the location where you keep your anime to be scanned
-  :basedir,
-  # list of file extensions to scan
-  :extensions,
-  # if this is false. Only the top level files of each directory in the basedir are scanned.
-  # if this is true, all the files are picked up recursively
-  :recursive,
+APIClientOptions = Struct.new(
+  # connection settings to connect to anidb
+  :anidb,
   # set this to true to add all identified files to your mylist
   :add_to_mylist,
+  # options to configure the cache
   keyword_init: true,
 ) do
   include StrictInitialize
@@ -85,7 +94,8 @@ RenamerOptions = Struct.new(
   :unknown_location,
   # set this to true if you want a symlink back to the source where the files were moved
   :symlink_source,
-  # when replacing an existing file, searches this folder for symlinks and updates them to the new location. Most likely same as basedir.
+  # when replacing an existing file, searches this folder for symlinks and updates them
+  # to the new location. Most likely same as basedir.
   :fix_symlinks_root,
   # create symlinks to access anime by type and completeness factor. can be false, or a nested hash
   :create_symlinks,
@@ -101,7 +111,7 @@ RenamerOptions = Struct.new(
 end
 
 Options = Struct.new(
-  :anidb,
+  :api_client,
   :scanner,
   :renamer,
   # set this to false if you want the base directory left alone. Otherwise this removes all directories that can be
@@ -122,12 +132,23 @@ Options = Struct.new(
   def self.make_options(option_args)
     Options.new(**option_args.each_with_object({}) do |(k, v), m|
       m[k] = case k
-      when :anidb
-        APIOptions.new(**v)
+      when :api_client
+        make_api_client_options(v)
       when :scanner
         ScannerOptions.new(**v)
       when :renamer
         make_renamer_options(v)
+      else
+        v
+      end
+    end)
+  end
+
+  def self.make_api_client_options(option_args)
+    APIClientOptions.new(**option_args.each_with_object({}) do |(k, v), m|
+      m[k] = case k
+      when :anidb
+        AnidbOptions.new(**v)
       else
         v
       end

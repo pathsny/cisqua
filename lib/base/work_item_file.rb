@@ -1,7 +1,7 @@
 WorkItemFile = Struct.new(
   'WorkItemFile',
   :name,
-  :size_bytes,
   :ed2k,
+  :size_bytes,
   keyword_init: true,
 )

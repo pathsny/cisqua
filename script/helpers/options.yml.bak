@@ -1,12 +1,21 @@
 ---
-:anidb:
-  # configuration details for the api
-  :port: 9000
-  :host: api.anidb.net
-  :localport: 12387
-  :nat: true
-  :user: <your username>
-  :pass: <password>
+:api_client:
+  :anidb:
+    # configuration details for the api
+    :port: 9000
+    :host: api.anidb.net
+    :localport: 12387
+    :nat: true
+    :user: <your username>
+    :pass: <password>
+  # set this to true to add all identified files to your mylist
+  :add_to_mylist: true
+  # settings to control how the caching of API responses behaves
+  :cache: 
+    # where are the cached responses stored
+    :path:  /path/to/udp_cache
+    # time after which it is no longer valid
+    :ttl_min:  2880  
 :scanner:
   # the location where you keep your anime to be scanned
   :basedir: /path/to/anime
@@ -15,8 +24,6 @@
   # if this is false. Only the top level files of each directory in the basedir are scanned.
   # if this is true, all the files are picked up recursively
   :recursive: true
-  # set this to true to add all identified files to your mylist
-  :add_to_mylist: true
 :renamer:
   # list of extensions for subtitle files. If a show is present with a subtitle, the subtitle is also copied
   :subtitle_extensions: srt ass idx sub pdf ssa

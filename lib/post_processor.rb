@@ -3,7 +3,7 @@ require 'resolv-replace'
 
 class PostProcessor
   class << self
-    def run(test_client, options)
+    def run(options, test_mode)
       files = FileScanner.file_list(options[:scanner])
       log_start_banner
       scan_queue = Queue.new
@@ -36,14 +36,15 @@ class PostProcessor
       end
 
       info_getter = Thread.new do
-        anidb_api_klass = test_client ? CachingClient : APIClient
-        anidb_api = anidb_api_klass.new(options[:anidb])
+        Thread.current.name = 'info_getter'
+        anidb_api = APIClient.new(options[:api_client], test_mode)
         pipe_while_queue_has_items(info_queue, rename_queue) do |w|
           w.tap do |work_item|
             file = work_item.file
             work_item.info = anidb_api.process(file.name, file.ed2k, file.size_bytes)
           end
         end
+        anidb_api.disconnect
       end
 
       rename_worker = Thread.new do

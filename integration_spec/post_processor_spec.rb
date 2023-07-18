@@ -126,7 +126,7 @@ def prepare_data(t)
       f.src.path,
     )
   end
-  PostProcessor.run(true, options)
+  PostProcessor.run(options, true)
 end
 
 def make_specs_for_dst_dir(_name, t)
