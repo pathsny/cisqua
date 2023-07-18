@@ -1,7 +1,7 @@
 require File.join(ROOT_FOLDER, 'net/ranidb')
 require File.join(ROOT_FOLDER, 'external/lru_hash')
 
-class Anidb
+class APIClient
   def initialize(options)
     @options = options
     @cache = LRUHash.new(25_000)

@@ -3,9 +3,9 @@ require 'yaml'
 require 'fileutils'
 
 # caches anidb response. Only used while testing
-class CachingAnidb
+class CachingClient
   def initialize(options)
-    @anidb_api = Anidb.new options
+    @anidb_api = APIClient.new options
     @cache_dir_path = File.expand_path(File.join(
       DATA_FOLDER,
       'udp_anime_info_cache',

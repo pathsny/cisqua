@@ -36,7 +36,7 @@ class PostProcessor
       end
 
       info_getter = Thread.new do
-        anidb_api_klass = test_client ? CachingAnidb : Anidb
+        anidb_api_klass = test_client ? CachingClient : APIClient
         anidb_api = anidb_api_klass.new(options[:anidb])
         pipe_while_queue_has_items(info_queue, rename_queue) do |w|
           w.tap do |work_item|
