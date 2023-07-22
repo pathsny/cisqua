@@ -1,6 +1,8 @@
 require File.join(ROOT_FOLDER, 'net/ranidb')
 
 class ProxyClient
+  include SemanticLogger::Loggable
+
   SAFE_METHODS = %i[connect disconnect].freeze
   READ_METHODS = %i[search_file anime episode mylist_by_aid].freeze
   WRITE_METHODS = %i[mylist_add].freeze
@@ -39,10 +41,9 @@ class ProxyClient
 
     cache_dir = File.join(@cache_dir_path, method.to_s)
     _param_types, param_names = @client.method(method).parameters.transpose
-    cache_key = args.zip(param_names).reduce('') do |key, (value, name)|
-      existing = key.empty? ? key : "#{key}__"
-      "#{existing}#{name}_#{value}"
-    end
+
+    cache_key = args.zip(param_names)
+      .map { |value, name| "#{name}_#{value}" }.join('__')
 
     file_path = File.join(cache_dir, "#{cache_key}.yml")
     if File.exist?(file_path)
@@ -85,7 +86,7 @@ class ProxyClient
 
   def make_client(api_options)
     params = %i[host port localport user pass nat].map { |k| api_options[k] }
-    logger = Loggers::UDPClient
+    logger = SemanticLogger[Net::AniDBUDP]
     logger.instance_eval("def proto(v = '') ; self.debug v ; end", __FILE__, __LINE__)
     Net::AniDBUDP.new(*params, logger)
   end

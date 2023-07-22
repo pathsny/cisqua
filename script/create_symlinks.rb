@@ -29,6 +29,7 @@ first_folder = ARGV[1]
 folders = first_folder ? all_folders.drop_while { |k| File.basename(k) != first_folder } : all_folders
 abort 'nothing to do' if folders.empty?
 
+logger = SemanticLogger['CreateLinks']
 renamer = Renamer::Renamer.new(r_options)
 
 folders.each do |f|
@@ -43,9 +44,9 @@ folders.each do |f|
             ended: true,
             completed: a_attrs['status'] == 'complete' }
   renamer.update_symlinks_for ainfo, File.basename(f), f
-  Loggers::CreateLinks.debug { "#{f} has #{ainfo.inspect}" }
+  logger.debug { "#{f} has #{ainfo.inspect}" }
 rescue StandardError
-  Loggers::CreateLinks.error { "error working with #{f}" }
+  logger.error { "error working with #{f}" }
 end
 
 syms = r_options[:create_symlinks]
@@ -57,7 +58,7 @@ all_folder_names = all_folder.map { |f| File.basename(f) }
 if unique_folders_in_symlink_directories.size != all_folder_names.size ||
    all_folder_names != unique_folders_in_symlink_directories
 
-  Loggers::CreateLinks.error do
+  logger.error do
     "something is wrong #{all_folder_names} does not map to #{symlink_folders}"
   end
 end

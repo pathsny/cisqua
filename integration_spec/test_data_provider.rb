@@ -36,6 +36,10 @@ class TestDataProvider
     end
   end
 
+  def logfile_path
+    File.join(TEST_DATA_ROOT, 'log', 'anidb.log')
+  end
+
   def root_location
     TestDataLocation.new(segment: 'root', absolute_path: TEST_DATA_ROOT)
   end

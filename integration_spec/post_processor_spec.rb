@@ -9,6 +9,9 @@ RSpec.configure do |_config|
     end
   end
 
+  AppLogger.disable_stdout_logging
+  AppLogger.log_file = TestDataProvider.instance.logfile_path
+
   # Runs faster, but maybe inaccurate. Useful for development
   # We dont clear the file data between runs, so only the final
   # result can be asserted.

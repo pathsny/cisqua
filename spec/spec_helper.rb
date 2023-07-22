@@ -8,15 +8,22 @@ require 'date'
 require 'rspec/logging_helper'
 require_relative('../spec_util/matchers')
 
+RSpec.shared_context 'with semantic_logger helper' do
+  let(:logger) { SemanticLogger::Test::CaptureLogEvents.new }
+end
+
 RSpec.configure do |config|
   config.expect_with :rspec do |expectations|
     expectations.include_chain_clauses_in_custom_matcher_descriptions = true
   end
 
-  include RSpec::LoggingHelper
+  config.include_context 'with semantic_logger helper'
+
+  config.before do
+    SemanticLogger::Logger.stubs(:processor).returns(logger)
+  end
 
   config.mock_with :mocha
-  config.capture_log_messages
 end
 
 def require_from_root(path)

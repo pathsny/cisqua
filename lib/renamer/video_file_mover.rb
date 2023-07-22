@@ -1,5 +1,7 @@
 module Renamer
   class VideoFileMover
+    include SemanticLogger::Loggable
+
     def initialize(options)
       @options = options
       @symlinker = Symlinker.new(options)
@@ -13,7 +15,11 @@ module Renamer
       return Response.duplicate(destination) if is_duplicate_destination(old_path, destination)
 
       unless File.directory?(location)
-        Loggers::VideoFileMover.debug("Creating directory #{location}. #{@options[:dry_run_mode] ? ' DRY RUN' : ''}")
+        logger.debug(
+          'Creating directory',
+          location:,
+          DRY_RUN: @options[:dry_run_mode],
+        )
         FileUtils.mkdir_p(location) unless @options[:dry_run_mode]
       end
       move_file(old_path, destination, move_options)
@@ -51,9 +57,11 @@ module Renamer
     # moves a file from `old_path` to `new_path`.
     # Optionally generates a symlink back to old_path if specified with options
     def move_file(old_path, new_path, move_options)
-      dry_run = @options[:dry_run_mode] ? ' DRY RUN' : ''
-      Loggers::VideoFileMover.debug(
-        "moving #{old_path} to #{new_path} with #{move_options}.#{dry_run}",
+      logger.debug(
+        'moving file',
+        dest: new_path,
+        options: move_options,
+        DRY_RUN: @options[:dry_run_mode],
       )
       FileUtils.mv(old_path, new_path) unless @options[:dry_run_mode]
       if @options.to_h.merge(move_options)[:symlink_source] && old_path != new_path
@@ -62,7 +70,11 @@ module Renamer
       return unless move_options[:update_links_from]
 
       symlink_for(old_path, move_options[:update_links_from]).each do |old_link|
-        Loggers::VideoFileMover.debug "removing old symlink from #{old_link} to #{old_path}"
+        logger.debug(
+          'removing old symlink',
+          symlink: old_link,
+          target: old_path,
+        )
         FileUtils.rm(old_link) unless @options[:dry_run_mode]
         @symlinker.relative(new_path, old_link)
       end

@@ -7,6 +7,8 @@ require 'rest_client'
 
 module Renamer
   class Renamer
+    include SemanticLogger::Loggable
+
     def initialize(options)
       @options = options
       @output_location = File.absolute_path(options[:output_location], ROOT_FOLDER)
@@ -33,8 +35,11 @@ module Renamer
       location, path, name = generate_location(work_item.info)
       process_file(name, work_item, location, path, override_options)
     rescue StandardError
-      Loggers::Renamer.error(
-        "error naming #{work_item.file.name} from #{work_item.info.inspect} with #{$ERROR_INFO}",
+      logger.error(
+        'error while renaming',
+        source: work_item.file.name,
+        data: work_item.info,
+        exception: $ERROR_INFO,
       )
       raise
     end
@@ -120,7 +125,11 @@ module Renamer
       idfile_path = File.join(location, 'anidb.id')
       return if File.exist?(idfile_path) || !options[:create_anidb_id_files]
 
-      Loggers::Renamer.debug("Creating #{idfile_path}. #{@options[:dry_run_mode] ? ' DRY RUN' : ''}")
+      logger.debug(
+        'Creating File',
+        name: idfile_path,
+        DRY_RUN: @options[:dry_run_mode],
+      )
       File.write(idfile_path, "#{info[:file][:aid]}\n") unless options[:dry_run_mode]
     end
 
@@ -134,15 +143,24 @@ module Renamer
       incorrect_locations = all_locations.reject { |a| a == correct_location }
       incorrect_locations.each do |l|
         s = File.join(l, folder)
-        if File.symlink?(s)
-          File.unlink(s) unless options[:dry_run_mode]
-          Loggers::Renamer.info "DELETING symlink #{'DRY RUN' if options[:dry_run_mode]}\n\t#{s}  <--X\n\t#{location}"
-        end
+        next unless File.symlink?(s)
+
+        logger.info(
+          'DELETING symlink',
+          DRY_RUN: options[:dry_run_mode],
+          symlink: s,
+          target: File.readlink(s),
+        )
+        File.unlink(s) unless options[:dry_run_mode]
       end
       return if File.symlink?("#{correct_location}/#{folder}")
 
       symlink(location, correct_location, folder)
-      Loggers::Renamer.info "SYMLINKING \n\t#{location} <---\n\t#{correct_location}/#{folder}"
+      logger.info(
+        'SYMLINKING',
+        to: location,
+        from: "#{correct_location}/#{folder}",
+      )
     end
 
     def decide_symlink_location(ainfo)
@@ -158,7 +176,7 @@ module Renamer
     def symlink(source, dest, name)
       @symlinker.relative_with_name(source, dest, name)
     rescue StandardError => e
-      Loggers::Renamer.warn e.inspect
+      logger.warn('error during symlink', exception: e)
       raise
     end
 
@@ -170,12 +188,32 @@ module Renamer
         port: plex_opt[:port],
         path: "/library/sections/#{plex_opt[:section]}/refresh",
       ).to_s
-      Loggers::Renamer.debug "updating plex at #{uri}"
-      resp = RestClient.get(uri, params: { 'X-Plex-Token': plex_opt[:token] })
-      if resp.code == 200
-        Loggers::Renamer.info "Requested plex server at #{uri} to scan library files"
-      else
-        Loggers::Renamer.error "could not update plex. Got status code #{resp.code} and body #{resp.body}"
+      logger.debug(
+        'updating plex',
+        plex_server: uri,
+      )
+      begin
+        resp = RestClient.get(uri, params: { 'X-Plex-Token': plex_opt[:token] })
+        if resp.code == 200
+          logger.info(
+            'Requested plex server to scan library files',
+            plex_server: uri,
+          )
+        else
+          logger.error(
+            'could not update plex',
+            plex_server: uri,
+            code: resp.code,
+            body: resp.body,
+          )
+        end
+      rescue StandardError => e
+        logger.error(
+          'could not update plex',
+          plex_server: uri,
+          exception: e,
+          log_exception: :full,
+        )
       end
     end
   end

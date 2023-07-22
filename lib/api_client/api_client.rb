@@ -3,14 +3,18 @@ require 'fileutils'
 require File.join(ROOT_FOLDER, 'net/ranidb')
 
 class APIClient
+  include SemanticLogger::Loggable
 
   def initialize(api_options, test_mode)
     @client = ProxyClient.new(api_options, test_mode)
   end
 
-  def process(name, ed2k, size)
+  def process(_name, ed2k, size)
     @client.search_file(ed2k, size).tap do |info|
-      Loggers::PostProcessor.debug "file #{name} identified as #{info.inspect}"
+      logger.debug(
+        'identified file',
+        info:,
+      )
       return nil if info.nil?
 
       update_mylist_with info
@@ -29,7 +33,13 @@ class APIClient
   private
 
   def update_mylist_with(info)
-    Loggers::PostProcessor.debug "adding #{info.inspect} to mylist"
+    anime_info = info[:anime]
+    logger.debug(
+      'adding to mylist',
+      name: anime_info[:romaji_name],
+      epno: anime_info[:epno],
+      group_name: anime_info[:group_name],
+    )
     @client.mylist_add(info[:fid])
   end
 

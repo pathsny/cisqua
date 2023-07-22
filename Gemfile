@@ -9,6 +9,7 @@ gem 'irb'
 gem 'json'
 gem 'logging'
 gem 'rest-client'
+gem 'semantic_logger'
 gem 'solid_assert'
 
 group :development do

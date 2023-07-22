@@ -55,6 +55,8 @@ end
 DUPLICATES = {}
 UNKNOWN = []
 
+logger = SemanticLogger['BadFiles']
+
 def try_fix(folder, movie)
   folder_name = File.basename(folder)
   files = Dir["#{folder}/*"].reject { |f| /^[^.]*$/.match File.basename(f) || File.basename(f) == 'tvshow.nfo' }
@@ -68,15 +70,15 @@ def try_fix(folder, movie)
       destination = File.join(File.dirname(file), new_name)
       if File.exist? destination
         DUPLICATES[file] = destination
-        Loggers::BadFiles.debug { "#{file} seems to be duplicate of #{destination}" }
+        logger.debug { "#{file} seems to be duplicate of #{destination}" }
       else
-        Loggers::BadFiles.info { "renaming #{file} as #{destination}" }
+        logger.info { "renaming #{file} as #{destination}" }
         FileUtils.mv file, destination
       end
     end
   end
 rescue StandardError
-  Loggers::BadFiles.error { "error working with #{folder} #{$ERROR_INFO}" }
+  logger.error { "error working with #{folder} #{$ERROR_INFO}" }
 end
 
 def test_names(folder, movie)
@@ -87,7 +89,7 @@ def test_names(folder, movie)
   patterns = movie ? m_pattern(folder_name) : s_pattern(folder_name)
   files.each do |file|
     unless patterns.any? { |p| p.match File.basename(file) }
-      Loggers::BadFiles.debug { "do not know file #{file} using #{patterns.inspect}" }
+      logger.debug { "do not know file #{file} using #{patterns.inspect}" }
       UNKNOWN.push(file)
     end
   end
@@ -105,5 +107,5 @@ end
 File.write('duplicates.yml', DUPLICATES.to_yaml)
 File.write('unknown.yml', UNKNOWN.to_yaml)
 
-Loggers::BadFiles.info { DUPLICATES.inspect }
-Loggers::BadFiles.info { UNKNOWN.inspect }
+logger.info { DUPLICATES.inspect }
+logger.info { UNKNOWN.inspect }

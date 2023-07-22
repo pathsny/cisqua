@@ -12,6 +12,13 @@ OptionParser.new do |opts|
 end.parse!
 require File.expand_path('../../lib/libs', __dir__)
 
+def logger
+  return @logger if @logger
+
+  AppLogger.log_file = File.join(DATA_FOLDER, 'log', 'console.log')
+  @logger = SemanticLogger['AnidbConsole']
+end
+
 def r
   Dir[File.join(ROOT_FOLDER, 'lib', '**/*')].each do |f|
     load f unless File.directory?(f)

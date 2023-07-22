@@ -25,11 +25,11 @@ options = Options.load_options(script_options[:options_file])
 options[:log_level] = script_options[:log_level] if script_options.key?(:log_level)
 options[:renamer][:dry_run_mode] = script_options[:dry_run_mode] if script_options.key?(:dry_run_mode)
 
-Loggers.log_level = (options[:log_level])
+AppLogger.log_level = (options[:log_level])
 if script_options.key?(:logfile) || script_options[:test_mode]
-  logfile_path = script_options[:logfile] || File.expand_path('../data/test_data/anidb.log', __dir__)
-  Loggers.setup_log_file(logfile_path)
+  logfile_path = script_options[:logfile] || File.expand_path('../data/test_data/log/anidb.log', __dir__)
+  AppLogger.log_file = logfile_path
   options[:renamer][:plex_scan_library_files] = nil
 end
 
-PostProcessor.run(options, false)
+PostProcessor.run(options, script_options[:test_mode])

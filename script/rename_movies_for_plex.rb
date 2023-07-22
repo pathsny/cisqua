@@ -27,14 +27,12 @@ options[:log_level] = script_options[:log_level] if script_options.key?(:log_lev
 # we dont want to preserve the old files
 options[:renamer][:symlink_source] = false
 
-Loggers.log_level = options[:log_level]
-Loggers.custom_log_file(script_options[:logfile]) if script_options.key?(:logfile)
-
-module Loggers
-  RenameMoviesForPlex = Logging.logger['RenameMoviesForPlex']
-end
+AppLogger.log_level = options[:log_level]
+AppLogger.log_file = script_options[:logfile] if script_options.key?(:logfile)
 
 class MovieRenamerFoPlex
+  include SemanticLogger::Loggable
+
   def initialize(options, script_options)
     @options = options
     @script_options = script_options
@@ -44,14 +42,14 @@ class MovieRenamerFoPlex
 
   def run
     root_folder = File.absolute_path(@options.dig(:renamer, :create_symlinks, :movies), ROOT_FOLDER)
-    Loggers::RenameMoviesForPlex.info { "processing files in #{root_folder}" }
-    Loggers::RenameMoviesForPlex.info { 'DryRun mode is on ' } if @script_options[:dry_run_mode]
+    logger.info { "processing files in #{root_folder}" }
+    logger.info { 'DryRun mode is on ' } if @script_options[:dry_run_mode]
     all_folders = Dir[File.join(root_folder, '**')]
     all_folders.each do |movie_folder|
       files = FileScanner.file_list(@options[:scanner].merge(basedir: File.realpath(movie_folder)))
       files.each { |movie| plex_rename(File.realpath(movie)) }
     end
-    @errors.each { |e| Loggers::RenameMoviesForPlex.error(e) }
+    @errors.each { |e| logger.error(e) }
   end
 
   def plex_rename(movie)
@@ -66,7 +64,7 @@ class MovieRenamerFoPlex
       @options[:renamer][:dry_run_mode] = @script_options[:dry_run_mode]
       resp = @renamer.try_process(work_item, update_links_from: fix_symlinks_root)
       assert(resp.type == :success, "could not move #{movie}")
-      Loggers::RenameMoviesForPlex.info { "moved #{movie} to #{resp.destination}" }
+      logger.info { "moved #{movie} to #{resp.destination}" }
     else
       info = extract_info_from_name_assuming_current_scheme(movie)
       work_item = WorkItem.new(file: movie, info:)
@@ -76,7 +74,7 @@ class MovieRenamerFoPlex
       resp = @renamer.try_process(work_item, update_links_from: fix_symlinks_root)
       assert(resp.type == :success, "could not generate new name for #{movie}")
       assert(resp.destination == movie, "location of #{movie} was unexpectedly changed to #{resp.destination}")
-      Loggers::RenameMoviesForPlex.info { "did not have to rename #{movie}" }
+      logger.info { "did not have to rename #{movie}" }
     end
   rescue StandardError => e
     @errors << e

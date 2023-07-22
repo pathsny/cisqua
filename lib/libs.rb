@@ -2,6 +2,7 @@ ENV['OPENSSL_CONF'] = File.expand_path('.add_provider_conf', __dir__)
 
 require 'amazing_print'
 require 'yaml'
+require 'semantic_logger'
 
 ROOT_FOLDER = File.expand_path('..', __dir__)
 DATA_FOLDER = File.join(ROOT_FOLDER, 'data')
