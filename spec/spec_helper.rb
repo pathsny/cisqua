@@ -13,6 +13,8 @@ RSpec.shared_context 'with semantic_logger helper' do
 end
 
 RSpec.configure do |config|
+  config.include Cisqua
+
   config.expect_with :rspec do |expectations|
     expectations.include_chain_clauses_in_custom_matcher_descriptions = true
   end
@@ -34,13 +36,13 @@ OPTIONS_BAK = YAML.load_file(File.expand_path('../script/helpers/options.yml.bak
 DUMMY_INFO = YAML.load_file(File.expand_path('dummy_info.yml', __dir__))
 
 def dummy_work_item(file_name)
-  file = WorkItemFile.new(name: file_name)
-  WorkItem.new(file:, info: DUMMY_INFO)
+  file = Cisqua::WorkItemFile.new(name: file_name)
+  Cisqua::WorkItem.new(file:, info: DUMMY_INFO)
 end
 
 def unknown_work_item(file_name)
-  file = WorkItemFile.new(name: file_name)
-  WorkItem.new(file:)
+  file = Cisqua::WorkItemFile.new(name: file_name)
+  Cisqua::WorkItem.new(file:)
 end
 
 def write_file(name, content)

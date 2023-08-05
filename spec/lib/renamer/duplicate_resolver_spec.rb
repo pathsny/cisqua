@@ -1,4 +1,4 @@
-describe Renamer::DuplicateResolver do
+describe Cisqua::Renamer::DuplicateResolver do
   let(:common_file) { { aid: '10206', eid: '158897', gid: '11193' } }
   let(:sources) { Renamer::DuplicateResolver::Sources }
   let(:quality) { Renamer::DuplicateResolver::Quality }
@@ -15,7 +15,7 @@ describe Renamer::DuplicateResolver do
   let(:blu_ray) { make_item(current_info.merge(source: 'Blu-ray')) }
 
   def resolve(current, duplicates)
-    Renamer::DuplicateResolver.resolve(current, duplicates).tap do |resolved|
+    described_class.resolve(current, duplicates).tap do |resolved|
       expect(resolved[:selected]).to(eq(current)) if resolved[:keep_current]
     end
   end
@@ -26,7 +26,7 @@ describe Renamer::DuplicateResolver do
 
   def make_item(file_params, fid = nil)
     info = { fid: fid || make_fid, anime: {}, file: common_file.merge(file_params) }
-    WorkItem.new(file: Faker::Lorem.sentence, info:)
+    Cisqua::WorkItem.new(file: Faker::Lorem.sentence, info:)
   end
 
   def clone_item(item)

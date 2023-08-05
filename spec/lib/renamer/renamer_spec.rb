@@ -1,10 +1,10 @@
-describe Renamer::Renamer do
+describe Cisqua::Renamer::Renamer do
   include FakeFS::SpecHelpers
 
   subject { described_class.new(options[:renamer]) }
 
   before do
-    Renamer::NameGenerator.any_instance
+    Cisqua::Renamer::NameGenerator.any_instance
       .stubs(:generate_name_and_path)
       .returns(['Anime Name', 'Anime Name - episode number'])
     FileUtils.mkdir_p('/path/to/src_dir')
@@ -86,7 +86,7 @@ describe Renamer::Renamer do
 
     context 'when keep_current is true' do
       before do
-        Renamer::DuplicateResolver
+        Cisqua::Renamer::DuplicateResolver
           .stubs(:resolve)
           .returns({
             keep_current: true,
@@ -104,7 +104,7 @@ describe Renamer::Renamer do
 
     context 'when keep_current is false' do
       before do
-        Renamer::DuplicateResolver
+        Cisqua::Renamer::DuplicateResolver
           .stubs(:resolve)
           .returns({
             keep_current: false,

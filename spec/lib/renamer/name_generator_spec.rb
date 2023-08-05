@@ -1,4 +1,4 @@
-describe Renamer::NameGenerator do
+describe Cisqua::Renamer::NameGenerator do
   RSpec::Matchers.define :rename_to do |expected|
     match do |actual|
       subject.generate_name_and_path(actual) == expected

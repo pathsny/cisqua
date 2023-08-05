@@ -30,6 +30,8 @@ Metrics/CyclomaticComplexity:
   Max: 30
 Metrics/MethodLength:
   Max: 200
+Metrics/ModuleLength:
+  Enabled: false
 Metrics/PerceivedComplexity:
   Max: 50
 Naming/MethodParameterName:
@@ -57,6 +59,8 @@ RSpec/ExampleLength:
 RSpec/ExpectActual:
   Exclude:
     - 'spec/lib/renamer/name_generator_spec.rb'
+RSpec/FilePath:
+  Enabled: false
 RSpec/IndexedLet:
   Enabled: false
 RSpec/InstanceVariable:

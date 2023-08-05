@@ -1,4 +1,4 @@
-describe FileScanner do
+describe Cisqua::FileScanner do
   it 'lists non recursive files' do
     Dir.expects(:glob).with('/Movies/*.*', File::FNM_CASEFOLD).returns([])
     described_class.file_list(basedir: '/Movies', extensions: :all, recursive: false)

@@ -3,14 +3,14 @@ require_relative('test_data_provider')
 # Integration test for the entire post processing function
 RSpec.configure do |_config|
   def options
-    @options ||= Options.load_options(nil).tap do |options|
+    @options ||= Cisqua::Options.load_options(nil).tap do |options|
       options[:log_level] = :debug
       options[:renamer][:plex_scan_library_files] = nil
     end
   end
 
-  AppLogger.disable_stdout_logging
-  AppLogger.log_file = TestDataProvider.instance.logfile_path
+  Cisqua::AppLogger.disable_stdout_logging
+  Cisqua::AppLogger.log_file = Cisqua::TestDataProvider.instance.logfile_path
 
   # Runs faster, but maybe inaccurate. Useful for development
   # We dont clear the file data between runs, so only the final
@@ -37,7 +37,7 @@ RSpec.configure do |_config|
           end
           make_specs_for_test(
             test_name,
-            TestDataProvider.instance.test_data[test_name.to_s],
+            Cisqua::TestDataProvider.instance.test_data[test_name.to_s],
           )
         end
       end
@@ -129,7 +129,7 @@ def prepare_data(t)
       f.src.path,
     )
   end
-  PostProcessor.run(options, true)
+  Cisqua::PostProcessor.run(options, true)
 end
 
 def make_specs_for_dst_dir(_name, t)
@@ -145,7 +145,7 @@ def make_specs_for_dst_dir(_name, t)
     expect(content).to eq("#{t.anidb_id}\n")
   end
 
-  TestDataProvider.instance.dst_dir_symlink_locations.each do |sym|
+  Cisqua::TestDataProvider.instance.dst_dir_symlink_locations.each do |sym|
     if t.dst_dir_symlink_locs.include?(sym.segment)
       it "has a symlink to #{t.dst_dir.segment} from #{sym.segment}" do
         expect(
@@ -162,14 +162,15 @@ def make_specs_for_dst_dir(_name, t)
   end
 end
 
-describe PostProcessor do
+describe Cisqua::PostProcessor do
   unless should_run_fast_mode
     before(:all) do
+      data_provider = Cisqua::TestDataProvider.instance
       all_locations =
         [
-          TestDataProvider.instance.src_location,
-        ] + TestDataProvider.instance.dst_locations +
-        TestDataProvider.instance.dst_dir_symlink_locations
+          data_provider.src_location,
+        ] + data_provider.dst_locations +
+        data_provider.dst_dir_symlink_locations
       all_locations.each do |loc|
         FileUtils.rm_r(Dir["#{loc.path}/*"])
       end

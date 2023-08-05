@@ -10,5 +10,5 @@ FAST_INTEGRATION_SPEC = ENV['FAST_MODE'] || false
 
 RSpec.configure do |_config|
   logfile_path = File.expand_path('../data/test_data/log/anidb.log', __dir__)
-  AppLogger.log_file = logfile_path
+  Cisqua::AppLogger.log_file = logfile_path
 end

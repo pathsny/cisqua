@@ -1,10 +1,10 @@
-describe Renamer::VideoFileMover do
+describe Cisqua::Renamer::VideoFileMover do
   include FakeFS::SpecHelpers
 
   let(:source_dir) { '/deep/source'.tap { |d| FileUtils.mkdir_p(d) } }
   let(:dest_dir) { '/deep/dest' }
   let(:source_video) { create_source_file("#{source_dir}/file_1.mkv") }
-  let(:symlinker) { Renamer::Symlinker.new(dry_run_mode: false) }
+  let(:symlinker) { Cisqua::Renamer::Symlinker.new(dry_run_mode: false) }
 
   shared_examples 'file mover' do |matcher_name|
     alias_method :be_moved_to, matcher_name
