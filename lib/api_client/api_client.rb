@@ -6,8 +6,8 @@ module Cisqua
   class APIClient
     include SemanticLogger::Loggable
 
-    def initialize(actual_client, test_mode)
-      @client = ProxyClient.new(actual_client, test_mode)
+    def initialize(client)
+      @client = client
     end
 
     def process(_name, ed2k, size)

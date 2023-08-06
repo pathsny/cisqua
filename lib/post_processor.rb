@@ -5,15 +5,14 @@ module Cisqua
   class PostProcessor
     include SemanticLogger::Loggable
     class << self
-      def run(options, test_mode)
-        files = FileScanner.file_list(options[:scanner])
+      def run(options, scanner, api_client, renamer)
+        files = scanner.file_list
         Thread.current.name = 'main'
 
         log_start_banner
         scan_queue = Queue.new
         info_queue = Queue.new
         rename_queue = Queue.new
-        client = make_client(options.api_client.anidb)
 
         def while_queue_has_items(queue)
           until (item = queue.pop) == :end
@@ -28,14 +27,14 @@ module Cisqua
           destination_queue << :end
         end
 
-        scanner = Thread.new do
+        scanner_worker = Thread.new do
           Thread.current.name = 'scanner'
 
           pipe_while_queue_has_items(scan_queue, info_queue) do |w|
             SemanticLogger.tagged(file: w.file.name) do
               w.tap do |work_item|
                 file = work_item.file
-                size, ed2k = FileScanner.ed2k_file_hash(file.name)
+                size, ed2k = scanner.ed2k_file_hash(file.name)
                 file.size_bytes = size
                 file.ed2k = ed2k
                 logger.debug(
@@ -51,22 +50,19 @@ module Cisqua
         info_getter = Thread.new do
           Thread.current.name = 'info_getter'
 
-          anidb_api = APIClient.new(client, test_mode)
           pipe_while_queue_has_items(info_queue, rename_queue) do |w|
             SemanticLogger.tagged(file: w.file.name) do
               w.tap do |work_item|
                 file = work_item.file
-                work_item.info = anidb_api.process(file.name, file.ed2k, file.size_bytes)
+                work_item.info = api_client.process(file.name, file.ed2k, file.size_bytes)
               end
             end
           end
-          anidb_api.disconnect
+          api_client.disconnect
         end
 
         rename_worker = Thread.new do
           Thread.current.name = 'renamer'
-
-          renamer = Renamer::Renamer.new(options[:renamer])
           dups = {}
           success = {}
           files.each do
@@ -131,7 +127,7 @@ module Cisqua
           renamer.post_rename_actions
         end
 
-        scanner.abort_on_exception = true
+        scanner_worker.abort_on_exception = true
         info_getter.abort_on_exception = true
         rename_worker.abort_on_exception = true
 
@@ -140,7 +136,7 @@ module Cisqua
           scan_queue << work_item
         end
 
-        [scanner, info_getter, rename_worker].each(&:join)
+        [scanner_worker, info_getter, rename_worker].each(&:join)
         return unless options[:clean_up_empty_dirs]
 
         basedir = File.absolute_path(options[:scanner][:basedir], ROOT_FOLDER)

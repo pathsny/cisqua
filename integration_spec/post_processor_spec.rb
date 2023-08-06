@@ -129,7 +129,12 @@ def prepare_data(t)
       f.src.path,
     )
   end
-  Cisqua::PostProcessor.run(options, true)
+  Cisqua::PostProcessor.run(
+    Cisqua::Registry.instance.options,
+    Cisqua::Registry.instance.scanner,
+    Cisqua::Registry.instance.api_client,
+    Cisqua::Registry.instance.renamer,
+  )
 end
 
 def make_specs_for_dst_dir(_name, t)

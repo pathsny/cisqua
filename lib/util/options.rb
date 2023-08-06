@@ -134,8 +134,7 @@ module Cisqua
     ) do
       include StrictInitialize
 
-      def self.load_options(options_file = nil)
-        options_file ||= File.join(DATA_FOLDER, 'options.yml')
+      def self.load_options(options_file)
         option_args = YAML.load_file(options_file)
         make_options(option_args)
       end

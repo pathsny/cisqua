@@ -22,16 +22,19 @@ module Cisqua
       script_options[:logfile] = path
     end
   end.parse!
-  options = Options.load_options(script_options[:options_file])
-  options[:log_level] = script_options[:log_level] if script_options.key?(:log_level)
-  options[:renamer][:dry_run_mode] = script_options[:dry_run_mode] if script_options.key?(:dry_run_mode)
 
-  AppLogger.log_level = (options[:log_level])
+  Registry.test_mode_override = script_options[:test_mode]
+  Registry.options_file_override = script_options[:options_file]
+  registry = Registry.instance
+  registry.options[:log_level] = script_options[:log_level] if script_options.key?(:log_level)
+  registry.options[:renamer][:dry_run_mode] = script_options[:dry_run_mode] if script_options.key?(:dry_run_mode)
+
+  AppLogger.log_level = (registry.options[:log_level])
   if script_options.key?(:logfile) || script_options[:test_mode]
     logfile_path = script_options[:logfile] || File.expand_path('../data/test_data/log/anidb.log', __dir__)
     AppLogger.log_file = logfile_path
-    options[:renamer][:plex_scan_library_files] = nil
+    registry.options[:renamer][:plex_scan_library_files] = nil
   end
 
-  PostProcessor.run(options, script_options[:test_mode])
+  PostProcessor.run(registry.options, registry.scanner, registry.api_client, registry.renamer)
 end

@@ -12,7 +12,7 @@ module Cisqua
     attr_reader :test_data, :options
 
     def initialize
-      @options = Options.load_options(nil)
+      @options = Registry.instance.options
       test_info = JSON.load_file!(File.join(
         TEST_DATA_ROOT, 'test_data.json'
       ))
