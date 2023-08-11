@@ -15,4 +15,4 @@ name = 'anidb' if name.nil?
 location = File.expand_path("../helpers/#{name}_console.rb", __FILE__)
 raise "#{name} is not a supported console type" unless File.exist?(location)
 
-exec "ruby -S irb -r #{location}  --simple-prompt"
+exec "bundle exec pry -r #{location} --simple-prompt -- #{ARGV.join(' ')}"

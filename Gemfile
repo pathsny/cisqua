@@ -3,11 +3,13 @@ ruby File.read(ruby_version_path, mode: 'rb').chomp
 
 source 'https://rubygems.org'
 
+gem 'activesupport'
 gem 'amazing_print'
 gem 'invariant'
-gem 'irb'
 gem 'json'
 gem 'logging'
+
+gem 'pry'
 gem 'rest-client'
 gem 'semantic_logger'
 gem 'solid_assert'
