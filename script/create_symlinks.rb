@@ -37,7 +37,7 @@ folders.each do |f|
   axml = REXML::Document.new File.new("#{mylist_location}/anime/a#{aid}.xml")
   if r_options[:adult_location] && axml.elements["anime/seriesInfo/genres/genre[@id = '80']"]
     renamer.symlink(f, r_options[:adult_location],
-                    File.basename(f))
+      File.basename(f))
   end
   a_attrs = mylist.elements["myList/animeList/anime[@id = '#{aid}']"].attributes
   ainfo = { type: a_attrs['type'],

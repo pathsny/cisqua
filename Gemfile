@@ -19,5 +19,6 @@ group :development do
   gem 'rspec'
   gem 'rubocop', require: false
   gem 'rubocop-rspec', require: false
+  gem 'rufo', require: false
   gem 'solargraph'
 end

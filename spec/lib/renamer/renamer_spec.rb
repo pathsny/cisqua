@@ -89,11 +89,11 @@ describe Renamer::Renamer do
         Renamer::DuplicateResolver
           .stubs(:resolve)
           .returns({
-                     keep_current: true,
-                     selected: dest_item,
-                     junk: [junk_item, source_item],
-                     dups: [dup_item],
-                   })
+            keep_current: true,
+            selected: dest_item,
+            junk: [junk_item, source_item],
+            dups: [dup_item],
+          })
         subject.process_duplicate_set(dest_item, [source_item, junk_item, dup_item])
       end
 
@@ -107,11 +107,11 @@ describe Renamer::Renamer do
         Renamer::DuplicateResolver
           .stubs(:resolve)
           .returns({
-                     keep_current: false,
-                     selected: source_item,
-                     junk: [junk_item],
-                     dups: [dup_item],
-                   })
+            keep_current: false,
+            selected: source_item,
+            junk: [junk_item],
+            dups: [dup_item],
+          })
         subject.process_duplicate_set(dest_item, [source_item, junk_item, dup_item])
       end
 

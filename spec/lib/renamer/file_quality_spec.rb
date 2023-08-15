@@ -72,12 +72,12 @@ describe FileQuality do
 
     it 'ranks one file quality over another if resolution, version and quality all improve or stay the same' do
       expect(FileQuality.new(common_info)).to be < FileQuality.new(common_info.merge(video_resolution: '1920x1080',
-                                                                                     version: 3))
+        version: 3))
       expect(FileQuality.new(common_info)).to be > FileQuality.new(common_info.merge(video_resolution: '640x480',
-                                                                                     quality: 'med'))
+        quality: 'med'))
       expect(FileQuality.new(common_info)).to be > FileQuality.new(common_info.merge(version: 1, quality: 'med'))
       expect(FileQuality.new(common_info)).to be < FileQuality.new(common_info.merge(video_resolution: '1920x1080',
-                                                                                     version: 3, quality: 'very high'))
+        version: 3, quality: 'very high'))
     end
 
     it 'ranks as equal file qualities where resolution, version and quality move in different directions' do
@@ -101,9 +101,9 @@ describe FileQuality do
 
     it 'ranks one file quality as better than another if resolution and/or quality move the same way' do
       expect(FileQuality.new(common_info)).to be > FileQuality.new(common_info.merge(source: 'VHS',
-                                                                                     video_resolution: '640x480'))
+        video_resolution: '640x480'))
       expect(FileQuality.new(common_info)).to be < FileQuality.new(common_info.merge(source: 'Blu-ray',
-                                                                                     quality: 'very high'))
+        quality: 'very high'))
     end
 
     it 'ranks as equal file qualities where resolution and/or quality move in the opposite direction of source' do
