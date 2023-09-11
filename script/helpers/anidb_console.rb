@@ -2,7 +2,7 @@
 require 'yaml'
 require 'optparse'
 
-C = Struct.new(:options_file, :test_mode, :registry).new
+C = Struct.new(:options_file, :test_mode, :registry, :db).new
 
 module Cisqua
   OptionParser.new do |opts|
@@ -12,6 +12,9 @@ module Cisqua
     end
     opts.on('-t', '--test_mode', 'whether to start in test mode') do
       C.test_mode = true
+    end
+    opts.on('-d=DB', '--redis-db', 'which db number of redis') do |db|
+      C.db = db
     end
   end.parse!
   require File.expand_path('../../lib/libs', __dir__)
@@ -33,7 +36,11 @@ def r
 
   registry_klass.clear
   registry_klass.options_file_override = C.options_file
+  options = registry_klass.load_options
+
   registry_klass.test_mode_override = C.test_mode
+  options[:redis][:db] = C.db || (C.test_mode ? 1 : 0)
+  registry_klass.options_override = options
   C.registry = registry_klass.instance
 end
 

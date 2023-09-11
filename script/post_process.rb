@@ -23,18 +23,26 @@ module Cisqua
     end
   end.parse!
 
-  Registry.test_mode_override = script_options[:test_mode]
-  Registry.options_file_override = script_options[:options_file]
-  registry = Registry.instance
-  registry.options[:log_level] = script_options[:log_level] if script_options.key?(:log_level)
-  registry.options[:renamer][:dry_run_mode] = script_options[:dry_run_mode] if script_options.key?(:dry_run_mode)
-
-  AppLogger.log_level = (registry.options[:log_level])
-  if script_options.key?(:logfile) || script_options[:test_mode]
-    logfile_path = script_options[:logfile] || File.expand_path('../data/test_data/log/anidb.log', __dir__)
-    AppLogger.log_file = logfile_path
-    registry.options[:renamer][:plex_scan_library_files] = nil
+  if script_options[:test_mode]
+    TestUtil.prep(
+      options_file: script_options[:options_file],
+      dry_run: script_options[:dry_run_mode],
+      log_level: script_options[:log_level],
+      log_file_path: script_options[:logfile],
+    )
+  else
+    Registry.options_file_override = script_options[:options_file]
+    options = Registry.load_options
+    if script_options.key?(:log_level)
+      options[:log_level] = script_options[:log_level]
+      AppLogger.log_level = script_options[:log_level]
+    end
+    AppLogger.log_file = script_options[:logfile] if script_options.key?(:logfile)
+    options[:renamer][:dry_run_mode] = script_options[:dry_run_mode] if script_options.key?(:dry_run_mode)
+    Registry.options_override = options
   end
-
-  PostProcessor.run(registry.options, registry.scanner, registry.api_client, registry.renamer)
+  registry = Registry.instance
+  RedisScripts.instance.with_redis(registry.options.redis.conf_path) do
+    PostProcessor.run(registry.options, registry.scanner, registry.api_client, registry.renamer)
+  end
 end

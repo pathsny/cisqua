@@ -113,7 +113,7 @@ module Cisqua
           if response.type == :success
             @atleast_one_success = true
             ensure_anidb_id_file(location, work_item.info)
-            update_symlinks_for(work_item.info[:anime], path, location) if options[:create_symlinks]
+            update_symlinks_for(work_item, path, location) if options[:create_symlinks]
           end
         end
       end
@@ -135,13 +135,13 @@ module Cisqua
         File.write(idfile_path, "#{info[:file][:aid]}\n") unless options[:dry_run_mode]
       end
 
-      def update_symlinks_for(ainfo, folder, location)
+      def update_symlinks_for(work_item, folder, location)
         symlink_types = %i[movies incomplete_series complete_series
                            incomplete_other complete_other adult_location]
         all_locations = symlink_types.map do |k|
           File.absolute_path(options[:create_symlinks][k], ROOT_FOLDER)
         end.compact
-        correct_location = decide_symlink_location(ainfo)
+        correct_location = decide_symlink_location(work_item)
         incorrect_locations = all_locations.reject { |a| a == correct_location }
         incorrect_locations.each do |l|
           s = File.join(l, folder)
@@ -165,14 +165,15 @@ module Cisqua
         )
       end
 
-      def decide_symlink_location(ainfo)
+      def decide_symlink_location(work_item)
+        ainfo = work_item.info[:anime]
         symlink_locations = options[:create_symlinks]
         return File.absolute_path(symlink_locations[:adult_location], ROOT_FOLDER) if ainfo[:is_18_restricted] == '1'
         return File.absolute_path(symlink_locations[:movies], ROOT_FOLDER) if ainfo[:type] == 'Movie'
 
         type = ['Web', 'TV Series', 'OVA', 'TV Special'].include?(ainfo[:type]) ? :series : :other
-        status = ainfo[:ended] && ainfo[:completed] ? :complete : :incomplete
-        File.absolute_path(symlink_locations["#{status}_#{type}".to_sym], ROOT_FOLDER)
+        mylist_status = MyList.complete?(work_item.info[:file][:aid]) ? :complete : :incomplete
+        File.absolute_path(symlink_locations["#{mylist_status}_#{type}".to_sym], ROOT_FOLDER)
       end
 
       def symlink(source, dest, name)

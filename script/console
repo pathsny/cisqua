@@ -2,6 +2,7 @@
 # console for debugging.
 #    anidb loads a console with the udp client
 require 'optparse'
+
 name = nil
 OptionParser.new do |opts|
   opts.banner = 'Usage: console -n anidb'

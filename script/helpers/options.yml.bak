@@ -11,11 +11,11 @@
   # set this to true to add all identified files to your mylist
   :add_to_mylist: true
   # settings to control how the caching of API responses behaves
-  :cache: 
-    # where are the cached responses stored
-    :path:  /path/to/udp_cache
+  :cache:
     # time after which it is no longer valid
-    :ttl_min:  2880  
+    :ttl_hours:  48
+:redis:
+  :db: 1
 :scanner:
   # the location where you keep your anime to be scanned
   :basedir: /path/to/anime

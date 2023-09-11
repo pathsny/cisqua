@@ -7,6 +7,7 @@ describe Cisqua::Renamer::Renamer do
     Cisqua::Renamer::NameGenerator.any_instance
       .stubs(:generate_name_and_path)
       .returns(['Anime Name', 'Anime Name - episode number'])
+    Cisqua::MyList.stubs(:complete?).returns(false)
     FileUtils.mkdir_p('/path/to/src_dir')
   end
 

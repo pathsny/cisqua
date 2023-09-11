@@ -1,5 +1,6 @@
 require File.expand_path('libs', __dir__)
 require 'resolv-replace'
+require File.join(Cisqua::ROOT_FOLDER, 'integration_spec', 'test_util')
 
 module Cisqua
   class PostProcessor

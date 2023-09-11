@@ -15,13 +15,13 @@ module Net
   ANIME_AMASKS_ORDER.delete(:aid)
 
   DEFAULT_FILE_FFIELDS =  [ :aid, :eid, :gid, :length, :quality, :video_resolution,
-                            :source, :sub_language, :dub_language, :state ]
+                            :source, :sub_language, :dub_language, :state, :other_episodes]
   DEFAULT_FILE_AFIELDS =  [ :type, :year, :highest_episode_number,
                             :english_name, :romaji_name, :epno, :ep_english_name,
                             :ep_romaji_name, :group_name, :group_short_name ]
   DEFAULT_ANIME_AFIELDS = [ :aid, :dateflags, :year, :type, :romaji_name, :english_name,
                             :episodes, :highest_episode_number, :air_date, :end_date,
-                            :is_18_restricted ]
+                            :is_18_restricted, :special_ep_count ]
   EPISODE_FIELDS =        [ :eid, :aid, :length, :rating, :votes, :epno,
                             :english_name, :romaji_name, :kanji_name, :aired ]
   GROUP_FIELDS =          [ :gid, :rating, :votes, :acount, :fcount, :name,
@@ -171,7 +171,11 @@ module Net
     end
 
     def disconnect()
-      @sock.shutdown if @connected
+      begin
+        @sock.shutdown if @connected
+      rescue Errno::ENOTCON
+        logger.debug("Socket was not connected")
+      end
       @sock.close if @sock
       @connected = false
       @sock = nil
@@ -650,7 +654,6 @@ module Net
             h[:anime][k] = lr.shift
           end
         end
-        h[:anime][:ended] = h[:anime][:dateflags].to_i[4] == 1
         h
       else
         nil
@@ -768,7 +771,7 @@ module Net
         end
         if (h[:viewdate].to_i > 0 ? 1 : 0) != viewed.to_i ||
            h[:state].to_i != MYLIST_STATES[state].to_i
-          -h[:lid] # Hack !
+          h[:lid]
         else
           h[:lid]
         end

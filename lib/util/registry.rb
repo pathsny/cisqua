@@ -11,10 +11,11 @@ module Cisqua
       :renamer,
       :scanner,
     ) do
-      def initialize(options_file_param, options_override, test_mode_param)
-        self.options_file = options_file_param
+      def initialize(options_override, test_mode_param)
+        self.options_file = @options_file_override
         self.test_mode = test_mode_param
-        self.options = options_override || Options.load_options(options_file)
+
+        self.options = options_override || load_options
 
         logger = SemanticLogger[Net::AniDBUDP]
         logger.instance_eval("def proto(v = '') ; self.debug v ; end", __FILE__, __LINE__)
@@ -22,30 +23,30 @@ module Cisqua
           *(%i[host port localport user pass nat].map { |k| options.api_client[:anidb][k] }),
           logger,
         )
+
+        self.redis = Redis.new(db: options.redis.db)
         self.proxy_client = ProxyClient.new(anidb_client, test_mode)
-        self.api_client = APIClient.new(proxy_client)
+        self.api_client = APIClient.new(proxy_client, redis)
         self.renamer = Renamer::Renamer.new(options[:renamer])
         self.scanner = FileScanner.new(options[:scanner])
+        Model::Redisable.redis = redis
       end
 
       def self.instance
         @instance ||= new(
-          @options_file_override || File.join(DATA_FOLDER, 'options.yml'),
-          @options_override || nil,
+          @options_override || load_options,
           @test_mode_override || false,
         )
       end
 
-      def self.options_file_override=(options_file)
-        @options_file_override = options_file
+      def self.load_options
+        Options.load_options(
+          @options_file_override || File.join(DATA_FOLDER, 'options.yml'),
+        )
       end
 
-      def self.options_override=(options)
-        @options_override = options
-      end
-
-      def self.test_mode_override=(test_mode)
-        @test_mode_override = test_mode
+      class << self
+        attr_accessor :options_file_override, :options_override, :test_mode_override
       end
 
       def self.clear

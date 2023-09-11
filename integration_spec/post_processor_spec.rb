@@ -1,17 +1,10 @@
 require_relative('test_data_provider')
+require_relative('test_util')
 
 # Integration test for the entire post processing function
 RSpec.configure do |_config|
-  def options
-    @options ||= Cisqua::Options.load_options(nil).tap do |options|
-      options[:log_level] = :debug
-      options[:renamer][:plex_scan_library_files] = nil
-    end
-  end
-
   Cisqua::AppLogger.disable_stdout_logging
-  Cisqua::AppLogger.log_file = Cisqua::TestDataProvider.instance.logfile_path
-
+  Cisqua::TestUtil.prep(log_level: :debug)
   # Runs faster, but maybe inaccurate. Useful for development
   # We dont clear the file data between runs, so only the final
   # result can be asserted.
@@ -20,28 +13,86 @@ RSpec.configure do |_config|
   end
 
   def make_specs_for(test_groups)
-    test_groups.each do |group_name, test_names|
-      group_name_str = group_name.to_s.gsub('_', ' ')
-      context "when the file(s) is/are a #{group_name_str}" do
-        skip_next = false
+    test_group_data = test_groups.transform_values do |test_names|
+      skip_next = false
+      {}.tap do |tests|
         test_names.each do |test_name|
-          if skip_next
-            it "should provide an implementation for #{test_name}"
-            skip_next = false
-            next
-          end
           if test_name == :'#'
-            # Indicates the next test is commented
             skip_next = true
             next
           end
-          make_specs_for_test(
-            test_name,
-            Cisqua::TestDataProvider.instance.test_data[test_name.to_s],
-          )
+          if skip_next
+            tests[test_name] = :skipped
+            skip_next = false
+          else
+            tests[test_name] = Cisqua::TestDataProvider.instance.test_data[test_name.to_s]
+          end
         end
       end
     end
+
+    groups_list = make_test_groups_by_iteration(test_group_data)
+    groups_list.each_with_index do |groups, i|
+      break if i > 1
+      context "when processor is run for the #{(i + 1).ordinalize} time" do
+        make_before_all_section_for_groups(groups)
+        make_specs_for_groups(groups)
+      end
+    end
+  end
+
+  def make_before_all_section_for_groups(groups)
+    before(:all) do
+      groups.each do |_group_name, tests|
+        tests.each do |name, test_data|
+          next if test_data.nil? || test_data == :skipped
+
+          fast_mode = should_run_fast_mode && ready_for_fast_mode(name, test_data)
+          prepare_data(test_data) unless fast_mode
+        end
+      end
+      Cisqua::PostProcessor.run(
+        Cisqua::Registry.instance.options,
+        Cisqua::Registry.instance.scanner,
+        Cisqua::Registry.instance.api_client,
+        Cisqua::Registry.instance.renamer,
+      )
+    end
+  end
+
+  def make_specs_for_groups(groups)
+    groups.each do |group_name, tests|
+      group_name_str = group_name.to_s.gsub('_', ' ')
+      context "when the file(s) is/are a #{group_name_str}" do
+        tests.each do |test_name, test_data|
+          make_specs_for_test(test_name, test_data)
+        end
+      end
+    end
+  end
+
+  def make_test_groups_by_iteration(test_group_data)
+    iterations = []
+    max_test_array_length = test_group_data.values.map do |tests_data|
+      tests_data.values.map { |v| v.is_a?(Array) ? v.size : 0 }
+    end.flatten.max
+    max_test_array_length.times do |i|
+      new_group_data = {}
+      test_group_data.each do |group_name, tests_data|
+        new_tests_data = {}
+
+        tests_data.each do |test_name, test_data|
+          if test_data.nil? || test_data == :skipped
+            new_tests_data[test_name] = test_data if i.zero?
+            next
+          end
+          new_tests_data[test_name] = test_data[i] unless test_data[i].nil?
+        end
+        new_group_data[group_name] = new_tests_data unless new_tests_data.empty?
+      end
+      iterations << new_group_data unless new_group_data.empty?
+    end
+    iterations
   end
 
   def make_specs_for_test(name, test_data)
@@ -53,16 +104,32 @@ RSpec.configure do |_config|
 
       return
     end
+    if test_data == :skipped
+      it "should provide an implementation for #{name_str}"
+      return
+    end
+
     if should_run_fast_mode && !can_support_fast_mode(name, test_data)
       it "is skipped for #{name} in fast_mode"
       return
     end
 
-    context_str_segment = test_data.count == 1 ? 'file is' : 'files are'
+    context "when the file is #{name_str}" do
+      make_specs_for_dst_dir(name, test_data) if test_data.dst_dir
 
-    context "when the #{context_str_segment} #{name_str}" do
-      fast_mode = should_run_fast_mode && ready_for_fast_mode(name, test_data)
-      make_specs_for_helper(name, test_data, fast_mode, 1)
+      test_data.files.each do |f|
+        it "moves (and symlink back) #{f.src.segment} to #{test_data.dst.segment} with name #{f.dst.segment}" do
+          expect(f.src.path).to be_moved_to_with_source_symlink(f.dst.path)
+        end
+      end
+
+      test_data.recheck.each do |rt|
+        rt.files.each do |rt_f|
+          it "moves processed file #{rt_f.src.segment} to #{rt.dst.segment} and update symlinks" do
+            expect(rt_f.src.path).to be_moved_to_with_source_symlink(rt_f.dst.path)
+          end
+        end
+      end
     end
   end
 
@@ -86,39 +153,6 @@ RSpec.configure do |_config|
 
     true
   end
-
-  def make_specs_for_helper(name, test_data, fast_mode, loop_count)
-    t = test_data.first
-
-    unless fast_mode
-      before(:all) do
-        prepare_data(t)
-      end
-    end
-
-    make_specs_for_dst_dir(name, t) if t.dst_dir
-
-    t.files.each do |f|
-      it "moves (and symlink back) #{f.src.segment} to #{t.dst.segment} with name #{f.dst.segment}" do
-        expect(f.src.path).to be_moved_to_with_source_symlink(f.dst.path)
-      end
-    end
-
-    t.recheck.each do |rt|
-      rt.files.each do |rt_f|
-        it "moves processed file #{rt_f.src.segment} to #{rt.dst.segment} and update symlinks" do
-          expect(rt_f.src.path).to be_moved_to_with_source_symlink(rt_f.dst.path)
-        end
-      end
-    end
-
-    remaining = test_data.drop(1)
-    return if remaining.empty?
-
-    context "when #{loop_count} #{loop_count > 1 ? 'files have' : 'file has'} been processed" do
-      make_specs_for_helper(name, remaining, fast_mode, loop_count + 1)
-    end
-  end
 end
 
 def prepare_data(t)
@@ -129,12 +163,6 @@ def prepare_data(t)
       f.src.path,
     )
   end
-  Cisqua::PostProcessor.run(
-    Cisqua::Registry.instance.options,
-    Cisqua::Registry.instance.scanner,
-    Cisqua::Registry.instance.api_client,
-    Cisqua::Registry.instance.renamer,
-  )
 end
 
 def make_specs_for_dst_dir(_name, t)
@@ -170,6 +198,10 @@ end
 describe Cisqua::PostProcessor do
   unless should_run_fast_mode
     before(:all) do
+      Cisqua::RedisScripts.instance.start_redis(
+        Cisqua::Registry.options_override.redis.conf_path,
+      )
+      redis = Cisqua::Registry.instance.redis
       data_provider = Cisqua::TestDataProvider.instance
       all_locations =
         [
@@ -180,37 +212,40 @@ describe Cisqua::PostProcessor do
         FileUtils.rm_r(Dir["#{loc.path}/*"])
       end
     end
+
+    after(:all) do
+      Cisqua::RedisScripts.instance.stop_redis
+    end
   end
 
-  context 'when processor is run' do
-    make_specs_for(
-      movie: %i[
-        movie
-        movie_with_subs
-        movie_in_parts
-        movie_special
-        movie_op_or_ed
-        movie_with_all_episodes
-        episode_of_movie
-      ],
-      tv_series: %i[
-        episode_from_complete_series
-        special_episode_from_complete_series
-        episode_from_incomplete_series
-        multi_file_episode
-      ],
-      something_else: %i[
-        not_recognized
-        episode_of_other
-        episode_of_hidden_series
-      ],
-      duplicate: %i[
-        not_recognized_duplicate
-        identical_duplicate
-        duplicate_that_is_improved
-        duplicate_that_is_worse
-        non_identical_duplicate_that_is_not_better_or_worse
-      ],
-    )
-  end
+  make_specs_for(
+    movie: %i[
+      movie
+      movie_with_subs
+      movie_in_parts
+      movie_special
+      movie_op_or_ed
+      movie_with_all_episodes
+      episode_of_movie
+    ],
+    tv_series: %i[
+      episode_from_complete_series
+      special_episode_from_complete_series
+      episode_from_incomplete_series
+      episode_from_series_that_becomes_complete
+      multi_file_episode
+    ],
+    something_else: %i[
+      not_recognized
+      episode_of_other
+      episode_of_hidden_series
+    ],
+    duplicate: %i[
+      not_recognized_duplicate
+      identical_duplicate
+      duplicate_that_is_improved
+      duplicate_that_is_worse
+      non_identical_duplicate_that_is_not_better_or_worse
+    ],
+  )
 end

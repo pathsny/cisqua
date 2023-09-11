@@ -1,13 +1,18 @@
-module Cisqua
-  require File.join(ROOT_FOLDER, 'net/ranidb')
+require File.join(Cisqua::ROOT_FOLDER, 'net/ranidb')
 
+module Cisqua
   class ProxyClient
     extend Reloadable
     include SemanticLogger::Loggable
 
-    reloadable_const_define :SAFE_METHODS, %i[connect disconnect].freeze
-    reloadable_const_define :READ_METHODS, %i[search_file anime episode mylist_by_aid].freeze
-    reloadable_const_define :WRITE_METHODS, %i[mylist_add].freeze
+    reloadable_const_define :EXPECTED_CALLS_NO_CACHE, %i[connect disconnect].freeze
+    reloadable_const_define :EXPECTED_CALLS_TEST_CACHE, %i[
+      search_file
+      file
+      anime
+      episode
+      mylist_add
+    ].freeze
 
     def initialize(client, test_mode)
       @client = client
@@ -19,22 +24,21 @@ module Cisqua
     end
 
     def method_missing(method, *args)
-      if SAFE_METHODS.include?(method)
+      if EXPECTED_CALLS_NO_CACHE.include?(method)
         call_client(method, *args)
         return
       end
+      assert(
+        EXPECTED_CALLS_TEST_CACHE.include?(method),
+        "unsupported api call #{method}",
+      )
 
-      if READ_METHODS.include?(method)
-        if @test_mode
-          check_cache(method, *args) do
-            call_client(method, *args)
-          end
-        else
+      if @test_mode
+        check_cache(method, *args) do
           call_client(method, *args)
         end
       else
-        assert(WRITE_METHODS.include?(method), "unsupported api method call #{method}")
-        call_client(method, *args) unless @test_mode
+        call_client(method, *args)
       end
     end
 
@@ -58,23 +62,17 @@ module Cisqua
       end
     end
 
-    def is_cacheable(method)
-      return true if READ_METHODS.include?(method)
-
-      raise "not configured for api call #{method}" unless WRITE_METHODS.include?(method)
-    end
-
     def disconnect
       @client.disconnect if @client.connected?
     end
-
-    private
 
     def call_client(method, *args)
       maintain_rate_limit
       @client.connect unless @client.connected
       @client.__send__(method, *args)
     end
+
+    private
 
     def respond_to_missing?(method, *)
       @client.respond_to?(method) || super

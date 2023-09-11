@@ -1,6 +1,7 @@
 module Cisqua
   module Renamer
     class DuplicateResolver
+      include SemanticLogger::Loggable
       class << self
         def extract_clones(original, duplicates)
           clones_of_original, rest = duplicates.partition do |item|

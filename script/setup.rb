@@ -20,3 +20,6 @@ FileUtils.cp(File.join(root_dir, 'script/helpers/options.yml.bak'), options_file
 Dir.chdir(root_dir) do
   raise 'could not run bundler' unless system 'bundle install'
 end
+
+# How to start redis
+# redis-server

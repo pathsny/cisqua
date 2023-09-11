@@ -36,6 +36,15 @@ module Cisqua
     include StrictInitialize
   end
 
+  reloadable_const_define :RedisOptions, Struct.new(
+    # which redis db to use
+    :db,
+    :conf_path,
+    keyword_init: true,
+  ) do
+    include StrictInitialize
+  end
+
   # configuration details for the api
   reloadable_const_define :AnidbOptions, Struct.new(
     :port,
@@ -49,12 +58,24 @@ module Cisqua
     include StrictInitialize
   end
 
+  reloadable_const_define :CacheOptions do
+    Struct.new(
+      # where are the cached responses stored
+      :ttl,
+      keyword_init: true,
+    ) do
+      include StrictInitialize
+    end
+  end
+
   reloadable_const_define :APIClientOptions do
     Struct.new(
       # connection settings to connect to anidb
       :anidb,
       # set this to true to add all identified files to your mylist
       :add_to_mylist,
+      # to configure how responses are cached
+      :cache,
       keyword_init: true,
     ) do
       include StrictInitialize
@@ -124,6 +145,7 @@ module Cisqua
     Struct.new(
       :api_client,
       :scanner,
+      :redis,
       :renamer,
       # set this to false if you want the base directory left alone. Otherwise this removes all directories that can be
       # safely removed. i.e either they're empty or contain only empty directories
@@ -140,42 +162,68 @@ module Cisqua
       end
 
       def self.make_options(option_args)
-        Options.new(**option_args.each_with_object({}) do |(k, v), m|
-          m[k] = case k
-          when :api_client
-            make_api_client_options(v)
-          when :scanner
-            ScannerOptions.new(**v)
-          when :renamer
-            make_renamer_options(v)
-          else
-            v
-          end
-        end)
+        Options.new(
+          **option_args.each_with_object({}) do |(k, v), m|
+            m[k] = case k
+            when :api_client
+              make_api_client_options(v)
+            when :redis
+              make_redis_options(v)
+            when :scanner
+              ScannerOptions.new(**v)
+            when :renamer
+              make_renamer_options(v)
+            else
+              v
+            end
+          end,
+        )
+      end
+
+      def self.make_redis_options(option_args)
+        RedisOptions.new(
+          **option_args.each_with_object({}) do |(k, v), m|
+            m[k] = case k
+            when :conf_path
+              File.join(ROOT_FOLDER, v)
+            else
+              v
+            end
+          end,
+        )
       end
 
       def self.make_api_client_options(option_args)
-        APIClientOptions.new(**option_args.each_with_object({}) do |(k, v), m|
-          m[k] = case k
-          when :anidb
-            AnidbOptions.new(**v)
-          else
-            v
-          end
-        end)
+        APIClientOptions.new(
+          **option_args.each_with_object({}) do |(k, v), m|
+              m[k] = case k
+              when :anidb
+                AnidbOptions.new(**v)
+              when :cache
+                cache_options = v.clone
+                cache_options[:ttl] = (cache_options[:ttl_hours]).hours
+                cache_options.delete(:ttl_hours)
+                CacheOptions.new(**cache_options)
+              else
+                v
+              end
+            end,
+        )
       end
 
       def self.make_renamer_options(option_args)
-        RenamerOptions.new(**option_args.each_with_object({}) do |(k, v), m|
-          m[k] = case k
-          when :plex_scan_library_files
-            v && PlexScanLibraryOption.new(**v)
-          when :create_symlinks
-            SymlinkLocationOptions.new(**v)
-          else
-            v
-          end
-        end)
+        RenamerOptions.new(
+          **option_args.each_with_object({}) do |(k, v), m|
+              m[k] = case k
+              when :plex_scan_library_files
+                v && PlexScanLibraryOption.new(**v)
+              when :create_symlinks
+                SymlinkLocationOptions.new(**v)
+              else
+                v
+              end
+            end,
+        )
       end
     end
   end

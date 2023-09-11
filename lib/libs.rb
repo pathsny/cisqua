@@ -1,6 +1,10 @@
 ENV['OPENSSL_CONF'] = File.expand_path('.add_provider_conf', __dir__)
 
+require 'active_model'
+require 'active_support'
+require 'active_support/all'
 require 'amazing_print'
+require 'redis'
 require 'semantic_logger'
 require 'yaml'
 
