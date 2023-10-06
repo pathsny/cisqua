@@ -35,3 +35,9 @@ group :development, :test do
   gem 'rufo', require: false
   gem 'solargraph'
 end
+
+group :deployment do
+  gem 'bcrypt_pbkdf'
+  gem 'ed25519'
+  gem 'net-ssh'
+end
