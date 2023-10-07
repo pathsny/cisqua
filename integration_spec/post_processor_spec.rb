@@ -1,15 +1,31 @@
 require_relative('test_data_provider')
 require_relative('test_util')
+require_relative('test_interface')
 
 # Integration test for the entire post processing function
 RSpec.configure do |_config|
   Cisqua::AppLogger.disable_stdout_logging
-  Cisqua::TestUtil.prep(log_level: :debug)
   # Runs faster, but maybe inaccurate. Useful for development
   # We dont clear the file data between runs, so only the final
   # result can be asserted.
   def should_run_fast_mode
     @should_run_fast_mode ||= (ENV['FAST_MODE'] || false)
+  end
+
+  def test_config
+    @test_config ||= begin
+      prep = ENV.fetch('PREP_MODE', nil)
+      if prep
+        { mode: :prep, value: prep == 'all' ? :all : Integer(prep) }
+      else
+        interface = ENV.fetch('TEST_INTERFACE', 'web')
+        interface == 'cli' ? { mode: :cli } : { mode: :web }
+      end
+    end
+  end
+
+  def test_interface
+    @test_interface ||= TestInterface.create(test_config, should_run_fast_mode)
   end
 
   def make_specs_for(test_groups)
@@ -33,29 +49,28 @@ RSpec.configure do |_config|
 
     groups_list = make_test_groups_by_iteration(test_group_data)
 
-    before(:all) do
-      @processor = Cisqua::PostProcessor.new(
-        Cisqua::Registry.instance.options,
-        Cisqua::Registry.instance.scanner,
-        Cisqua::FileProcessor.instance,
-      )
-      @processor.start
-    end
-
-    after(:all) do
-      @processor.stop
-    end
-
     groups_list.each_with_index do |groups, i|
-      break if i > 1
+      prep_only_iteration = false
+      if test_config[:mode] == :prep
+        break if test_config[:value] != :all && i + 1 > test_config[:value]
+
+        # We just want to get everything ready, but not run the test at this iteration
+        prep_only_iteration = true if i + 1 == test_config[:value] || test_config[:value] == :all
+      end
+
       context "when processor is run for the #{(i + 1).ordinalize} time" do
-        make_before_all_section_for_groups(groups)
-        make_specs_for_groups(groups)
+        if prep_only_iteration
+          make_before_all_section_for_groups(groups, false)
+          it 'needs a dummy test'
+        else
+          make_before_all_section_for_groups(groups, true)
+          make_specs_for_groups(groups)
+        end
       end
     end
   end
 
-  def make_before_all_section_for_groups(groups)
+  def make_before_all_section_for_groups(groups, run_process)
     before(:all) do
       groups.each do |_group_name, tests|
         tests.each do |name, test_data|
@@ -65,7 +80,7 @@ RSpec.configure do |_config|
           prepare_data(test_data) unless fast_mode
         end
       end
-      @processor.run
+      test_interface.run if run_process
     end
   end
 
@@ -205,27 +220,25 @@ def make_specs_for_dst_dir(_name, t)
 end
 
 describe Cisqua::PostProcessor do
-  unless should_run_fast_mode
-    before(:all) do
-      Cisqua::RedisScripts.instance.start_redis(
-        Cisqua::Registry.options_override.redis.conf_path,
-      )
-      redis = Cisqua::Registry.instance.redis
+  before(:all) do
+    test_interface.start
+    unless should_run_fast_mode
       data_provider = Cisqua::TestDataProvider.instance
       all_locations =
         [
           data_provider.src_location,
-        ] + data_provider.dst_locations +
-        data_provider.dst_dir_symlink_locations
+        ] + data_provider.dst_locations + data_provider.dst_dir_symlink_locations
       all_locations.each do |loc|
         FileUtils.rm_r(Dir["#{loc.path}/*"])
       end
     end
-
-    after(:all) do
-      Cisqua::RedisScripts.instance.stop_redis
-    end
   end
+
+  after(:all) do
+    test_interface.stop
+  end
+
+  test_interface.prep
 
   make_specs_for(
     movie: %i[
