@@ -1,3 +1,5 @@
+require_relative '../../web/view_data'
+
 module Cisqua
   reloadable_const_define :Registry do
     Struct.new(
@@ -11,6 +13,7 @@ module Cisqua
       :renamer,
       :scanner,
       :file_processor,
+      :view_data,
     ) do
       def initialize(options_override, test_mode_param)
         self.options_file = @options_file_override
@@ -33,6 +36,7 @@ module Cisqua
         FileProcessor.instance.set_dependencies(scanner, api_client, renamer)
         BatchProcessor.instance.options = options
         BatchProcessor.instance.scanner = scanner
+        self.view_data = ViewData.new
         Model::Redisable.redis = redis
       end
 

@@ -30,11 +30,19 @@ module Cisqua
 
     set :connections, []
     set :bind, '0.0.0.0'
+    set :view_data, Registry.instance.view_data
     set :test_mode_default_value, Registry.instance.test_mode
     set :protection, except: :frame_options
 
     logger.info("Starting Cisqua client in #{Registry.instance.test_mode ? 'TEST MODE' : 'REGULAR MODE'}")
     logger.info("the sinatra environment is #{settings.environment}")
+
+    attr_reader :connections
+
+    before do
+      @view_data = settings.view_data
+      @connections = []
+    end
 
     configure :development do
       set :static_cache_control, %i[public nocache]
@@ -54,7 +62,13 @@ module Cisqua
     end
 
     get '/' do
+      initial_data = @view_data.for_scans(
+        Time.now,
+        BatchCheck.find_if_exists,
+        BatchData.latest(50),
+      )
       erb :index, locals: {
+        initial_data:,
         test_mode: settings.test_mode_default_value,
         dry_run: Registry.instance.options[:renamer][:dry_run_mode],
       }
@@ -70,6 +84,7 @@ module Cisqua
       content_type :json
       {
         scan_enque_result: result[:status],
+        updates: updates_from(params['queried-timestamp'].to_i),
       }.to_json
     end
 
@@ -81,6 +96,36 @@ module Cisqua
         complete: batch_data.complete?,
         conns: settings.connections.count,
       })
+      data = @view_data.for_scans(
+        Time.now,
+        BatchCheck.find_if_exists,
+        [batch_data],
+      )
+      settings.connections.each { |conn| stream_data(conn, data) }
+    end
+
+    def stream_data(conn, data)
+      conn << "data: #{data.to_json}\n\n"
+    end
+
+    def updates_from(queried_timestamp)
+      @view_data.for_scans(
+        Time.now,
+        BatchCheck.find_if_exists,
+        BatchData.updated_since(queried_timestamp),
+      )
+    end
+
+    get '/refresh', provides: 'text/event-stream' do
+      stream :keep_open do |out|
+        settings.connections << out
+        logger.info('the length is now ', { count: settings.connections.count })
+        stream_data(out, updates_from(params['queried-timestamp'].to_i))
+        out.callback do
+          logger.debug('Connnection Closed')
+          settings.connections.delete(out)
+        end
+      end
     end
 
     get '/favicon.ico' do
