@@ -1,3 +1,5 @@
+require 'faraday'
+
 module Cisqua
   class BatchProcessor
     include Singleton
@@ -235,8 +237,8 @@ module Cisqua
         plex_server: uri,
       )
       begin
-        resp = RestClient.get(uri, params: { 'X-Plex-Token': plex_opt[:token] })
-        if resp.code == 200
+        resp = Faraday.get(uri, { 'X-Plex-Token': plex_opt[:token] })
+        if resp.status == 200
           logger.info(
             'Requested plex server to scan library files',
             plex_server: uri,
