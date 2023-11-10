@@ -22,11 +22,22 @@ module Cisqua
 
       attr_reader :options
 
-      def try_process(work_item, override_options = {})
+      def process(work_item, override_options = {})
+        case work_item.request_type
+        when :standard
+          process_standard(work_item, override_options)
+        when :duplicate_set
+          process_duplicate_set(work_item, override_options)
+        else
+          assert(false, "unknown request type #{work_item.request_type}")
+        end
+      end
+
+      def process_standard(work_item, override_options)
         unless work_item.info
           unknown_location = File.absolute_path(options[:unknown_location], ROOT_FOLDER)
           response = @mover.process(
-            work_item.file.name,
+            work_item.file.path,
             unknown_location,
             { unambiguous: true, **override_options },
           )
@@ -39,7 +50,7 @@ module Cisqua
       rescue StandardError
         logger.error(
           'error while renaming',
-          source: work_item.file.name,
+          source: work_item.file.path,
           data: work_item.info,
           exception: $ERROR_INFO,
         )
@@ -48,7 +59,9 @@ module Cisqua
 
       # given a work_item indicating the existing file and given
       # a list of duplicates, processes all of them
-      def process_duplicate_set(existing, duplicates)
+      def process_duplicate_set(work_item, _override_options)
+        existing = work_item
+        duplicates = work_item.duplicate_work_items
         result = DuplicateResolver.resolve(existing, duplicates)
         # get data shared by all files
         location, path, name = generate_location(existing[:info])
@@ -56,26 +69,22 @@ module Cisqua
         dup = curried_method(:move_to_dup)[name]
         result[:junk].each(&junk)
         result[:dups].each(&dup)
-        return if result[:keep_current]
+        return Response.unchanged(existing.file.path) if result[:keep_current]
 
         junk_duplicate_location = File.absolute_path(options[:junk_duplicate_location], ROOT_FOLDER)
         fix_symlinks_root = File.absolute_path(options[:fix_symlinks_root], ROOT_FOLDER)
-        resp = @mover.process(
-          existing.file.name,
+        clear_location_resp = @mover.process(
+          existing.file.path,
           junk_duplicate_location,
           new_name: name,
           unambiguous: true,
           symlink_source: false,
           update_links_from: fix_symlinks_root,
         )
-        assert(resp.type == :success, 'moving the existing file should not fail')
-        process_file(name, result[:selected], location, path).tap do |r|
-          assert(r.type == :success, 'we just cleared the location')
-        end
-      end
-
-      def post_rename_actions
-        plex_scan_library_files(options[:plex_scan_library_files]) if @atleast_one_success
+        assert(clear_location_resp.type == :success, 'moving the existing file should not fail')
+        replacement_resp = process_file(name, result[:selected], location, path)
+        assert(replacement_resp.type == :success, 'we just cleared the location')
+        Response.replaced(result[:selected], replacement_resp.destination)
       end
 
       private
@@ -87,7 +96,7 @@ module Cisqua
       def move_to_junk(name, work_item)
         junk_duplicate_location = File.absolute_path(options[:junk_duplicate_location], ROOT_FOLDER)
         @mover.process(
-          work_item.file.name,
+          work_item.file.path,
           junk_duplicate_location,
           new_name: name,
           unambiguous: true,
@@ -97,7 +106,7 @@ module Cisqua
       def move_to_dup(name, work_item)
         duplicate_location = File.absolute_path(options[:duplicate_location], ROOT_FOLDER)
         @mover.process(
-          work_item.file.name,
+          work_item.file.path,
           duplicate_location,
           new_name: name,
           unambiguous: true,
@@ -106,7 +115,7 @@ module Cisqua
 
       def process_file(name, work_item, location, path, override_options = {})
         @mover.process(
-          work_item.file.name,
+          work_item.file.path,
           location,
           { new_name: name, **override_options },
         ).tap do |response|
@@ -181,43 +190,6 @@ module Cisqua
       rescue StandardError => e
         logger.warn('error during symlink', exception: e)
         raise
-      end
-
-      def plex_scan_library_files(plex_opt)
-        return unless plex_opt
-
-        uri = URI::HTTP.build(
-          host: plex_opt[:host],
-          port: plex_opt[:port],
-          path: "/library/sections/#{plex_opt[:section]}/refresh",
-        ).to_s
-        logger.debug(
-          'updating plex',
-          plex_server: uri,
-        )
-        begin
-          resp = RestClient.get(uri, params: { 'X-Plex-Token': plex_opt[:token] })
-          if resp.code == 200
-            logger.info(
-              'Requested plex server to scan library files',
-              plex_server: uri,
-            )
-          else
-            logger.error(
-              'could not update plex',
-              plex_server: uri,
-              code: resp.code,
-              body: resp.body,
-            )
-          end
-        rescue StandardError => e
-          logger.error(
-            'could not update plex',
-            plex_server: uri,
-            exception: e,
-            log_exception: :full,
-          )
-        end
       end
     end
   end

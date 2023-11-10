@@ -131,8 +131,6 @@ module Cisqua
       :create_symlinks,
       # needed to make sure plex identifies anime
       :create_anidb_id_files,
-      # needed to update plex server after files have been renamed.
-      :plex_scan_library_files,
       # when dry_run_mode is set, no files are moved and no directories are created
       :dry_run_mode,
       keyword_init: true,
@@ -141,16 +139,27 @@ module Cisqua
     end
   end
 
+  reloadable_const_define :PostBatchActions do
+    Struct.new(
+      # set this to false if you want the base directory left alone. Otherwise this removes all directories that can be
+      # safely removed. i.e either they're empty or contain only empty directories
+      :clean_up_empty_dirs,
+      # needed to update plex server after files have been renamed.
+      :plex_scan_library_files,
+      keyword_init: true,
+    ) do
+      include StrictInitialize
+    end
+  end
+
+
   reloadable_const_define :Options do
     Struct.new(
       :api_client,
       :scanner,
       :redis,
       :renamer,
-      # set this to false if you want the base directory left alone. Otherwise this removes all directories that can be
-      # safely removed. i.e either they're empty or contain only empty directories
-      :clean_up_empty_dirs,
-      # the default log level in the logs
+      :post_batch_actions,
       :log_level,
       keyword_init: true,
     ) do
@@ -173,6 +182,21 @@ module Cisqua
               ScannerOptions.new(**v)
             when :renamer
               make_renamer_options(v)
+            when :post_batch_actions
+              make_post_batch_actions(v)
+            else
+              v
+            end
+          end,
+        )
+      end
+
+      def self.make_post_batch_actions(option_args)
+        PostBatchActions.new(
+          **option_args.each_with_object({}) do |(k, v), m|
+            m[k] = case k
+            when :plex_scan_library_files
+              v && PlexScanLibraryOption.new(**v)
             else
               v
             end
@@ -215,8 +239,6 @@ module Cisqua
         RenamerOptions.new(
           **option_args.each_with_object({}) do |(k, v), m|
               m[k] = case k
-              when :plex_scan_library_files
-                v && PlexScanLibraryOption.new(**v)
               when :create_symlinks
                 SymlinkLocationOptions.new(**v)
               else

@@ -1,5 +1,6 @@
 # Main entry point for rename script. Checks with anidb, adds to mylist etc
 require File.expand_path('../lib/libs', __dir__)
+require File.join(Cisqua::ROOT_FOLDER, 'integration_spec', 'test_util')
 require 'optparse'
 
 module Cisqua
@@ -42,7 +43,10 @@ module Cisqua
     Registry.options_override = options
   end
   registry = Registry.instance
-  RedisScripts.instance.with_redis(registry.options.redis.conf_path) do
-    PostProcessor.run(registry.options, registry.scanner, registry.api_client, registry.renamer)
+  RedisScripts.instance.with_redis do
+    processor = PostProcessor.new(registry.options, registry.scanner, FileProcessor.instance)
+    processor.start
+    processor.run
+    processor.stop
   end
 end

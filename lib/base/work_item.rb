@@ -1,9 +1,14 @@
 module Cisqua
   reloadable_const_define :WorkItem do
     Struct.new(
+      # can be :standard for regular processing. Or :duplicate_set to indicate that
+      # we're reprocessing a processed file and comparing it against one or more
+      # duplicates that could replace this file.
+      :request_type,
       :file,
       :info,
-      :renamer_status,
+      :result,
+      :duplicate_work_items,
       keyword_init: true,
     ) do
       def quality

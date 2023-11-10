@@ -32,6 +32,20 @@ RSpec.configure do |_config|
     end
 
     groups_list = make_test_groups_by_iteration(test_group_data)
+
+    before(:all) do
+      @processor = Cisqua::PostProcessor.new(
+        Cisqua::Registry.instance.options,
+        Cisqua::Registry.instance.scanner,
+        Cisqua::FileProcessor.instance,
+      )
+      @processor.start
+    end
+
+    after(:all) do
+      @processor.stop
+    end
+
     groups_list.each_with_index do |groups, i|
       break if i > 1
       context "when processor is run for the #{(i + 1).ordinalize} time" do
@@ -51,12 +65,7 @@ RSpec.configure do |_config|
           prepare_data(test_data) unless fast_mode
         end
       end
-      Cisqua::PostProcessor.run(
-        Cisqua::Registry.instance.options,
-        Cisqua::Registry.instance.scanner,
-        Cisqua::Registry.instance.api_client,
-        Cisqua::Registry.instance.renamer,
-      )
+      @processor.run
     end
   end
 

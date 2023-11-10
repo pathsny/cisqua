@@ -10,6 +10,7 @@ module Cisqua
       :redis,
       :renamer,
       :scanner,
+      :file_processor,
     ) do
       def initialize(options_override, test_mode_param)
         self.options_file = @options_file_override
@@ -29,6 +30,9 @@ module Cisqua
         self.api_client = APIClient.new(proxy_client, redis)
         self.renamer = Renamer::Renamer.new(options[:renamer])
         self.scanner = FileScanner.new(options[:scanner])
+        FileProcessor.instance.set_dependencies(scanner, api_client, renamer)
+        BatchProcessor.instance.options = options
+        BatchProcessor.instance.scanner = scanner
         Model::Redisable.redis = redis
       end
 

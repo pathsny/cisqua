@@ -13,7 +13,7 @@ module Cisqua
         Registry.options_file_override = options_file
         Registry.load_options.tap do |options|
           options[:redis][:db] = 1
-          options[:renamer][:plex_scan_library_files] = nil
+          options[:post_batch_actions][:plex_scan_library_files] = nil
           options[:renamer][:dry_run_mode] = dry_run
           options[:log_level] = log_level
         end

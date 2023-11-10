@@ -8,11 +8,21 @@ module Cisqua
       @options = options
     end
 
+    def basedir
+      File.absolute_path(options[:basedir], ROOT_FOLDER)
+    end
+
     def file_list
-      basedir = File.absolute_path(options[:basedir], ROOT_FOLDER)
       extensions = options[:extensions] == :all ? '*' : "{#{extension_glob options[:extensions]}}"
       Dir.glob(File.join(basedir.to_s, "#{'**/' if options[:recursive]}*.#{extensions}"), File::FNM_CASEFOLD)
         .reject { |n| File.symlink? n }
+    end
+
+    def work_item_files
+      file_list.map do |path|
+        name = Pathname.new(path).relative_path_from(Pathname.new(basedir)).to_s
+        WorkItemFile.new(path:, name:)
+      end
     end
 
     def extension_glob(extensions)
