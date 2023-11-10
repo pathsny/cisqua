@@ -1,4 +1,7 @@
 require_relative '../lib/libs'
+require 'active_support'
+require 'active_support/all'
+require 'active_support/testing/time_helpers'
 require 'mocha/api'
 require 'rspec'
 require 'faker'
@@ -17,6 +20,7 @@ RSpec.configure do |config|
 
   config.expect_with :rspec do |expectations|
     expectations.include_chain_clauses_in_custom_matcher_descriptions = true
+    config.include ActiveSupport::Testing::TimeHelpers
   end
 
   config.include_context 'with semantic_logger helper'

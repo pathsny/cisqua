@@ -3,6 +3,7 @@ ruby File.read(ruby_version_path, mode: 'rb').chomp
 
 source 'https://rubygems.org'
 
+gem 'actionview'
 gem 'activemodel'
 gem 'activesupport'
 gem 'amazing_print'
@@ -14,12 +15,20 @@ gem 'nokogiri'
 gem 'pry'
 gem 'redis'
 gem 'semantic_logger'
+gem 'sinatra'
+gem 'sinatra-contrib'
 gem 'solid_assert'
+gem 'thin'
 gem 'tty-progressbar'
-group :development do
+
+group :development, :test do
   gem 'fakefs'
   gem 'faker'
+  gem 'htmlbeautifier'
+  gem 'ld-eventsource'
   gem 'mocha'
+  gem 'rb-fsevent'
+  gem 'rerun'
   gem 'rspec'
   gem 'rubocop', require: false
   gem 'rubocop-rspec', require: false
