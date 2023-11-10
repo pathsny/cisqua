@@ -1,5 +1,4 @@
 require File.expand_path('libs', __dir__)
-require 'resolv-replace'
 
 module Cisqua
   class PostProcessor
