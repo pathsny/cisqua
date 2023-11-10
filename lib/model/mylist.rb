@@ -9,6 +9,8 @@ module Cisqua
         redis.sadd(animes_key, file.aid)
         redis.zadd(animes_sorted_key, 1, "#{name}:#{file.aid}")
         redis.sadd(files_key(file.aid), fid)
+
+        Range.make_for_anime(file.aid)
       end
 
       def animes_key
@@ -72,8 +74,6 @@ module Cisqua
         epnos = epnos.to_set
         (1..anime.episode_count).all? { |epno| epnos.include?(epno) }
       end
-
-      def make_range(aid); end
 
       def update_anime_name(aid, old_name, new_name)
         redis.zrem(animes_sorted_key, "#{old_name}:#{aid}")
