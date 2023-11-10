@@ -21,6 +21,36 @@ module Cisqua
       }
     end
 
+    def for_scans_with_lib_updates(queried_at, batch_check, batch_datas)
+      scan_data = for_scans(queried_at, batch_check, batch_datas)
+      a_ids = scan_data[:scans].flat_map { |scan| scan[:updates].map { |u| u[:id] } }.uniq
+      {
+        **scan_data,
+        library: a_ids.map { |aid| for_anime(Anime.find(aid)) },
+      }
+    end
+
+    def for_anime(anime)
+      range = Range.find_by_id(anime.id)
+      {
+        id: anime.id,
+        name: anime.romaji_name,
+        combined_name: combined_name_for_anime(anime),
+        english_name: anime.english_name,
+        ended: anime.ended?,
+        complete: anime.movie? ? true : MyList.complete?(anime.id),
+        year: anime.year,
+        air_date: anime.air_date.strftime('%Y-%m-%d'),
+        end_date: anime.ended? ? anime.end_date.strftime('%Y-%m-%d') : nil,
+        type: anime.type,
+        eps: range.simple,
+        eps_w_grps: range.with_groups,
+      }
+    rescue StandardError, Invariant::AssertionError => e
+      logger.error('error generating view data', { anime: anime.id, exception: e })
+      raise
+    end
+
     private
 
     def for_batch_check(batch_check)

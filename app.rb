@@ -96,7 +96,7 @@ module Cisqua
         complete: batch_data.complete?,
         conns: settings.connections.count,
       })
-      data = @view_data.for_scans(
+      data = @view_data.for_scans_with_lib_updates(
         Time.now,
         BatchCheck.find_if_exists,
         [batch_data],
@@ -109,7 +109,7 @@ module Cisqua
     end
 
     def updates_from(queried_timestamp)
-      @view_data.for_scans(
+      @view_data.for_scans_with_lib_updates(
         Time.now,
         BatchCheck.find_if_exists,
         BatchData.updated_since(queried_timestamp),
@@ -126,6 +126,12 @@ module Cisqua
           settings.connections.delete(out)
         end
       end
+    end
+
+    get '/library' do
+      content_type :json
+      library_data = MyList.anime_ids_sorted.map { |aid| @view_data.for_anime(Anime.find(aid)) }
+      library_data.to_json
     end
 
     get '/favicon.ico' do

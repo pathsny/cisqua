@@ -299,6 +299,50 @@ footer {
   /* Making active tab bold can also help distinguish it */
 }
 
+/* Library Card Styling */
+.library-card {
+  border: 1px solid #eaeaea;
+  padding: 20px;
+  background-color: #f9f9f9;
+  display: flex;
+  gap: 20px;
+  /* This will provide a gap between the left and right sections */
+  margin-bottom: 20px;
+  /* Space between each library card */
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.05);
+  /* Subtle shadow for depth */
+}
+
+.library-card .left-section {
+  flex: 1;
+  padding: 1em;
+  display: flex;
+  flex-direction: column;
+  margin: 12 px 0;
+}
+
+.library-card .title-wrapper {
+  display: flex;
+  align-items: center;
+  /* Vertically aligns child items */
+  gap: 15px;
+  /* Spacing between direct children, adjust as needed */
+  margin-bottom: 20px;
+  /* moved from h2 */
+}
+
+.library-card .title-wrapper h2 {
+  font-size: 1.2em;
+  margin: 0;
+  /* Reset the margin on the h2 */
+  font-weight: bold;
+  color: #444;
+}
+
+.library-card .title-wrapper .status-badge {
+  padding: 4px 8px;
+}
+
 .status-badge {
   display: inline-flex;
   align-items: center;
@@ -326,6 +370,29 @@ footer {
   background-color: #FFF;
   color: #CA6D59;
 }
+
+.library-card .right-section {
+  flex: 1;
+  padding: 1em;
+  border-left: 1px solid #eaeaea;
+  /* A subtle separator between the two sections */
+  display: flex;
+  flex-direction: column;
+  margin: 14 px 0;
+}
+
+.library-card .right-section p {
+  display: flex;
+  justify-content: space-between;
+}
+
+.library-card .right-section strong,
+.library-card .right-section span {
+  flex: 1;
+  /* Both labels and values will take equal width. */
+}
+
+
 
 .highlight-text {
   color: #87CEEB;

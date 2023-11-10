@@ -79,6 +79,8 @@
         <div class="tabs-header">
           <button x-bind:class="{ 'active-tab': isTabActive('scans') }" class="tab-button"
                   x-on:click="setActiveTab('scans')">Scans</button>
+          <button x-bind:class="{ 'active-tab': isTabActive('library') }" class="tab-button"
+                  x-on:click="setActiveTab('library')">Library</button>
         </div>
         <section class="scans" x-show="activeTab === 'scans' && hasRun">
           <template x-for="scan in scans">
@@ -174,6 +176,58 @@
               </div>
             </article>
           </template>
+        </section>
+        <section
+          class="library"
+          x-show="activeTab === 'library'"
+          x-data="library"
+          x-cloak
+        >
+          <div class="request-fetch">
+            <button
+              id="fetch-library"
+              :disabled="libraryState == 'loading'"
+              x-on:click="fetchLibrary"
+            >Fetch Library</button>
+            <article class="library-card">
+              <div class="title-wrapper">
+                <h2 class="card-title">Legend</h2>
+                <label>On-Going</label>
+                <%= erb :_library_badge, locals: {prefix: "libraryBadges['ongoing']"}%>
+                <label>Ended (Incomplete)</label>
+                <%= erb :_library_badge, locals: {prefix: "libraryBadges['ended-incomplete']"}%>
+                <label>Ended (Complete)</label>
+                <%= erb :_library_badge, locals: {prefix: "libraryBadges['ended-complete']"}%>
+              </div>
+            </article>
+            <div x-show="libraryState == 'loading'" class="spinner-container">
+              <div class="spinner"></div>
+              <p>Loading library data...</p>
+            </div>
+          </div>
+          <div x-show="libraryState == 'loaded'">
+            <template x-for="[id, c] in Object.entries(libraryCards)" :key="id">
+              <article class="library-card">
+                <!-- Left Side: Primary Information -->
+                <div class="left-section">
+                  <div class="title-wrapper">
+                    <h2 class="card-title" x-text="c.name"></h2>
+                    <%= erb :_library_badge, locals: {prefix: 'c.badge'} %>
+                  </div>
+                  <p><span x-text="c.type"></span></p>
+                  <p><span x-text="c.eps"></span></p>
+                </div>
+                <!-- Right Side: Detailed Information -->
+                <div class="right-section">
+                  <p><strong>ID:</strong> <span x-text="c.id"></span></p>
+                  <p><strong>English Name:</strong><span x-text="c.english_name || '---'"></span></p>
+                  <p><strong>Collection:</strong> <span x-text="c.contents"></span></p>
+                  <p><strong>Air Date:</strong> <span x-text="c.air_date"></span></p>
+                  <p><strong>End Date:</strong> <span x-text="c.end_date"></span></p>
+                </div>
+              </article>
+            </template>
+          </div>
         </section>
       </div>
     </div>
