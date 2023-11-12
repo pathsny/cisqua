@@ -31,7 +31,7 @@ function getBadgeDetails(entry) {
 };
 
 
-function librarySection() {
+function librarySection(notif) {
   return {
     libraryBadges,
     libraryData: {},
@@ -46,6 +46,13 @@ function librarySection() {
       try {
         this.libraryState = 'loading';
         const response = await fetch('/library');
+        if (!response.ok) {
+          console.error("Error fetching library:", response);
+          this.notif.show('Error: Unable to fetch the library!', 'error');
+          window.nox = this.notif
+          this.libraryState = 'error';
+          return
+        }
         const library = await response.json();
         this.libraryData = {};
         this.libraryCards = {};
@@ -53,7 +60,7 @@ function librarySection() {
         this.mergeUpdates(library)
       } catch (error) {
         console.error("Error fetching library:", error);
-        this.showNotification('Error: Unable to fetch the library!', 'error');
+        notif.show('Error: Unable to fetch the library!', 'error');
       }
     },
     mergeUpdates(libraryUpdates) {
@@ -84,7 +91,32 @@ function librarySection() {
         },
       };
       return card_data;
+    },
+    setNotif(notif) {
+      this.notif = notif;
     }
+  }
+}
+
+function notification() {
+  return {
+    data: null,
+    badgeMap: {
+      'success': '✔️',
+      'warning': '⚠️',
+      'error': '❌'
+    },
+
+    show(message, type) {
+      this.data = {
+        message: message,
+        type: type,
+        badge: this.badgeMap[type],
+      }
+      setTimeout(() => {
+        this.data = null;
+      }, 3000);
+    },
   }
 }
 
@@ -104,19 +136,17 @@ function data() {
 
     return newScans.concat(updatedOldScans);
   }
+
+  const notif = notification();
+
   return {
-    notification: null,
     scans: window.initialData.scans,
     hasRun: !!window.initialData.latest_check,
     latestCheck: window.initialData.latest_check || {},
     queriedTimestamp: window.initialData.queried_timestamp,
-    badgeMap: {
-      'success': '✔️',
-      'warning': '⚠️',
-      'error': '❌'
-    },
     activeTab: 'scans',
-    library: librarySection(),
+    notif: notif,
+    library: librarySection(notif),
 
 
     submitForm: async function () {
@@ -130,22 +160,22 @@ function data() {
         result = await response.json();
       } catch (error) {
         console.error("Error while starting scan:", error);
-        this.showNotification('Error: Something went wrong!', 'error')
+        this.notif.show('Error: Something went wrong!', 'error')
       }
 
       // Handle notifications
       switch (result.scan_enque_result) {
         case 'started':
-          this.showNotification('Scan started successfully!', 'success');
+          this.notif.show('Scan started successfully!', 'success');
           break;
         case 'waiting':
-          this.showNotification('Scan already running', 'warning');
+          this.notif.show('Scan already running', 'warning');
           break;
         case 'rejected':
-          this.showNotification('Scan rejected', 'error');
+          this.notif.show('Scan rejected', 'error');
           break;
         case 'no_files':
-          this.showNotification('No New Files', 'warning');
+          this.notif.show('No New Files', 'warning');
           break;
         default:
           throw new Error(`Unknown scan_enque_result: ${result.scan_enque_result}`);
@@ -162,16 +192,6 @@ function data() {
       this.queriedTimestamp = newState.queried_timestamp;
     },
 
-    showNotification(message, type) {
-      this.notification = {
-        message: message,
-        type: type,
-        badge: this.badgeMap[type],
-      }
-      setTimeout(() => {
-        this.notification = null;
-      }, 3000);
-    },
     init() {
       this.$watch('latestCheck.scan_in_progress', (value) => {
         if (value) {
@@ -184,6 +204,7 @@ function data() {
         this.startSSE();
       }
       window.scans = this.scans
+      this.library.setNotif(this.notif)
     },
     startSSE() {
       if (!this.eventSource) {
