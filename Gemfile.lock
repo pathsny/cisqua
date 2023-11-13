@@ -91,14 +91,9 @@ GEM
     mustermann (3.0.0)
       ruby2_keywords (~> 0.0.1)
     net-ssh (7.2.0)
-<<<<<<< HEAD
     nokogiri (1.15.3-arm64-darwin)
       racc (~> 1.4)
     nokogiri (1.15.3-x86_64-linux)
-=======
-    nokogiri (1.15.3)
-      mini_portile2 (~> 2.8.2)
->>>>>>> ab702d9 (fix the Gemfile.lock to work correctly in docker)
       racc (~> 1.4)
     parallel (1.23.0)
     parser (3.2.2.3)
