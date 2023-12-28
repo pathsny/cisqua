@@ -106,7 +106,7 @@ module Cisqua
     end
 
     def save_associations
-      redis.zadd('bd:timestamps', updated_at.to_i, id)
+      redis.zadd('bd:timestamps', created_at.to_i, id)
     end
 
     def updates_json

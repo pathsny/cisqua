@@ -18,11 +18,7 @@ module Cisqua
       raise 'cannot start more than once' if @started
       raise 'cannot start unless dependencies are set' if options.nil?
 
-      latest_batch_data = BatchData.latest(1).first
-      if latest_batch_data && !latest_batch_data.complete?
-        logger.warn('batch_data incomplete on startup. Probably aborted', latest_batch_data.id)
-        latest_batch_data.update(is_complete: true)
-      end
+      fixup_batch_datas
 
       @started = true
       FileProcessor.instance.start
@@ -38,6 +34,16 @@ module Cisqua
         end
       end
       @worker_thread.abort_on_exception = true
+    end
+
+    def fixup_batch_datas
+      previous_batch_datas = BatchData.latest(10)
+      previous_batch_datas.each do |bd|
+        unless bd.complete?
+          logger.warn('batch_data incomplete on startup. Probably aborted', batch_data: bd.id)
+          bd.update(is_complete: true)
+        end
+      end
     end
 
     def stop
