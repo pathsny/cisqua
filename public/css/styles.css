@@ -517,18 +517,6 @@ footer {
   color: white;
 }
 
-.added {
-  color: #4CAF50;
-}
-
-.duplicates {
-  color: #FF9800;
-}
-
-.replacement {
-  color: #8BC34A
-}
-
 .final-status {
   font-weight: bold;
   background: linear-gradient(to right, #2c3e50, #5a8bbd);
@@ -556,8 +544,4 @@ footer {
 
 .unknown-label {
   background-color: #CA6D59;
-}
-
-.unknown {
-  color: #CA6D59;
 }
