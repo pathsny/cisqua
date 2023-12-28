@@ -30,8 +30,7 @@ function getBadgeDetails(entry) {
   }
 };
 
-
-function librarySection(notif) {
+function librarySection() {
   return {
     libraryBadges,
     libraryData: {},
@@ -48,8 +47,7 @@ function librarySection(notif) {
         const response = await fetch('/library');
         if (!response.ok) {
           console.error("Error fetching library:", response);
-          this.notif.show('Error: Unable to fetch the library!', 'error');
-          window.nox = this.notif
+          this.$dispatch('show-notification', { type: 'error', message: 'Error: Unable to fetch the library!' })
           this.libraryState = 'error';
           return
         }
@@ -60,7 +58,7 @@ function librarySection(notif) {
         this.mergeUpdates(library)
       } catch (error) {
         console.error("Error fetching library:", error);
-        notif.show('Error: Unable to fetch the library!', 'error');
+        this.$dispatch('show-notification', { type: 'error', message: 'Error: Unable to fetch the library!' })
       }
     },
     mergeUpdates(libraryUpdates) {
@@ -92,9 +90,6 @@ function librarySection(notif) {
       };
       return card_data;
     },
-    setNotif(notif) {
-      this.notif = notif;
-    }
   }
 }
 
@@ -106,17 +101,15 @@ function notification() {
       'warning': '⚠️',
       'error': '❌'
     },
-
-    show(message, type) {
+    show(notifData) {
       this.data = {
-        message: message,
-        type: type,
-        badge: this.badgeMap[type],
+        ...notifData,
+        badge: this.badgeMap[notifData.type],
       }
       setTimeout(() => {
         this.data = null;
       }, 3000);
-    },
+    }
   }
 }
 
@@ -146,7 +139,7 @@ function data() {
     queriedTimestamp: window.initialData.queried_timestamp,
     activeTab: 'scans',
     notif: notif,
-    library: librarySection(notif),
+    library: librarySection(),
 
 
     submitForm: async function () {
@@ -160,22 +153,22 @@ function data() {
         result = await response.json();
       } catch (error) {
         console.error("Error while starting scan:", error);
-        this.notif.show('Error: Something went wrong!', 'error')
+        this.$dispatch('show-notification', { type: 'error', message: 'Error: Something went wrong!' })
       }
 
       // Handle notifications
       switch (result.scan_enque_result) {
         case 'started':
-          this.notif.show('Scan started successfully!', 'success');
+          this.$dispatch('show-notification', { type: 'success', message: 'Scan started successfully!' })
           break;
         case 'waiting':
-          this.notif.show('Scan already running', 'warning');
+          this.$dispatch('show-notification', { type: 'warning', message: 'Scan already running' })
           break;
         case 'rejected':
-          this.notif.show('Scan rejected', 'error');
+          this.$dispatch('show-notification', { type: 'error', message: 'Scan rejected' })
           break;
         case 'no_files':
-          this.notif.show('No New Files', 'warning');
+          this.$dispatch('show-notification', { type: 'warning', message: 'No New Files' })
           break;
         default:
           throw new Error(`Unknown scan_enque_result: ${result.scan_enque_result}`);
@@ -204,7 +197,6 @@ function data() {
         this.startSSE();
       }
       window.scans = this.scans
-      this.library.setNotif(this.notif)
     },
     startSSE() {
       if (!this.eventSource) {

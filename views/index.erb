@@ -10,7 +10,7 @@
       <h1>Cisqua <% if test_mode %>TEST MODE<% end %>
       </h1>
     </header>
-    <div class="container" x-data="data()">
+    <div class="container" x-data="data()" @show-notification="notif.show($event.detail)">
       <div class="left-column">
         <section class="request-scan">
           <form @submit.prevent="submitForm($event)">
