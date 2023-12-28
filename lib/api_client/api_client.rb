@@ -6,10 +6,13 @@ module Cisqua
 
   class APIClient
     include SemanticLogger::Loggable
+    # Since the scraper can be re-created, we use a setter rather than an initializer
+    attr_writer :metadata_scraper
 
-    def initialize(client, redis)
+    def initialize(client, redis, options)
       @client = client
       @redis = redis
+      @options = options
     end
 
     def process(_name, ed2k, size)
@@ -47,8 +50,8 @@ module Cisqua
 
         retrieve_other_details(search.file)
       end
-
       add_to_mylist(search.fid)
+      @metadata_scraper.ensure_metadata(search.file.aid) if @options.fetch_metadata
       munge_into_expected_format(search.fid)
     end
 

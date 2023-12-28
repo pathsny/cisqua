@@ -52,6 +52,10 @@ module Cisqua
       gids.map { |gid| Group.find(gid) }
     end
 
+    def metadata
+      Metadata.find_by_id(id)
+    end
+
     def self.all_ids
       redis.smembers('animes')
     end

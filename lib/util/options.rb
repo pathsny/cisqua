@@ -74,6 +74,8 @@ module Cisqua
       :anidb,
       # set this to true to add all identified files to your mylist
       :add_to_mylist,
+      # set this to true to fetch metadata
+      :fetch_metadata,
       # to configure how responses are cached
       :cache,
       keyword_init: true,
@@ -139,7 +141,7 @@ module Cisqua
     end
   end
 
-  reloadable_const_define :PostBatchActions do
+  reloadable_const_define :PostBatchActionsOptions do
     Struct.new(
       # set this to false if you want the base directory left alone. Otherwise this removes all directories that can be
       # safely removed. i.e either they're empty or contain only empty directories
@@ -152,6 +154,15 @@ module Cisqua
     end
   end
 
+  reloadable_const_define :MetadataOptions do
+    Struct.new(
+      # tvdb mapping file age in days before it should be updated
+      :file_age_threshold,
+      :tvdb_api_key,
+    ) do
+      include StrictInitialize
+    end
+  end
 
   reloadable_const_define :Options do
     Struct.new(
@@ -159,6 +170,7 @@ module Cisqua
       :scanner,
       :redis,
       :renamer,
+      :metadata,
       :post_batch_actions,
       :log_level,
       keyword_init: true,
@@ -182,6 +194,8 @@ module Cisqua
               ScannerOptions.new(**v)
             when :renamer
               make_renamer_options(v)
+            when :metadata
+              make_metadata_options(v)
             when :post_batch_actions
               make_post_batch_actions(v)
             else
@@ -191,8 +205,21 @@ module Cisqua
         )
       end
 
+      def self.make_metadata_options(option_args)
+        MetadataOptions.new(
+          **option_args.each_with_object({}) do |(k, v), m|
+            m[k] = case k
+            when :file_age_threshold
+              v && v.days
+            else
+              v
+            end
+          end,
+        )
+      end
+
       def self.make_post_batch_actions(option_args)
-        PostBatchActions.new(
+        PostBatchActionsOptions.new(
           **option_args.each_with_object({}) do |(k, v), m|
             m[k] = case k
             when :plex_scan_library_files

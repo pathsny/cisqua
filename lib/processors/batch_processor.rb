@@ -11,7 +11,11 @@ module Cisqua
       @current = nil
     end
 
-    attr_writer :scanner
+    # Since BatchProcessor is a singleton, the scanner has to be set rather than passed as an initializer.
+    #   This allows BatchProcessor to know when there are files to process.
+    # The metadatascraper needs a periodic check event. The start of a batch is convenient. So setting it
+    #   allows the batch processor to take this action.
+    attr_writer :scanner, :metadata_scraper
     attr_accessor :input, :signal, :options
 
     def start
@@ -108,6 +112,7 @@ module Cisqua
     end
 
     def process(work_items:, batch_data:, on_update:, **)
+      @metadata_scraper.ensure_mapping
       on_update.call(:started, batch_data)
       atleast_one_success_phase_1, dups = process_items(
         :standard,
