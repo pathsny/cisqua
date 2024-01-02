@@ -15,6 +15,7 @@ module Cisqua
         end
 
         def make_key(id)
+          assert(!@key_prefix.nil?, "class #{name} does not define a key prefix")
           "#{@key_prefix}:#{id}"
         end
       end
