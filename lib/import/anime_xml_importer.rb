@@ -209,15 +209,15 @@ module Cisqua
 
         begin
           AnimeFileMisc.new(misc_data).save_unique
-        rescue Invariant::AssertionError, StandardError => e
+        rescue SolidAssert::AssertionFailedError, StandardError => e
           data = { misc: misc_data, file: file_data }
           raise ImportError.new('error adding misc', data:, inner_error: e)
         end
-      rescue Invariant::AssertionError, StandardError => e
+      rescue SolidAssert::AssertionFailedError, StandardError => e
         raise ImportError.new('error adding file', data: { fid: file_node['id'] }, inner_error: e)
       end
       episode
-    rescue Invariant::AssertionError, StandardError => e
+    rescue SolidAssert::AssertionFailedError, StandardError => e
       raise ImportError.new('error adding episode', data: { eid: episode_node['id'] }, inner_error: e)
     end
 
@@ -252,7 +252,7 @@ module Cisqua
       episode_nodes.each do |episode_node|
         make_files(anime, episode_node)
       end
-    rescue Invariant::AssertionError, StandardError => e
+    rescue SolidAssert::AssertionFailedError, StandardError => e
       raise ImportError.new('error importing anime', data: { aid: @aid }, inner_error: e)
     end
 

@@ -46,7 +46,7 @@ module Cisqua
         eps: range.simple,
         eps_w_grps: range.with_groups,
       }
-    rescue StandardError, Invariant::AssertionError => e
+    rescue StandardError, SolidAssert::AssertionFailedError => e
       logger.error('error generating view data', { anime: anime.id, exception: e })
       raise
     end

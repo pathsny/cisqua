@@ -7,6 +7,9 @@ require 'amazing_print'
 require 'redis'
 require 'semantic_logger'
 require 'yaml'
+require 'solid_assert'
+
+SolidAssert.enable_assertions
 
 module Cisqua
   module Reloadable

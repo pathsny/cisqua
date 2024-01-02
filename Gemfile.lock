@@ -58,7 +58,6 @@ GEM
     http-form_data (2.3.0)
     i18n (1.14.1)
       concurrent-ruby (~> 1.0)
-    invariant (0.2.0)
     jaro_winkler (1.5.6)
     json (2.6.1)
     kramdown (2.4.0)
@@ -231,7 +230,6 @@ DEPENDENCIES
   faker
   faraday
   htmlbeautifier
-  invariant
   json
   ld-eventsource
   logging

@@ -1,7 +1,6 @@
 require 'English'
 require 'fileutils'
 require 'pathname'
-require 'invariant'
 
 module Cisqua
   require File.join(ROOT_FOLDER, 'rename_rules')

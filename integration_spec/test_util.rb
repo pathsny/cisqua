@@ -109,7 +109,7 @@ module Cisqua
       def data_to_remove_from_redis_as_if_files_never_scanned(redis, work_item_files, test_mode: true)
         searches = work_item_files.map do |w_file|
           AnimeFileSearch.find(w_file.ed2k, w_file.size_bytes)
-        rescue StandardError, Invariant::AssertionError => e
+        rescue StandardError, SolidAssert::AssertionFailedError => e
           next if w_file.name =~ /cisqua/
 
           raise "got error #{e} while trying to find #{w_file.name}"
