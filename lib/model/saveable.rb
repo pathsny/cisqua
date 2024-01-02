@@ -42,16 +42,6 @@ module Cisqua
           @symbol_attrs
         end
 
-        def attr_list
-          (
-            int_attr_list +
-            bool_attr_list +
-            string_attr_list +
-            symbol_attr_list +
-            time_attr_list
-          ).sort
-        end
-
         def string_attrs(*attrs)
           @string_attrs = (@string_attrs + attrs).uniq
           attr_accessor(*attrs)
@@ -61,8 +51,89 @@ module Cisqua
           @string_attrs
         end
 
+        def hash_attrs(*attrs)
+          @hash_attrs = (@hash_attrs + attrs).uniq
+          add_serialized_attrs(attrs) do |value|
+            value.nil? || value.is_a?(Hash) ? [true, nil] : [false, 'it is not a hash']
+          end
+        end
+
+        def list_attrs(*attrs)
+          @list_attrs = (@list_attrs + attrs).uniq
+          add_serialized_attrs(attrs) do |value|
+            value.nil? || value.is_a?(Array) ? [true, nil] : [false, 'it is not an array']
+          end
+        end
+
+        def add_serialized_attrs(attrs)
+          attrs.each do |attr|
+            var_name = "@#{serialized_attr_var_name(attr)}"
+            define_method(attr) do
+              str_val = instance_variable_get(var_name)
+              str_val && JSON.parse(str_val)
+            end
+
+            define_method("#{attr}=") do |value|
+              is_valid, error_reason = yield(value)
+              assert(
+                is_valid,
+                "Invalid value #{value} for attr #{attr} because #{error_reason}",
+              )
+              instance_variable_set(var_name, value&.to_json)
+            end
+          end
+        end
+
+        def serialized_attr_var_name(attr)
+          "#{attr}_json_str"
+        end
+
+        def serialized_attr_var_names
+          serialized_attr_list.map do |attr|
+            serialized_attr_var_name(attr)
+          end
+        end
+
+        def serialized_attr_list
+          @hash_attrs + @list_attrs
+        end
+
+        def hash_attr_list
+          @hash_attrs
+        end
+
+        def list_attr_list
+          @list_attrs
+        end
+
+        def attr_list
+          (
+            int_attr_list +
+            bool_attr_list +
+            string_attr_list +
+            symbol_attr_list +
+            time_attr_list +
+            serialized_attr_list
+          ).sort
+        end
+
+        def redis_key_list
+          simple_attrs = (
+            int_attr_list +
+            bool_attr_list +
+            string_attr_list +
+            symbol_attr_list +
+            time_attr_list
+          ).map(&:to_s)
+          (simple_attrs + serialized_attr_var_names).sort
+        end
+
         def unique_attrs(*attrs)
           @unique_attrs = attrs
+          assert(
+            !serialized_attr_list.intersect?(attrs),
+            'serialized attrs not supported as unique attrs',
+          )
           find_method_name = "find_by_#{attrs.join('_and_')}"
           def_method_with_unique_attrs(find_method_name, attrs) do |*args|
             key = make_key(*args)
@@ -91,7 +162,7 @@ module Cisqua
         def find_by_key(key)
           return nil unless redis.exists?(key)
 
-          data = redis.hgetall(key).symbolize_keys
+          data = redis.hgetall(key)
           from_redis(data)
         end
 
@@ -110,45 +181,53 @@ module Cisqua
         end
 
         def from_redis(data)
-          transformed_data = data.each_with_object({}) do |(k, v), obj|
-            obj[k] = if bool_attr_list.include?(k)
-              v == 'true'
-            elsif int_attr_list.include?(k)
-              v.to_i
-            elsif time_attr_list.include?(k)
-              Time.at(v.to_i)
-            elsif symbol_attr_list.include?(k)
-              v.to_sym
+          unknown_keys = data.keys - redis_key_list
+          assert(unknown_keys.empty?, "unknown attributes #{unknown_keys} for #{name}")
+          transformed_data = attr_list.each_with_object({}) do |k, obj|
+            rkey = case k
+            when *serialized_attr_list
+              serialized_attr_var_name(k)
             else
-              assert(string_attr_list.include?(k), "unknown attribute type #{k} for #{name}")
-              v
+              k.to_s
             end
-          end
-          (attr_list - transformed_data.keys).each do |k|
-            transformed_data[k] = nil
+            obj[k] = if data.key?(rkey)
+              v = data[rkey]
+              case k
+              when *bool_attr_list
+                v == 'true'
+              when *int_attr_list
+                v.to_i
+              when *time_attr_list
+                Time.at(v.to_i)
+              when *symbol_attr_list
+                v.to_sym
+              when *serialized_attr_list
+                JSON.parse(v)
+              else
+                v
+              end
+            end
           end
           new(transformed_data)
         end
 
         def to_redis(key, instance_values)
-          attributes = attr_list.each_with_object({}) do |k, obj|
-            v = instance_values[k.to_s]
-            next if v.nil?
+          attributes = redis_key_list.each_with_object({ missing: [], data: {} }) do |k, obj|
+            value = instance_values[k]
+            if value.nil?
+              obj[:missing] << k
+              next
+            end
 
-            obj[k.to_s] = if time_attr_list.include?(k)
-              v.to_i.to_s
+            obj[:data][k] = case k
+            when *time_attr_list.map(&:to_s)
+              value.to_i.to_s
             else
-              is_known_attr = [
-                bool_attr_list,
-                symbol_attr_list,
-                int_attr_list,
-                string_attr_list,
-              ].any? { |list| list.include?(k) }
-              assert(is_known_attr, "unknown attribute type #{k} for #{name}")
-              v.to_s
+              value.to_s
             end
           end
-          redis.hset(key, *attributes.flatten)
+          redis.hdel(key, *attributes[:missing]) unless attributes[:missing].empty?
+          redis.hset(key, *attributes[:data].flatten)
         end
 
         def before_save(*cbs)
@@ -169,7 +248,14 @@ module Cisqua
           saved_instance = find_by_key(key)
           @before_save_cbs.map { |m| instance.send(m, saved_instance) }
         end
+
+        def clear_record(*values)
+          key = make_key(*values)
+          redis.del(key)
+        end
       end
+
+      ## Instance Methods
 
       def has_expected_attrs
         expected_attrs = self.class.required_attr_list
@@ -212,6 +298,12 @@ module Cisqua
         save
       end
 
+      def attributes
+        self.class.attr_list.each_with_object({}) do |attr, hash|
+          hash[attr] = send(attr)
+        end
+      end
+
       included do
         validate :has_expected_attrs
         @time_attrs = [:updated_at]
@@ -219,6 +311,8 @@ module Cisqua
         @symbol_attrs = []
         @int_attrs = []
         @bool_attrs = []
+        @hash_attrs = []
+        @list_attrs = []
         @custom_api_transforms = {}
 
         attr_accessor :updated_at

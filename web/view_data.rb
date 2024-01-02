@@ -75,7 +75,7 @@ module Cisqua
     end
 
     def for_batch_data(bd)
-      updates = bd.updates_json.map do |aid, update|
+      updates = (bd.updates || {}).map do |aid, update|
         anime = Anime.find(aid)
         {
           name: combined_name_for_anime(anime),
