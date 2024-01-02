@@ -2,7 +2,7 @@
 require 'yaml'
 require 'optparse'
 
-C = Struct.new(:options_file, :test_mode, :registry, :db).new
+C = Struct.new(:options_file, :test_mode, :registry, :db, :maintenance).new
 
 module Cisqua
   OptionParser.new do |opts|
@@ -42,6 +42,7 @@ def r
   options[:redis][:db] = C.db || (C.test_mode ? 1 : 0)
   registry_klass.options_override = options
   C.registry = registry_klass.instance
+  C.maintenance = Cisqua::Maintenance.new
 end
 
 r
