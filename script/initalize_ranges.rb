@@ -14,7 +14,7 @@ module Cisqua
     def make_for_anime(aid)
       Range.make_for_anime(aid)
     rescue StandardError => e
-      puts "error processing #{aid}"
+      puts "error processing #{aid} #{e}"
       raise
     end
   end

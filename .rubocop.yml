@@ -3,6 +3,8 @@ require: rubocop-rspec
 Lint/ConstantDefinitionInBlock:
   Exclude:
     - 'spec/**/*.rb'
+Lint/EmptyClass:
+  AllowComments: true
 Layout/ArgumentAlignment:
   EnforcedStyle: with_fixed_indentation
 Layout/EndAlignment:
@@ -20,10 +22,12 @@ Layout/LineLength:
     - 'script/unidentifiable_files.rb'
 Layout/MultilineMethodCallIndentation:
   EnforcedStyle: indented
+Layout/MultilineOperationIndentation:
+  EnforcedStyle: indented
 Metrics/AbcSize:
   Max: 200
 Metrics/BlockLength:
-  Max: 200
+  Max: 250
 Metrics/ClassLength:
   Max: 300
 Metrics/CyclomaticComplexity:
@@ -85,6 +89,10 @@ RSpec/NamedSubject:
   Enabled: false
 RSpec/NoExpectationExample:
   Enabled: false
+RSpec/SpecFilePathFormat:
+  CustomTransform:
+    Cisqua:
+      - ''
 Style/ClassVars:
   Enabled: false
 Style/CombinableLoops:

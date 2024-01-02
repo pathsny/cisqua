@@ -4,7 +4,11 @@ class TestCLIInterface < TestInterface
   end
 
   def start
-    Cisqua::RedisScripts.instance.start_redis(Cisqua::Registry.instance.options.redis.conf_path) unless should_run_fast_mode
+    unless should_run_fast_mode
+      Cisqua::RedisScripts.instance.start_redis(
+        Cisqua::Registry.instance.options.redis.conf_path,
+      )
+    end
     @processor = Cisqua::PostProcessor.new(
       Cisqua::Registry.instance.options,
       Cisqua::Registry.instance.scanner,

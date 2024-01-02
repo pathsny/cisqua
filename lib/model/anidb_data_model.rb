@@ -19,8 +19,12 @@ module Cisqua
         # we don't trust data if its not from the api client
         return true unless data_source == 'api_client'
 
-        logger.debug "comparing #{updated_at} and #{Registry.instance.options.api_client.cache.ttl} which is #{updated_at + Registry.instance.options.api_client.cache.ttl} vs #{Time.now}"
-        updated_at + Registry.instance.options.api_client.cache.ttl < Time.now
+        ttl = Registry.instance.options.api_client.cache.ttl
+        expiry_time = updated_at + ttl
+        now = Time.now
+        expiry_time < now.tap do |expired|
+          logger.debug 'checking expiry', ttl:, expiry_time:, now:, expired:
+        end
       end
 
       class_methods do

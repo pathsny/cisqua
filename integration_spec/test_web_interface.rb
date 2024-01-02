@@ -5,8 +5,7 @@ require 'json'
 require 'ld-eventsource'
 
 class TestWebInterface < TestInterface
-  def prep
-  end
+  def prep; end
 
   def start
     Cisqua::TestUtil.prep_for_integration_test(log_level: :debug)
