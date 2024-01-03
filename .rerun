@@ -1,1 +1,1 @@
---ignore data/*
+--ignore data/* --ignore script/* --ignore public/*
