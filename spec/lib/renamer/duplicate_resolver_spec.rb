@@ -82,7 +82,9 @@ describe Cisqua::Renamer::DuplicateResolver do
   end
 
   context 'when there are dups that are better than the current item' do
-    let(:resolved) { resolve(current, [version_1, clone_1, hdtv_with_eyecancer, wierdly_similar, version_3, blu_ray]) }
+    let(:resolved) do
+      resolve(current, [version_1, clone_1, hdtv_with_eyecancer, wierdly_similar, version_3, blu_ray])
+    end
 
     it 'does not keep current' do
       expect(resolve(current, [version_3])[:keep_current]).to be false

@@ -36,7 +36,7 @@ module RSpecMatcherUtils
              "#{expected} but was \n" \
              "#{symlink_target}"
     end
-    return "#{expected} should exist" unless File.exist?(expected)
+    "#{expected} should exist" unless File.exist?(expected)
   end
 end
 
@@ -128,17 +128,3 @@ RSpec::Matchers.define :be_moved_to_with_source_symlink do |expected|
     end
   end
 end
-
-# RSpec::Matchers.define :be_contained_in do |containing_path|
-#   match do |location|
-#     File.exist?(File.join(containing_path, location))
-#   end
-
-#   match_when_negated do |location|
-#     !File.exist?(File.join(containing_path, location))
-#   end
-
-#   failure_message do |location|
-#     "expected #{location} to exist inside #{containing_path}"
-#   end
-# end

@@ -22,12 +22,12 @@ module Cisqua
           new(:duplicate, duplicate_of)
         end
 
-        def unchanged(destination)
-          new(:resolved_duplicates_unchanged, destination)
+        def unchanged(destination, **)
+          new(:resolved_duplicates_unchanged, destination, **)
         end
 
-        def replaced(work_item, destination)
-          new(:resolved_duplicates_replaced, destination, work_item)
+        def replaced(work_item, destination, **)
+          new(:resolved_duplicates_replaced, destination, work_item, **)
         end
       end
     end

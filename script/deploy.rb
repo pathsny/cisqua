@@ -24,19 +24,19 @@ class Deploy
   end
 
   def comment(str)
-    puts str.gray
+    puts AmazingPrint::Colors.gray(str)
   end
 
   def local_input(str)
-    puts str.blue
+    puts AmazingPrint::Colors.blue(str)
   end
 
   def remote_output(str)
-    puts str.yellow
+    puts AmazingPrint::Colors.yellow(str)
   end
 
   def remote_input(str)
-    puts str.cyan
+    puts AmazingPrint::Colors.cyan(str)
   end
 
   def run_remote_command(session, command)

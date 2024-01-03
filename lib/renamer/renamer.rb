@@ -180,7 +180,7 @@ module Cisqua
 
         type = ['Web', 'TV Series', 'OVA', 'TV Special'].include?(ainfo[:type]) ? :series : :other
         mylist_status = MyList.complete?(work_item.info[:file][:aid]) ? :complete : :incomplete
-        File.absolute_path(symlink_locations["#{mylist_status}_#{type}".to_sym], ROOT_FOLDER)
+        File.absolute_path(symlink_locations[:"#{mylist_status}_#{type}"], ROOT_FOLDER)
       end
 
       def symlink(source, dest, name)

@@ -23,9 +23,9 @@ module Cisqua
       @test_mode = test_mode
     end
 
-    def method_missing(method, *args)
+    def method_missing(method, *)
       if EXPECTED_CALLS_NO_CACHE.include?(method)
-        call_client(method, *args)
+        call_client(method, *)
         return
       end
       assert(
@@ -34,11 +34,11 @@ module Cisqua
       )
 
       if @test_mode
-        check_cache(method, *args) do
+        check_cache(method, *) do |*args|
           call_client(method, *args)
         end
       else
-        call_client(method, *args)
+        call_client(method, *)
       end
     end
 
@@ -55,7 +55,7 @@ module Cisqua
       if File.exist?(file_path)
         YAML.load_file(file_path)
       else
-        yield.tap do |result|
+        yield(*args).tap do |result|
           FileUtils.mkdir_p(cache_dir)
           File.write(file_path, result.to_yaml)
         end
@@ -66,10 +66,10 @@ module Cisqua
       @client.disconnect if @client.connected?
     end
 
-    def call_client(method, *args)
+    def call_client(method, *)
       maintain_rate_limit
       @client.connect unless @client.connected
-      @client.__send__(method, *args)
+      @client.__send__(method, *)
     end
 
     private

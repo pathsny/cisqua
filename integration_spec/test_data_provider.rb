@@ -72,8 +72,8 @@ module Cisqua
       end
     end
 
-    def make_location_from_option_key(*args)
-      option_value = @options.dig(*args)
+    def make_location_from_option_key(*)
+      option_value = @options.dig(*)
       make_location_from_option_path(option_value)
     end
 

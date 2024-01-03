@@ -214,10 +214,10 @@ module Cisqua
 
       def remove_data(redis, data_to_remove)
         %i[anime episodes files].each do |type|
-          data_to_remove[type][:keys_to_remove].each do |_name, keys|
+          data_to_remove[type][:keys_to_remove].each_value do |keys|
             redis.del(*keys)
           end
-          data_to_remove[type][:sets_to_update].each do |_name, set_data|
+          data_to_remove[type][:sets_to_update].each_value do |set_data|
             set_data.each do |s_key, s_values|
               redis.srem(s_key, *s_values)
             rescue StandardError => e
@@ -225,7 +225,7 @@ module Cisqua
               raise
             end
           end
-          data_to_remove[type][:sorted_sets_to_update].each do |_name, set_data|
+          data_to_remove[type][:sorted_sets_to_update].each_value do |set_data|
             set_data.each do |s_key, s_values|
               redis.zrem(s_key, s_values)
             rescue StandardError => e

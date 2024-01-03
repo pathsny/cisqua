@@ -56,7 +56,7 @@ end
 unique_folders_in_symlink_directories = symlink_folder_contents.flatten.uniq
 all_folder_names = all_folder.map { |f| File.basename(f) }
 if unique_folders_in_symlink_directories.size != all_folder_names.size ||
-   all_folder_names != unique_folders_in_symlink_directories
+    all_folder_names != unique_folders_in_symlink_directories
 
   logger.error do
     "something is wrong #{all_folder_names} does not map to #{symlink_folders}"

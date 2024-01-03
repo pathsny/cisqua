@@ -30,7 +30,6 @@ module Cisqua
           verify_data(original, duplicates)
           clones, rest = extract_clones(original, duplicates)
           sorted_rest = rest.sort(&method(:compare_items)).reverse
-
           make_result = lambda do |selected, others|
             junk, dups = others.partition { |r| compare_items(selected, r).positive? }
             { junk: clones + junk, keep_current: original == selected, dups:, selected: }

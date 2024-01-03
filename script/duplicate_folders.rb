@@ -24,6 +24,6 @@ aid_folder_hash = all_folders.group_by do |f|
 end
 
 logger = SemanticLogger['Duplicates']
-aid_folder_hash.each do |_aid, folders|
+aid_folder_hash.each_value do |folders|
   logger.info { "duplicate #{folders.inspect}" } if folders.length > 1
 end

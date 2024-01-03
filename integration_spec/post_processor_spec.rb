@@ -9,7 +9,7 @@ RSpec.configure do |_config|
   # We dont clear the file data between runs, so only the final
   # result can be asserted.
   def should_run_fast_mode
-    @should_run_fast_mode ||= (ENV['FAST_MODE'] || false)
+    @should_run_fast_mode ||= ENV['FAST_MODE'] || false
   end
 
   def test_config
@@ -72,7 +72,7 @@ RSpec.configure do |_config|
 
   def make_before_all_section_for_groups(groups, run_process)
     before(:all) do
-      groups.each do |_group_name, tests|
+      groups.each_value do |tests|
         tests.each do |name, test_data|
           next if test_data.nil? || test_data == :skipped
 

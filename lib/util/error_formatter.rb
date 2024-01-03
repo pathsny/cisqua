@@ -11,9 +11,11 @@ module Cisqua
     end
 
     def formatted_impl(e)
-      first_line = "#{e.backtrace.first}: #{e.message} (#{e.class})".red
+      first_line = AmazingPrint::Colors.red(
+        "#{e.backtrace.first}: #{e.message} (#{e.class})",
+      )
       rest = e.backtrace[1..].map do |l|
-        "\tfrom #{l}".red
+        AmazingPrint::Colors.red("\tfrom #{l}")
       end
 
       if e.cause

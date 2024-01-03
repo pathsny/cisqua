@@ -1,4 +1,4 @@
-FROM ruby:3.2.2-alpine as base
+FROM ruby:3.3.0-alpine as base
 
 # Update and install necessary dependencies
 RUN apk update && apk --no-cache --update add build-base sudo gcompat redis bash tzdata
