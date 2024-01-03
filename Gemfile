@@ -38,5 +38,6 @@ end
 group :deployment do
   gem 'bcrypt_pbkdf'
   gem 'ed25519'
+  gem 'net-scp'
   gem 'net-ssh'
 end

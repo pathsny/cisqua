@@ -1,3 +1,4 @@
+require 'net/scp'
 require 'net/ssh'
 require 'optparse'
 require 'yaml'
@@ -81,67 +82,98 @@ class Deploy
     end
   end
 
-  def run_remote_commands(session, cmd_types)
-    if cmd_types.include?(:pull)
-      comment 'pulling latest docker image'
-      exec_remote_command(
-        session,
-        "sudo docker pull #{CONFIG[:dockerhub_repo]}:#{CONFIG[:image_tag]}",
-      )
-    end
+  def run_remote_commands(session, cmd_types_and_data)
+    cmd_types_and_data.each do |cmd_type_and_data|
+      cmd_type, *data = cmd_type_and_data.is_a?(Array) ? cmd_type_and_data : [cmd_type_and_data, nil]
 
-    if cmd_types.include?(:restart)
-      comment 'finding deployments'
-      result = exec_remote_command(
-        session,
-        'sudo k3s kubectl get deployments ' \
-        "-n #{CONFIG[:remote_namespace]} " \
-        '-o custom-columns=:metadata.name --no-headers',
-      )
-      deployments = result.split("\n")
-      assert(deployments.size == 1, 'expecting only one instance')
-      deployment = deployments.first.strip
-      comment "restarting deployments #{deployment}"
-      start_time = Time.now
-      exec_remote_command(
-        session,
-        "sudo k3s kubectl rollout restart deployment/#{deployment} -n #{CONFIG[:remote_namespace]}",
-      )
-      deployment_succeeded = nil
-      run_remote_command(
-        session,
-        "sudo k3s kubectl rollout status deployment/#{deployment} -n #{CONFIG[:remote_namespace]} --timeout=30s",
-      ) do |_rollout_ch, rollout_data|
-        if rollout_data =~ /deployment "#{deployment}" successfully rolled out/
-          deployment_succeeded = true
-          puts rollout_data.green
-        elsif rollout_data =~ /error: timed out waiting for the condition/
-          puts rollout_data.red
-        else
-          puts rollout_data.yellowish
+      case cmd_type
+      when :pull
+        comment 'pulling latest docker image'
+        exec_remote_command(
+          session,
+          "sudo docker pull #{CONFIG[:dockerhub_repo]}:#{CONFIG[:image_tag]}",
+        )
+      when :stop
+        comment 'stopping the remote application'
+        exec_remote_command(
+          session,
+          "sudo ~/bin/heavyscript app -x #{CONFIG[:remote_app]}",
+        )
+      when :start
+        comment 'starting the remote application'
+        exec_remote_command(
+          session,
+          "sudo ~/bin/heavyscript app -s #{CONFIG[:remote_app]}",
+        )
+      when :backup_db
+        comment 'backing up the remote db'
+        remote_db_file = File.join(CONFIG[:remote_db_location], 'dump.rdb')
+        backup_db_file = File.join(CONFIG[:remote_db_location], 'dump.rdb.autobackup')
+        exec_remote_command(
+          session,
+          "cp #{remote_db_file} #{backup_db_file}",
+        )
+      when :copy_db
+        remote_db_file = File.join(CONFIG[:remote_db_location], 'dump.rdb')
+        local_db_file = File.expand_path(data.first)
+        comment "have to upload #{local_db_file} to #{remote_db_file}"
+        Net::SCP.start(CONFIG[:remote_host], CONFIG[:remote_user]) do |scp|
+          scp.upload!(local_db_file, remote_db_file)
         end
+      when :restart
+        comment 'finding deployments'
+        result = exec_remote_command(
+          session,
+          'sudo k3s kubectl get deployments ' \
+          "-n #{CONFIG[:remote_namespace]} " \
+          '-o custom-columns=:metadata.name --no-headers',
+        )
+        deployments = result.split("\n")
+        assert(deployments.size == 1, 'expecting only one instance')
+        deployment = deployments.first.strip
+        comment "restarting deployments #{deployment}"
+        start_time = Time.now
+        exec_remote_command(
+          session,
+          "sudo k3s kubectl rollout restart deployment/#{deployment} -n #{CONFIG[:remote_namespace]}",
+        )
+        deployment_succeeded = nil
+        run_remote_command(
+          session,
+          "sudo k3s kubectl rollout status deployment/#{deployment} -n #{CONFIG[:remote_namespace]} --timeout=30s",
+        ) do |_rollout_ch, rollout_data|
+          if rollout_data =~ /deployment "#{deployment}" successfully rolled out/
+            deployment_succeeded = true
+            puts rollout_data.green
+          elsif rollout_data =~ /error: timed out waiting for the condition/
+            puts rollout_data.red
+          else
+            puts rollout_data.yellowish
+          end
+        end
+        comment 'Printing Logs from container'
+        cur_time = Time.now
+        run_remote_command(
+          session,
+          "sudo k3s kubectl logs --since #{cur_time - start_time}s " \
+          "-l release=cisqua -n #{CONFIG[:remote_namespace]} --tail=100",
+        ) do |_logs_ch, log_data|
+          puts log_data
+        end
+        unless deployment_succeeded
+          abort
+        end
+      when :logs
+        run_remote_command(
+          session,
+          'sudo k3s kubectl logs ' \
+          "-l release=cisqua -n #{CONFIG[:remote_namespace]} --tail=100",
+        ) do |_logs_ch, log_data|
+          puts log_data
+        end
+      else
+        raise "unknown remote command #{cmd_type}"
       end
-      comment 'Printing Logs from container'
-      cur_time = Time.now
-      run_remote_command(
-        session,
-        "sudo k3s kubectl logs --since #{cur_time - start_time}s " \
-        "-l release=cisqua -n #{CONFIG[:remote_namespace]} --tail=100",
-      ) do |_logs_ch, log_data|
-        puts log_data
-      end
-      unless deployment_succeeded
-        abort
-      end
-    end
-    return unless cmd_types.include?(:logs)
-
-    run_remote_command(
-      session,
-      'sudo k3s kubectl logs ' \
-      "-l release=cisqua -n #{CONFIG[:remote_namespace]} --tail=100",
-    ) do |_logs_ch, log_data|
-      puts log_data
     end
   end
 
@@ -174,8 +206,12 @@ OptionParser.new do |opts|
     options[:remote][:pull] = true
   end
 
-  opts.on('-s', '--remote_restart', 'Restart deployments in namespace') do
-    options[:remote][:restart] = true
+  opts.on('-t', '--remote_stop', 'Stop deployments in namespace') do
+    options[:remote][:stop] = true
+  end
+
+  opts.on('-s', '--remote_start', 'Restart deployments in namespace') do
+    options[:remote][:start] = true
   end
 
   opts.on('-a', '--all', 'Entire end to end deployment') do
@@ -184,6 +220,10 @@ OptionParser.new do |opts|
 
   opts.on('-l', '--logs', 'Logs from last deployment') do
     options[:remote][:logs] = true
+  end
+
+  opts.on('-d', '--push_db DB', 'Shuts down deployment and updates remote db') do |db|
+    options[:push_db] = db
   end
 end.parse!
 
@@ -199,7 +239,7 @@ else
   if options[:all]
     d.build_image
     d.push
-    d.remote(%i[pull restart])
+    d.remote(%i[pull start])
     exit
   end
   if options[:build]
@@ -207,6 +247,9 @@ else
   end
   if options[:push]
     d.push
+  end
+  if options[:push_db]
+    d.remote([:stop, :backup_db, [:copy_db, options[:push_db]]])
   end
   unless options[:remote].empty?
     d.remote(options[:remote].keys)
