@@ -1,7 +1,10 @@
 describe Cisqua::Renamer::Renamer do
   include FakeFS::SpecHelpers
 
-  subject { described_class.new(options[:renamer]) }
+  subject do
+    api_client = stub(add_to_mylist: nil, remove_from_mylist: nil)
+    described_class.new(options[:renamer], api_client)
+  end
 
   before do
     Cisqua::Renamer::NameGenerator.any_instance

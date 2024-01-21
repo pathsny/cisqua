@@ -31,7 +31,7 @@ module Cisqua
         self.redis = Redis.new(db: options.redis.db)
         self.proxy_client = ProxyClient.new(anidb_client, test_mode)
         self.api_client = APIClient.new(proxy_client, redis)
-        self.renamer = Renamer::Renamer.new(options[:renamer])
+        self.renamer = Renamer::Renamer.new(options[:renamer], api_client)
         self.scanner = FileScanner.new(options[:scanner])
         FileProcessor.instance.set_dependencies(scanner, api_client, renamer)
         BatchProcessor.instance.options = options

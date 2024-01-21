@@ -133,6 +133,30 @@ module Cisqua
       @client.disconnect
     end
 
+    def add_to_mylist(fid)
+      if MyList.exist?(fid)
+        logger.debug('already in mylist')
+        return
+      end
+
+      lid = @client.mylist_add(fid)
+      MyList.add_file(fid)
+      logger.debug('Added to my list as ', lid)
+      lid
+    end
+
+    def remove_from_mylist(fid)
+      unless MyList.exist?(fid)
+        logger.debug('already not in mylist')
+        return
+      end
+
+      @client.mylist_del_by_fid(fid).tap do |resp|
+        logger.debug('Removed from my list', fid:, resp:)
+      end
+      MyList.remove_file(fid)
+    end
+
     private
 
     def retrieve_show_details(aid)
@@ -157,28 +181,6 @@ module Cisqua
         )
         Episode.from_api_response(response[:episode], id: eid).save
       end
-    end
-
-    def add_to_mylist(fid)
-      if MyList.exist?(fid)
-        logger.debug('already in mylist')
-        return
-      end
-
-      lid = @client.mylist_add(fid)
-      MyList.add_file(fid)
-      logger.debug('Added to my list as ', lid)
-      lid
-    end
-
-    def fetch_mylist_data(aid, episodes)
-      mylist_hash = @client.mylist_by_aid(aid)[:mylist]
-      mylist_hash[:epno] = fetch_episode_no(mylist_hash[:eid]) if mylist_hash[:single_episode]
-      MylistData.new(episodes.to_i, mylist_hash)
-    end
-
-    def fetch_episode_no(eid)
-      @client.episode(eid)[:episode][:epno]
     end
   end
 end

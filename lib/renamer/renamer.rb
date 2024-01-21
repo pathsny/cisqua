@@ -9,13 +9,13 @@ module Cisqua
     class Renamer
       include SemanticLogger::Loggable
 
-      def initialize(options)
+      def initialize(options, api_client)
         @options = options
         @output_location = File.absolute_path(options[:output_location], ROOT_FOLDER)
+        @api_client = api_client
         @mover = VideoFileMover.new(options)
         @symlinker = Symlinker.new(options)
         @name_generator = NameGenerator.new(method(:generate_name))
-        @atleast_one_success = false
       end
 
       attr_reader :options
@@ -80,6 +80,8 @@ module Cisqua
           update_links_from: fix_symlinks_root,
         )
         assert(clear_location_resp.type == :success, 'moving the existing file should not fail')
+        @api_client.remove_from_mylist(existing.info[:fid])
+
         replacement_resp = process_file(name, result[:selected], location, path)
         assert(replacement_resp.type == :success, 'we just cleared the location')
         Response.replaced(result[:selected], replacement_resp.destination)
@@ -118,7 +120,7 @@ module Cisqua
           { new_name: name, **override_options },
         ).tap do |response|
           if response.type == :success
-            @atleast_one_success = true
+            @api_client.add_to_mylist(work_item.info[:fid])
             ensure_anidb_id_file(location, work_item.info)
             update_symlinks_for(work_item, path, location) if options[:create_symlinks]
           end

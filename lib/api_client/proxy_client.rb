@@ -12,6 +12,7 @@ module Cisqua
       anime
       episode
       mylist_add
+      mylist_del_by_fid
     ].freeze
 
     def initialize(client, test_mode)
