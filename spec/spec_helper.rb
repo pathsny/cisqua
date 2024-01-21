@@ -39,14 +39,14 @@ end
 OPTIONS_BAK = YAML.load_file(File.expand_path('../script/helpers/options.yml.bak', __dir__))
 DUMMY_INFO = YAML.load_file(File.expand_path('dummy_info.yml', __dir__))
 
-def dummy_work_item(file_name)
-  file = Cisqua::WorkItemFile.new(name: file_name)
-  Cisqua::WorkItem.new(file:, info: DUMMY_INFO)
+def dummy_work_item(path)
+  file = Cisqua::WorkItemFile.new(name: File.basename(path), path:)
+  Cisqua::WorkItem.new(file:, info: DUMMY_INFO, request_type: :standard)
 end
 
-def unknown_work_item(file_name)
-  file = Cisqua::WorkItemFile.new(name: file_name)
-  Cisqua::WorkItem.new(file:)
+def unknown_work_item(path)
+  file = Cisqua::WorkItemFile.new(name: File.basename(path), path:)
+  Cisqua::WorkItem.new(file:, request_type: :standard)
 end
 
 def write_file(name, content)

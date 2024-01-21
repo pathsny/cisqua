@@ -6,7 +6,7 @@ end
 
 describe Cisqua::Renamer::Source do
   it 'only allows valid sources' do
-    expect { described_class.new('foo') }.to raise_error(Invariant::AssertionError)
+    expect { described_class.new('foo') }.to raise_error(SolidAssert::AssertionFailedError)
   end
 
   it 'does not rank unknown as better or worse' do
@@ -27,7 +27,7 @@ end
 
 describe Cisqua::Renamer::Quality do
   it 'only allows valid qualities' do
-    expect { described_class.new('foo') }.to raise_error(Invariant::AssertionError)
+    expect { described_class.new('foo') }.to raise_error(SolidAssert::AssertionFailedError)
   end
 
   it 'ranks things of different qualities as better or worse' do
@@ -38,7 +38,7 @@ end
 
 describe Cisqua::Renamer::VideoResolution do
   it 'only allows valid resolutions' do
-    expect { described_class.new('foo') }.to raise_error(Invariant::AssertionError)
+    expect { described_class.new('foo') }.to raise_error(SolidAssert::AssertionFailedError)
   end
 
   it 'ranks resolutions as better if width and/or height is better' do

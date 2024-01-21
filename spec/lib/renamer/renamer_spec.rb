@@ -20,10 +20,10 @@ describe Cisqua::Renamer::Renamer do
   let(:symlink_loc) { '/path/to/incomplete tv series, oav and web' }
   let(:incorrect_symlink_loc) { '/path/to/complete tv series, oav and web' }
 
-  context 'when running try_process' do
+  context 'when running process' do
     context 'when the file is unknown' do
       before do
-        @response = subject.try_process(unknown_work_item(source_video[:path]))
+        @response = subject.process(unknown_work_item(source_video[:path]))
       end
 
       it { expect(@response.type).to eq(:unknown) }
@@ -35,7 +35,7 @@ describe Cisqua::Renamer::Renamer do
       before do
         FileUtils.mkdir_p(incorrect_symlink_loc)
         File.symlink('../files/Anime Name', File.join(incorrect_symlink_loc, 'Anime Name'))
-        @response = subject.try_process(dummy_work_item(source_video[:path]))
+        @response = subject.process(dummy_work_item(source_video[:path]))
       end
 
       it { expect(@response.type).to eq(:success) }
@@ -49,7 +49,7 @@ describe Cisqua::Renamer::Renamer do
       before do
         FileUtils.mkdir_p(dest_dir)
         FileUtils.touch(dest)
-        @response = subject.try_process(dummy_work_item(source_video[:path]))
+        @response = subject.process(dummy_work_item(source_video[:path]))
       end
 
       it { expect(@response.type).to eq(:duplicate) }
@@ -78,6 +78,7 @@ describe Cisqua::Renamer::Renamer do
       FileUtils.mkdir_p('/path/to/anime/somewhere/deep')
       File.symlink("../../../files/Anime Name/#{dest_file_name}", old_symlink_loc)
       File.symlink("../files/Anime Name/#{dest_file_name}", additional_source_symlink)
+      dest_item.request_type = :duplicate_set
     end
 
     shared_examples 'handles junk and duplicates' do
@@ -95,7 +96,7 @@ describe Cisqua::Renamer::Renamer do
             junk: [junk_item, source_item],
             dups: [dup_item],
           })
-        subject.process_duplicate_set(dest_item, [source_item, junk_item, dup_item])
+        subject.process(dest_item, [source_item, junk_item, dup_item])
       end
 
       it_behaves_like 'handles junk and duplicates'
@@ -113,7 +114,7 @@ describe Cisqua::Renamer::Renamer do
             junk: [junk_item],
             dups: [dup_item],
           })
-        subject.process_duplicate_set(dest_item, [source_item, junk_item, dup_item])
+        subject.process(dest_item, [source_item, junk_item, dup_item])
       end
 
       it_behaves_like 'handles junk and duplicates'
