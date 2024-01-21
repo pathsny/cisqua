@@ -21,9 +21,9 @@ gem 'thin'
 gem 'tty-progressbar'
 
 group :development, :test do
+  gem 'erb-formatter'
   gem 'fakefs'
   gem 'faker'
-  gem 'htmlbeautifier'
   gem 'ld-eventsource'
   gem 'mocha'
   gem 'rb-fsevent'
