@@ -10,7 +10,6 @@ module Cisqua
         redis.sadd(animes_key, file.aid)
         redis.zadd(animes_sorted_key, 1, "#{name}:#{file.aid}")
         redis.sadd(files_key(file.aid), fid)
-        Range.make_for_anime(file.aid)
       end
 
       def remove_file(fid)
@@ -19,7 +18,6 @@ module Cisqua
         redis.srem(animes_key, file.aid)
         redis.zrem(animes_sorted_key, "#{name}:#{file.aid}")
         redis.srem(files_key(file.aid), fid)
-        Range.make_for_anime(file.aid)
       end
 
       def animes_key
