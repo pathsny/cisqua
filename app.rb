@@ -132,9 +132,15 @@ module Cisqua
     end
 
     get '/library' do
+      cursor = params[:cursor]
+      limit = params[:limit].to_i || 10
+
       content_type :json
-      library_data = MyList.anime_ids_sorted.map { |aid| @view_data.for_anime(Anime.find(aid)) }
-      library_data.to_json
+
+      MyList.animes_sorted(cursor, limit) => {animes:, next_cursor: }
+      library_data = animes.map { |anime| @view_data.for_anime(anime) }
+
+      { library_data:, next_cursor: }.to_json
     end
 
     get '/favicon.ico' do

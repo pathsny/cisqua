@@ -30,50 +30,115 @@ function getBadgeDetails(entry) {
   }
 };
 
+const libraryBaseUrl = '/library?limit=20';
+
 function makeLibrary() {
   return {
-    libraryData: {},
-    libraryState: null,
-    libraryCards: {},
-    maybeLoad() {
-      if (!this.libraryState) {
-        this.fetchLibrary();
-      }
+    animeDetails: new Map(),
+    reset() {
+      this.error = null;
+      this.loadingState = 'init';
+      this.animeIds = [];
+      this.nextCursor = null;
+    },
+    init() {
+      this.reset();
     },
     async fetchLibrary() {
+      if (this.loadingState == 'loading' || this.loadingState == 'error') {
+        return; // prevent concurrent fetches
+      }
+      if (this.loadingState !== 'init' && !this.nextCursor) {
+        return; // we've reached the end
+      }
+      this.loadingState = 'loading';
+      const url = this.nextCursor ?
+        `${libraryBaseUrl}&cursor=${encodeURIComponent(this.nextCursor)}` :
+        libraryBaseUrl;
+
       try {
-        this.libraryState = 'loading';
-        const response = await fetch('/library');
+        const response = await fetch(url);
         if (!response.ok) {
           console.error("Error fetching library:", response);
           notify({
             type: 'error',
             message: `Error: Unable to fetch the library: ${error}`
           });
-          this.libraryState = 'error';
+          this.loadingState = 'error';
           return
         }
-        const library = await response.json();
-        this.libraryData = {};
-        this.libraryCards = {};
-        this.libraryState = 'loaded';
-        this.mergeUpdates(library)
+        const { library_data, next_cursor } = await response.json();
+        this.appendAnimes(library_data);
+        this.nextCursor = next_cursor;
+        this.loadingState = 'loaded';
       } catch (error) {
-        console.error("Error fetching library:", error);
-        notify({ type: 'error', message: `Error: Something went wrong! ${error.message}` })
+        console.error(error);
+        notify({
+          type: 'error',
+          message: `Error: Unable to fetch the library: ${error}`
+        });
+        this.loadingState = 'error';
+        this.error = error;
       }
     },
-    mergeUpdates(libraryUpdates) {
-      if (this.libraryState != 'loaded') {
-        return
-      }
-      for (const entry of libraryUpdates) {
-        this.libraryData[entry.id] = entry;
-        this.libraryCards[entry.id] = this.libraryCard(entry);
+    lastIsAfter(name) {
+      const last = this.animeIds.slice(-1)[0];
+      return last && this.animeDetails.get(last).name.localeCompare(name) > 0;
+    },
+    async fetchTill(name) {
+      while (!this.lastIsAfter(name) && this.nextCursor) {
+        await this.fetchLibrary();
       }
     },
-    libraryBadgeData(style) {
-      return statusBadges[style];
+    appendAnimes(library_data) {
+      library_data.forEach(anime_data => {
+        this.animeIds.push(anime_data.id);
+        this.animeDetails.set(anime_data.id, this.libraryCard(anime_data));
+      });
+    },
+    update(library_data) {
+      library_data.forEach(anime_data => this.insertAnime(anime_data));
+    },
+    // These are updates that are not necessarily in sorted order.
+    insertAnime(anime_data) {
+      // We always store the data in the overall map
+      const newAnime = this.libraryCard(anime_data);
+      this.animeDetails.set(anime_data.id, newAnime);
+      if (this.loadingState == 'error' || this.loadingState == 'init') {
+        return; // We've not started fetching the library.
+      }
+      let index = this.animeIds.findIndex(id => {
+        return this.animeDetails.get(id).name.localeCompare(newAnime.name) >= 0;
+      })
+      if (this.animeIds[index] === newAnime.id) {
+        return; // element already exists
+      }
+      if (index >= 0) {
+        // Insert at the found index
+        this.animeIds.splice(index, 0, newAnime.id);
+      } else {
+        // no Index was found. It's only safe to insert at the end if we've
+        // fetched the entire library. That way we will not change the order of shows.
+        if (!this.nextCursor) {
+          this.animeIds.push(newAnime.id);
+        }
+      }
+    },
+    hasMoreItems() {
+      if (this.loadingState == 'error') {
+        return false;
+      }
+      if (this.loadingState == 'init' || this.loadingState == 'loading') {
+        return true;
+      }
+      return !!this.nextCursor;
+    },
+    refetchLibrary() {
+      this.reset();
+      return this.fetchLibrary();
+    },
+    get isLoading() {
+      return this.loadingState == 'loading'
     },
     libraryCard(entry) {
       const card_data = {
@@ -166,7 +231,7 @@ const mainService = {
     Alpine.store('lastUpdate').update(data.last_update);
     Alpine.store('scansData').update(data.scans);
     if (data.library) {
-      Alpine.store('library').mergeUpdates(data.library);
+      Alpine.store('library').update(data.library);
     }
     if (Alpine.store('lastUpdate').scanInProgress) {
       this.start();
@@ -205,9 +270,6 @@ const mainTab = {
   isScrolled: { scans: false, library: false },
   setActiveTab(tabName) {
     this.activeTab = tabName;
-    if (tabName === 'library') {
-      Alpine.store('library').maybeLoad();
-    }
     history.pushState({ tab: tabName }, '', `#${tabName}`);
   },
   isTabActive(tabName) {
@@ -271,5 +333,8 @@ document.addEventListener('alpine:init', () => {
   Alpine.store('notification', notification);
   Alpine.magic('notify', () => {
     return (notifData) => notify(notifData);
-  })
+  });
+  Alpine.magic('getAnime', () => {
+    return (aid) => Alpine.store('library').animeDetails.get(aid);
+  });
 });

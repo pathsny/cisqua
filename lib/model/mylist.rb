@@ -1,6 +1,7 @@
 module Cisqua
   class MyList
     include Model::Redisable
+    include SemanticLogger::Loggable
 
     class << self
       def add_file(fid)
@@ -37,16 +38,27 @@ module Cisqua
         redis.smembers(animes_key)
       end
 
-      def anime_ids_sorted(limit = nil)
-        redis.zrange(animes_sorted_key, 0, limit || -1).map { |value| value.split(':').last }
+      def anime_ids_sorted(cursor = nil, limit = 10)
+        start_range = cursor ? "(#{cursor}" : '-'
+        raw_data = redis.zrangebylex(
+          animes_sorted_key,
+          start_range,
+          '+',
+          limit: [0, limit],
+        )
+        anime_ids = raw_data.map { |value, _score| value.split(':').last }
+        next_cursor = raw_data.length == limit ? raw_data.last : nil
+        { anime_ids:, next_cursor: }
       end
 
       def animes
         anime_ids.map { |id| Anime.find(id) }
       end
 
-      def animes_sorted(limit = nil)
-        anime_ids_sorted(limit).map { |id| Anime.find(id) }
+      def animes_sorted(cursor = nil, limit = 10)
+        anime_ids_sorted(cursor, limit) => {anime_ids:, next_cursor: }
+        animes = anime_ids.map { |aid| Anime.find(aid) }
+        { animes:, next_cursor: }
       end
 
       def fids(aid)

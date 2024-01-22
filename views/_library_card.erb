@@ -2,22 +2,22 @@
   <!-- Left Side: Primary Information -->
   <div class="left-section">
     <div class="title-wrapper">
-      <h2 class="card-title" x-text="c.name"></h2>
-      <%= erb :_library_badge, locals: { prefix: "c.badge" } %>
+      <h2 class="card-title" x-text="<%=show_var%>.name"></h2>
+      <%= erb :_library_badge, locals: { prefix: "#{show_var}.badge" } %>
     </div>
-    <p><span x-text="c.type"></span></p>
-    <p><span x-text="c.eps"></span></p>
+    <p><span x-text="<%=show_var%>.type"></span></p>
+    <p><span x-text="<%=show_var%>.eps"></span></p>
   </div>
   <!-- Right Side: Detailed Information -->
   <div class="right-section">
     <p><strong>ID:</strong>
-      <span x-text="c.id"></span></p>
-    <p><strong>English Name:</strong><span x-text="c.english_name || '---'"></span></p>
+      <span x-text="<%=show_var%>.id"></span></p>
+    <p><strong>English Name:</strong><span x-text="<%=show_var%>.english_name || '---'"></span></p>
     <p><strong>Collection:</strong>
-      <span x-text="c.contents"></span></p>
+      <span x-text="<%=show_var%>.contents"></span></p>
     <p><strong>Air Date:</strong>
-      <span x-text="c.air_date"></span></p>
+      <span x-text="<%=show_var%>.air_date"></span></p>
     <p><strong>End Date:</strong>
-      <span x-text="c.end_date"></span></p>
+      <span x-text="<%=show_var%>.end_date"></span></p>
   </div>
 </article>
