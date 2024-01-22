@@ -26,25 +26,25 @@ class TestWebInterface < TestInterface
 
   def run
     response = Faraday.post('http://localhost:4567/start_scan', {
-      'queried-timestamp' => Time.now.to_i,
+      queried_timestamp: Time.now.to_i,
     })
     assert(response.status == 200, 'must get back success')
     data = JSON.parse(response.body)
     assert(data['scan_enque_result'], 'started')
-    new_timestamp = data['updates']['queried_timestamp']
+    new_timestamp = data['updates']['last_update']['checked_timestamp']
 
     uri = URI::HTTP.build(
       host: 'localhost',
       port: 4567,
       path: '/refresh',
-      query: "queried-timestamp=#{new_timestamp}",
+      query: "queried_timestamp=#{new_timestamp}",
     )
     queue = Queue.new
 
     sse_client = SSE::Client.new(uri) do |client|
       client.on_event do |event|
         data = JSON.parse(event.data)
-        unless data['latest_check']['scan_in_progress']
+        unless data['last_update']['scan_in_progress']
           sse_client.close
           queue << true
         end

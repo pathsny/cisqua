@@ -16,7 +16,7 @@ module Cisqua
     def for_scans(queried_at, batch_check, batch_datas)
       {
         queried_timestamp: queried_at.to_i,
-        latest_check: for_batch_check(batch_check),
+        last_update: for_batch_check(batch_check),
         scans: batch_datas.map { |bd| for_batch_data(bd) },
       }
     end

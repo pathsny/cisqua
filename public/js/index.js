@@ -134,8 +134,8 @@ function data() {
 
   return {
     scans: window.initialData.scans,
-    hasRun: !!window.initialData.latest_check,
-    latestCheck: window.initialData.latest_check || {},
+    hasRun: !!window.initialData.last_update,
+    latestCheck: window.initialData.last_update || {},
     queriedTimestamp: window.initialData.queried_timestamp,
     activeTab: 'scans',
     notif: notif,
@@ -177,7 +177,7 @@ function data() {
     },
     updateState(newState) {
       this.hasRun = true
-      Object.assign(this.latestCheck, newState.latest_check);
+      Object.assign(this.latestCheck, newState.last_update);
       this.scans = mergeScans(this.scans, newState.scans);
       if (newState.library) {
         this.library.mergeUpdates(newState.library)

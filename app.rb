@@ -75,16 +75,16 @@ module Cisqua
     end
 
     post '/start_scan' do
-      Cisqua::AppLogger.log_level = params['debug_mode'] == 'on' ? :debug : :info
-      Registry.instance.options[:renamer][:dry_run_mode] = params['dry_run'] == 'on'
+      Cisqua::AppLogger.log_level = params[:debug_mode] ? :debug : :info
+      Registry.instance.options[:renamer][:dry_run_mode] = params[:dry_run]
 
-      result = BatchProcessor.instance.enqueue_request('Start Scan From Web', method(:on_process))
+      result = BatchProcessor.instance.enqueue_request('From Web', method(:on_process))
       logger.debug("Start Scan Status: #{result[:status]}")
 
       content_type :json
       {
         scan_enque_result: result[:status],
-        updates: updates_from(params['queried-timestamp'].to_i),
+        updates: updates_from(params[:queried_timestamp].to_i),
       }.to_json
     end
 
@@ -119,8 +119,8 @@ module Cisqua
     get '/refresh', provides: 'text/event-stream' do
       stream :keep_open do |out|
         settings.connections << out
-        logger.info('the length is now ', { count: settings.connections.count })
-        stream_data(out, updates_from(params['queried-timestamp'].to_i))
+        logger.debug('stream listeners count: ', { count: settings.connections.count })
+        stream_data(out, updates_from(params[:queried_timestamp].to_i))
         out.callback do
           logger.debug('Connnection Closed')
           settings.connections.delete(out)
