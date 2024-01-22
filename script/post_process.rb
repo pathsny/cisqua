@@ -43,7 +43,7 @@ module Cisqua
     Registry.options_override = options
   end
   registry = Registry.instance
-  RedisScripts.instance.with_redis do
+  RedisScripts.instance.with_redis(registry.options.redis.conf_path) do
     processor = PostProcessor.new(registry.options, registry.scanner, FileProcessor.instance)
     processor.start
     processor.run
