@@ -175,15 +175,11 @@ module Cisqua
             source: work_item.file.path,
             dest: result.destination,
           )
-          batch_data.add_success_fid(fid)
           success = [fid]
         when :resolved_duplicates_unchanged
           logger.info(
             'RETAINING file',
             source: result.destination,
-          )
-          batch_data.add_duplicate_fids(
-            work_item.duplicate_work_items.map { |w| w.info[:fid] },
           )
         when :resolved_duplicates_replaced
           logger.info(
@@ -196,13 +192,6 @@ module Cisqua
             new: result.replacement[:new_item].info[:fid].to_s,
             reason: result.replacement[:reason],
           }
-          dup_work_items = work_item.duplicate_work_items.select { |w| w != result.replacement[:new_item] }
-          unless dup_work_items.empty?
-            batch_data.add_duplicate_fids(
-              dup_work_items.map { |w| w.info[:fid] },
-            )
-          end
-          batch_data.add_replacement_fid(result.replacement[:new_item].info[:fid])
         else
           raise "Unknown response type #{result.type}"
         end

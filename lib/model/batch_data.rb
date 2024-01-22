@@ -13,7 +13,7 @@ module Cisqua
     bool_attrs :is_complete
     other_required_attrs :request_source, :count,
       :is_complete, :processed, :created_at
-    hash_attrs :updates, :replacements
+    hash_attrs :replacements
 
     key_prefix :bd
 
@@ -26,33 +26,6 @@ module Cisqua
 
     def complete?
       is_complete
-    end
-
-    def add_success_fid(fid)
-      redis.rpush(success_key, fid)
-      calculate_updates_hash(AnimeFile.find(fid).anime)
-    end
-
-    def success_fids
-      redis.lrange(success_key, 0, -1)
-    end
-
-    def add_duplicate_fids(fids)
-      redis.rpush(duplicate_key, fids)
-      calculate_updates_hash(AnimeFile.find(fids.first).anime)
-    end
-
-    def duplicate_fids
-      redis.lrange(duplicate_key, 0, -1)
-    end
-
-    def add_replacement_fid(fid)
-      redis.rpush(replacement_key, fid)
-      calculate_updates_hash(AnimeFile.find(fid).anime)
-    end
-
-    def replacement_fids
-      redis.lrange(replacement_key, 0, -1)
     end
 
     # Records a snapshot of fids in mylist.
@@ -144,18 +117,6 @@ module Cisqua
       "#{make_key_for_instance}:unknown"
     end
 
-    def success_key
-      "#{make_key_for_instance}:success"
-    end
-
-    def duplicate_key
-      "#{make_key_for_instance}:duplicate"
-    end
-
-    def replacement_key
-      "#{make_key_for_instance}:replacement"
-    end
-
     def affected_anime_ids
       redis.zrange(anime_key, 0, -1, rev: true)
     end
@@ -194,41 +155,6 @@ module Cisqua
 
     def save_associations
       redis.zadd('bd:timestamps', created_at.to_i, id)
-    end
-
-    # Updates the hash based on the latest state of success, duplicates etc and
-    # the current state of mylist.
-    # if this is recomputed in the future, it will likely be incorrect since the mylist
-    # will have additional data
-    def calculate_updates_hash(anime)
-      updates_hash = updates || {}
-
-      latest = MakeRange.new.parts_with_groups_strings(
-        anime.id,
-        MyList.files(anime.id),
-      )
-
-      updates_hash[anime.id] = {
-        latest:,
-        **calculate_updates(anime, success_fids, :success),
-        **calculate_updates(anime, duplicate_fids, :duplicate),
-        **calculate_updates(anime, replacement_fids, :replacement),
-      }
-      update(
-        updates: updates_hash,
-      )
-    end
-
-    def calculate_updates(anime, fids_attr, name)
-      files = fids_attr.map { |fid| AnimeFile.find(fid) }.filter { |file| file.aid == anime.id }
-      return {} if files.empty?
-
-      {
-        name => MakeRange.new.parts_with_groups_strings(
-          anime.id,
-          files,
-        ),
-      }
     end
   end
 end
