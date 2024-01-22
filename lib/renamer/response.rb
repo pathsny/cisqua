@@ -1,13 +1,15 @@
 module Cisqua
   module Renamer
     class Response
-      def initialize(type, destination, work_item = nil)
+      def initialize(type, destination, replacement: nil, junk: [], dups: [])
         @type = type
         @destination = destination
-        @work_item = work_item
+        @replacement = replacement
+        @junk = junk
+        @dups = dups
       end
 
-      attr_reader :type, :destination, :work_item
+      attr_reader :type, :destination, :replacement, :junk, :dups
 
       class << self
         def unknown(destination)
@@ -26,8 +28,8 @@ module Cisqua
           new(:resolved_duplicates_unchanged, destination, **)
         end
 
-        def replaced(work_item, destination, **)
-          new(:resolved_duplicates_replaced, destination, work_item, **)
+        def replaced(destination, **)
+          new(:resolved_duplicates_replaced, destination, **)
         end
       end
     end

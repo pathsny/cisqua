@@ -96,7 +96,7 @@ module Cisqua
       logger.info('got called back with ', {
         state:,
         id: batch_data.id,
-        progress: batch_data.progress,
+        progress: batch_data.processed,
         complete: batch_data.complete?,
         conns: settings.connections.count,
       })

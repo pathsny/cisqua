@@ -4,6 +4,10 @@ RSpec::Matchers.define :be_equivalent_to do |expected|
   end
 end
 
+def comparison_result(q1, q2)
+  described_class.new(q1).compare_with_info(described_class.new(q2))
+end
+
 describe Cisqua::Renamer::Source do
   it 'only allows valid sources' do
     expect { described_class.new('foo') }.to raise_error(SolidAssert::AssertionFailedError)
@@ -111,6 +115,52 @@ describe Cisqua::Renamer::FileQuality do
     it 'remains true for sources that are not equal but of the same score' do
       expect(described_class.new(common_info)).to be > described_class.new(
         common_info.merge(quality: 'med', source: 'HKDVD'),
+      )
+    end
+
+    it 'returns information to understand the comparison result' do
+      expect(comparison_result(
+        common_info,
+        common_info.merge(quality: 'med'),
+      )).to eq(
+        comp: 1,
+        left: { quality: 'high' },
+        right: { quality: 'med' },
+      )
+      expect(comparison_result(
+        common_info,
+        common_info.merge(version: 3),
+      )).to eq(
+        comp: -1,
+        left: { version: '2' },
+        right: { version: '3' },
+      )
+      expect(comparison_result(
+        common_info,
+        common_info.merge(
+          video_resolution: '640x480',
+          quality: 'med',
+        ),
+      )).to eq(
+        comp: 1,
+        left: { quality: 'high', video_resolution: '1280x720' },
+        right: { quality: 'med', video_resolution: '640x480' },
+      )
+      expect(comparison_result(
+        common_info,
+        common_info,
+      )).to eq(
+        comp: 0,
+        left: {},
+        right: {},
+      )
+      expect(comparison_result(
+        common_info,
+        common_info.merge(video_resolution: '1920x1080', version: 1),
+      )).to eq(
+        comp: 0,
+        left: { video_resolution: '1280x720', version: '2' },
+        right: { video_resolution: '1920x1080', version: '1' },
       )
     end
   end

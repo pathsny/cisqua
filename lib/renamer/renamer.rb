@@ -55,6 +55,8 @@ module Cisqua
         raise
       end
 
+      private
+
       # given a work_item indicating the existing file and given
       # a list of duplicates, processes all of them
       def process_duplicate_set(work_item, _override_options)
@@ -67,7 +69,12 @@ module Cisqua
         dup = curried_method(:move_to_dup)[name]
         result[:junk].each(&junk)
         result[:dups].each(&dup)
-        return Response.unchanged(existing.file.path) if result[:keep_current]
+        if result[:keep_current]
+          return Response.unchanged(
+            existing.file.path,
+            **result.slice(:junk, :dups),
+          )
+        end
 
         junk_duplicate_location = File.absolute_path(options[:junk_duplicate_location], ROOT_FOLDER)
         fix_symlinks_root = File.absolute_path(options[:fix_symlinks_root], ROOT_FOLDER)
@@ -84,10 +91,20 @@ module Cisqua
 
         replacement_resp = process_file(name, result[:selected], location, path)
         assert(replacement_resp.type == :success, 'we just cleared the location')
-        Response.replaced(result[:selected], replacement_resp.destination)
+        reason = existing.quality.compare_with_info(
+          result[:selected].quality,
+        ).slice(:left, :right)
+        Response.replaced(
+          replacement_resp.destination,
+          dups: result[:dups],
+          junk: result[:junk],
+          replacement: {
+            new_item: result[:selected],
+            old_item: existing,
+            reason: reason.transform_keys { |k| { left: :old, right: :new }[k] },
+          },
+        )
       end
-
-      private
 
       def curried_method(sym)
         proc(&method(sym)).curry

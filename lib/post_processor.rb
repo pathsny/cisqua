@@ -24,10 +24,7 @@ module Cisqua
         when :started, :process
           logger.info('progress', {
             count: batch_data.count,
-            unknown: batch_data.unknowns.count,
-            success: batch_data.success_fids.count,
-            duplicate: batch_data.duplicate_fids.count,
-            replacement: batch_data.replacement_fids.count,
+            processed: batch_data.processed,
           })
         when :complete
           yield

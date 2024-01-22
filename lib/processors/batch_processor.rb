@@ -148,47 +148,70 @@ module Cisqua
     end
 
     def on_process(batch_data, on_update, work_item, result)
-      case result.type
-      when :success
-        logger.info(
-          'MOVING File',
-          source: work_item.file.path,
-          dest: result.destination,
-        )
-        batch_data.add_success_fid(work_item.info[:fid])
-      when :unknown
+      if result.type == :unknown
         logger.warn(
           'UNKNOWN file',
           source: work_item.file.path,
           dest: result.destination,
         )
         batch_data.add_unknown(work_item.file.name)
-      when :resolved_duplicates_unchanged
-        logger.info(
-          'RETAINING file',
-          source: result.destination,
-        )
-        batch_data.add_duplicate_fids(
-          work_item.duplicate_work_items.map { |w| w.info[:fid] },
-        )
-      when :resolved_duplicates_replaced
-        logger.info(
-          'REPLACING file',
-          source: result.work_item.file.path,
-          dest: work_item.file.path,
-        )
-        dup_work_items = work_item.duplicate_work_items.select { |w| w != result.work_item }
-        unless dup_work_items.empty?
-          batch_data.add_duplicate_fids(
-            dup_work_items.map { |w| w.info[:fid] },
+      else
+        fid = work_item.info[:fid]
+        aid = AnimeFile.find(fid).aid
+        success = []
+        dups = (result.dups || []).map { |w|  w.info[:fid] }
+        junk = (result.junk || []).map { |w|  w.info[:fid] }
+        replacement = nil
+        case result.type
+        when :duplicate
+          logger.warn(
+            'DUPLICATE file',
+            source: work_item.file.path,
+            dest: result.destination,
           )
+        when :success
+          logger.info(
+            'MOVING File',
+            source: work_item.file.path,
+            dest: result.destination,
+          )
+          batch_data.add_success_fid(fid)
+          success = [fid]
+        when :resolved_duplicates_unchanged
+          logger.info(
+            'RETAINING file',
+            source: result.destination,
+          )
+          batch_data.add_duplicate_fids(
+            work_item.duplicate_work_items.map { |w| w.info[:fid] },
+          )
+        when :resolved_duplicates_replaced
+          logger.info(
+            'REPLACING file',
+            source: result.replacement[:new_item].file.path,
+            dest: work_item.file.path,
+          )
+          replacement = {
+            old: result.replacement[:old_item].info[:fid].to_s,
+            new: result.replacement[:new_item].info[:fid].to_s,
+            reason: result.replacement[:reason],
+          }
+          dup_work_items = work_item.duplicate_work_items.select { |w| w != result.replacement[:new_item] }
+          unless dup_work_items.empty?
+            batch_data.add_duplicate_fids(
+              dup_work_items.map { |w| w.info[:fid] },
+            )
+          end
+          batch_data.add_replacement_fid(result.replacement[:new_item].info[:fid])
+        else
+          raise "Unknown response type #{result.type}"
         end
-        batch_data.add_replacement_fid(result.work_item.info[:fid])
-      when :duplicate
-        logger.warn(
-          'DUPLICATE file',
-          source: work_item.file.path,
-          dest: result.destination,
+        batch_data.record_progress(
+          aid,
+          success:,
+          dups:,
+          junk:,
+          replacement:,
         )
       end
       on_update.call(:process, batch_data)

@@ -6,11 +6,14 @@ module Cisqua
     module Comparable
       include ::Comparable
 
-      def consistent_comparison(*comps)
+      def consistent_comparison(*comparisons)
+        differing = comparisons.select { |h| h[:comp] != 0 }
+        comps = differing.map { |h| h[:comp] }
+        attrs = differing.map { |h| h[:attr] }
         # return 0 if you have atleast two comparisons that are of opposite signs (i.e -1 and 1)
-        return 0 if (comps & [-1, 1]).sort == [-1, 1]
+        return { comp: 0, attrs: } if comps.empty? || (comps & [-1, 1]).sort == [-1, 1]
 
-        comps.reduce(:|)
+        { comp: comps.reduce(:|), attrs: }
       end
     end
 
@@ -21,6 +24,10 @@ module Cisqua
       attr_reader :name
 
       @all_instances = []
+
+      def to_s
+        name
+      end
 
       class << self
         def new(name)
@@ -51,15 +58,15 @@ module Cisqua
       reloadable_const_define :VHS, make_instance('VHS', 2)
       reloadable_const_define :VCD, make_instance('VCD', 2)
       reloadable_const_define :SVCD, make_instance('SVCD', 2)
-      reloadable_const_define :TV, make_instance('TV', 3)
-      reloadable_const_define :DTV, make_instance('DTV', 3)
-      reloadable_const_define :LD, make_instance('LD', 3)
-      reloadable_const_define :HKDVD, make_instance('HKDVD', 3)
-      reloadable_const_define :WWW, make_instance('www', 3)
-      reloadable_const_define :HDTV, make_instance('HDTV', 4)
-      reloadable_const_define :DVD, make_instance('DVD', 4)
-      reloadable_const_define :HD_DVD, make_instance('HD-DVD', 5)
-      reloadable_const_define :BLU_RAY, make_instance('Blu-ray', 5)
+      reloadable_const_define :TV, make_instance('TV', 4)
+      reloadable_const_define :DTV, make_instance('DTV', 4)
+      reloadable_const_define :LD, make_instance('LD', 4)
+      reloadable_const_define :HKDVD, make_instance('HKDVD', 4)
+      reloadable_const_define :WWW, make_instance('www', 4)
+      reloadable_const_define :HDTV, make_instance('HDTV', 6)
+      reloadable_const_define :DVD, make_instance('DVD', 6)
+      reloadable_const_define :HD_DVD, make_instance('HD-DVD', 8)
+      reloadable_const_define :BLU_RAY, make_instance('Blu-ray', 8)
 
       protected
 
@@ -73,6 +80,10 @@ module Cisqua
       attr_reader :name
 
       @all_instances = []
+
+      def to_s
+        name
+      end
 
       class << self
         def new(name)
@@ -97,11 +108,11 @@ module Cisqua
       end
 
       reloadable_const_define :EYECANCER, make_instance('eyecancer', 1)
-      reloadable_const_define :LOW, make_instance('very low', 2)
-      reloadable_const_define :LOW, make_instance('low', 3)
-      reloadable_const_define :MED, make_instance('med', 4)
-      reloadable_const_define :HIGH, make_instance('high', 5)
-      reloadable_const_define :VERY_HIGH, make_instance('very high', 6)
+      reloadable_const_define :VERY_LOW, make_instance('very low', 2)
+      reloadable_const_define :LOW, make_instance('low', 4)
+      reloadable_const_define :MED, make_instance('med', 6)
+      reloadable_const_define :HIGH, make_instance('high', 7)
+      reloadable_const_define :VERY_HIGH, make_instance('very high', 8)
 
       protected
 
@@ -119,12 +130,20 @@ module Cisqua
       def initialize(res_string)
         m = PATTERN.match(res_string)
         assert(m, 'video resolution is not parseable')
+        @res_string = res_string
         @width = m[1].to_i
         @height = m[2].to_i
       end
 
+      def to_s
+        @res_string
+      end
+
       def <=>(other)
-        consistent_comparison(width <=> other.width, height <=> other.height)
+        consistent_comparison(
+          { attr: :width, comp: width <=> other.width },
+          { attr: :height, comp: height <=> other.height },
+        )[:comp]
       end
     end
 
@@ -136,30 +155,45 @@ module Cisqua
         @version = options[:version]
         @quality = Quality.new(options[:quality])
         @source = Source.new(options[:source])
-        @res = VideoResolution.new(options[:video_resolution])
+        @video_resolution = VideoResolution.new(options[:video_resolution])
         assert(
           @version.is_a?(Integer) && @version >= 1 && @version <= 5,
           'quality requires a valid version',
         )
       end
 
-      attr_reader :version, :quality, :source, :res
+      attr_reader :version, :quality, :source, :video_resolution
 
       def <=>(other)
+        compare_with_info(other)[:comp]
+      end
+
+      def attr_hash(attrs)
+        attrs.each_with_object({}) do |attr, hsh|
+          hsh[attr] = send(attr).to_s
+        end
+      end
+
+      def compare_with_info(other)
         source_cmp = source <=> other.source
-        if source_cmp.zero?
+        result = if source_cmp.zero?
           consistent_comparison(
-            quality <=> other.quality,
-            version <=> other.version,
-            res <=> other.res,
+            { attr: :quality, comp: quality <=> other.quality },
+            { attr: :version, comp: version <=> other.version },
+            { attr: :video_resolution, comp: video_resolution <=> other.video_resolution },
           )
         else
           consistent_comparison(
-            source_cmp,
-            quality <=> other.quality,
-            res <=> other.res,
+            { attr: :source, comp: source_cmp },
+            { attr: :quality, comp: quality <=> other.quality },
+            { attr: :video_resolution, comp: video_resolution <=> other.video_resolution },
           )
         end
+        {
+          comp: result[:comp],
+          left: attr_hash(result[:attrs]),
+          right: other.attr_hash(result[:attrs]),
+        }
       end
     end
   end

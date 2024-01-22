@@ -107,10 +107,7 @@ module Cisqua
         source: bd.request_source,
         duration: distance_of_time_in_words(bd.created_at, bd.updated_at),
         file_count: bd.count,
-        scanned_count: bd.unknowns.count +
-          bd.success_fids.count +
-          bd.duplicate_fids.count +
-          bd.replacement_fids.count,
+        scanned_count: bd.processed,
         unknowns: bd.unknowns,
         complete: bd.complete?,
         updates:,
