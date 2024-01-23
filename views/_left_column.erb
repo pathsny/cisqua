@@ -1,0 +1,53 @@
+<div class="left-column">
+  <section class="request-scan">
+    <form @submit.prevent="submitForm($event)">
+      <button id="start-scan" :disabled="hasRun && latestCheck.scan_in_progress">Start Scan</button>
+      <div x-show="latestCheck.scan_in_progress" class="spinner-container">
+        <div class="spinner"></div>
+      </div>
+      <input type="hidden" name="queried-timestamp" x-bind:value="queriedTimestamp">
+      <div class="checkbox-list">
+        <label>
+          <input type="checkbox" name="debug_mode">
+          Debug Mode
+        </label>
+        <label>
+          <input type="checkbox" name="dry_run" <%= 'checked="checked"' if dry_run %>>
+          Dry Run
+        </label>
+      </div>
+    </form>
+  </section>
+  <section class="latest-check">
+    <div class="latest-check-header">
+      <h2>Latest Check</h2>
+      <p class="byline">
+        <span class="highlight-text" x-text="latestCheck.checked_at"></span>
+      </p>
+    </div>
+    <div x-show="hasRun">
+      <p>
+        <strong class="label">Date:</strong>
+        <span x-text="latestCheck.checked_date"></span>
+      </p>
+      <p>
+        <strong class="label">Time:</strong>
+        <span x-text="latestCheck.checked_time"></span>
+      </p>
+      <p>
+        <strong class="label">Source:</strong>
+        <span x-text="latestCheck.reason"></span>
+      </p>
+      <p>
+        <strong class="label">Result:</strong>
+        <span x-text="latestCheck.result"></span>
+      </p>
+    </div>
+    <div x-show="!hasRun">
+      <p>
+        <strong class="label">Status:</strong>
+        <span>NEVER RUN</span>
+      </p>
+    </div>
+  </section>
+</div>

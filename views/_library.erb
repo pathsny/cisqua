@@ -1,0 +1,25 @@
+<section class="library" x-show="activeTab === 'library'" x-data="library" x-cloak>
+  <div class="request-fetch">
+    <button id="fetch-library" :disabled="libraryState == 'loading'" x-on:click="fetchLibrary">Fetch Library</button>
+    <article class="library-card">
+      <div class="title-wrapper">
+        <h2 class="card-title">Legend</h2>
+        <label>On-Going</label>
+        <%= erb :_library_badge, locals: { prefix: "libraryBadges['ongoing']" } %>
+        <label>Ended (Incomplete)</label>
+        <%= erb :_library_badge, locals: { prefix: "libraryBadges['ended-incomplete']" } %>
+        <label>Ended (Complete)</label>
+        <%= erb :_library_badge, locals: { prefix: "libraryBadges['ended-complete']" } %>
+      </div>
+    </article>
+    <div x-show="libraryState == 'loading'" class="spinner-container">
+      <div class="spinner"></div>
+      <p>Loading library data...</p>
+    </div>
+  </div>
+  <div x-show="libraryState == 'loaded'">
+    <template x-for="[id, c] in Object.entries(libraryCards)" :key="id">
+      <%= erb :_library_card, locals: { show_var: "c" } %>
+    </template>
+  </div>
+</section>

@@ -1,0 +1,5 @@
+<section class="scans" x-show="activeTab === 'scans' && hasRun">
+  <template x-for="scan in scans">
+    <%= erb :_scan_card %>
+  </template>
+</section>

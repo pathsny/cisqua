@@ -1,0 +1,22 @@
+<div x-show="scan.unknowns && scan.unknowns.length > 0" class="scan-show">
+  <h4>
+    <%= erb :_library_badge, locals: { prefix: "libraryBadges['unknown-file']" } %>
+    <span>
+      <span class="highlight-text" x-text="scan.unknowns.length"></span>
+      <span>
+        Unrecognized Files</span>
+    </span>
+    <span class="expand-indicator" x-on:click="scan.showUnrecognized = !scan.showUnrecognized">
+      <i class="fa-solid fa-circle-chevron-down" x-show="!scan.showUnrecognized"></i>
+      <i class="fa-solid fa-circle-chevron-up" x-show="scan.showUnrecognized"></i>
+    </span>
+  </h4>
+  <div x-show="scan.showUnrecognized">
+    <template x-for="file in scan.unknowns">
+      <div class="scan-show-detail">
+        <span class="label unknown-label">Unknown:</span>
+        <span x-text="file"></span>
+      </div>
+    </template>
+  </div>
+</div>

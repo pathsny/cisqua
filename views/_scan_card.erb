@@ -1,0 +1,12 @@
+<article class="scan-card" :class="{'in-progress': !scan.complete}">
+  <%= erb :_scan_card_header %>
+  <div x-show="!scan.complete" class="spinner-container">
+    <div class="spinner"></div>
+  </div>
+  <%= erb :_scan_card_unknowns %>
+  <div class="recognized-shows">
+    <template x-for="show in scan.updates">
+      <%= erb :_scan_show %>
+    </template>
+  </div>
+</article>
