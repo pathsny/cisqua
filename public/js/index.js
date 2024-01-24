@@ -1,4 +1,4 @@
-const libraryBadges = {
+const statusBadges = {
   'ongoing': {
     wrapperClass: 'ongoing',
     icon: 'fas fa-sync',
@@ -24,15 +24,14 @@ const libraryBadges = {
 function getBadgeDetails(entry) {
   if (!entry.ended) {
     // Ongoing Collection
-    return libraryBadges["ongoing"];
+    return statusBadges["ongoing"];
   } else {
-    return libraryBadges[entry.complete ? "ended-complete" : "ended-incomplete"]
+    return statusBadges[entry.complete ? "ended-complete" : "ended-incomplete"]
   }
 };
 
 function librarySection() {
   return {
-    libraryBadges,
     libraryData: {},
     libraryState: null,
     libraryCards: {},
@@ -47,7 +46,10 @@ function librarySection() {
         const response = await fetch('/library');
         if (!response.ok) {
           console.error("Error fetching library:", response);
-          this.$dispatch('show-notification', { type: 'error', message: 'Error: Unable to fetch the library!' })
+          notify({
+            type: 'error',
+            message: `Error: Unable to fetch the library: ${error}`
+          });
           this.libraryState = 'error';
           return
         }
@@ -58,7 +60,7 @@ function librarySection() {
         this.mergeUpdates(library)
       } catch (error) {
         console.error("Error fetching library:", error);
-        this.$dispatch('show-notification', { type: 'error', message: 'Error: Unable to fetch the library!' })
+        notify({ type: 'error', message: `Error: Something went wrong! ${error.message}` })
       }
     },
     mergeUpdates(libraryUpdates) {
@@ -71,7 +73,7 @@ function librarySection() {
       }
     },
     libraryBadgeData(style) {
-      return libraryBadges[style];
+      return statusBadges[style];
     },
     libraryCard(entry) {
       const card_data = {
@@ -93,26 +95,28 @@ function librarySection() {
   }
 }
 
-function notification() {
-  return {
-    data: null,
-    badgeMap: {
-      'success': '✔️',
-      'warning': '⚠️',
-      'error': '❌'
-    },
-    show(notifData) {
-      this.data = {
-        ...notifData,
-        badge: this.badgeMap[notifData.type],
-      }
-      setTimeout(() => {
-        this.data = null;
-      }, 3000);
+const notification = {
+  data: null,
+  badgeMap: {
+    'success': '✔️',
+    'warning': '⚠️',
+    'error': '❌'
+  },
+  show(notifData) {
+    this.data = {
+      ...notifData,
+      css_class: notifData.type,
+      badge: this.badgeMap[notifData.type],
     }
+    setTimeout(() => {
+      this.data = null;
+    }, 3000);
   }
-}
+};
 
+function notify(notifData) {
+  Alpine.store('notification').show(notifData);
+}
 
 function data() {
   function mergeScans(oldScans, scanUpdates) {
@@ -130,15 +134,12 @@ function data() {
     return newScans.concat(updatedOldScans);
   }
 
-  const notif = notification();
-
   return {
     scans: window.initialData.scans,
     hasRun: !!window.initialData.last_update,
     latestCheck: window.initialData.last_update || {},
     queriedTimestamp: window.initialData.queried_timestamp,
     activeTab: 'scans',
-    notif: notif,
     library: librarySection(),
 
 
@@ -153,22 +154,22 @@ function data() {
         result = await response.json();
       } catch (error) {
         console.error("Error while starting scan:", error);
-        this.$dispatch('show-notification', { type: 'error', message: 'Error: Something went wrong!' })
+        notify({ type: 'error', message: `Error: Something went wrong! ${error.message}` })
       }
 
       // Handle notifications
       switch (result.scan_enque_result) {
         case 'started':
-          this.$dispatch('show-notification', { type: 'success', message: 'Scan started successfully!' })
+          notify({ type: 'success', message: 'Scan started successfully!' })
           break;
         case 'waiting':
-          this.$dispatch('show-notification', { type: 'warning', message: 'Scan already running' })
+          notify({ type: 'warning', message: 'Scan already running' })
           break;
         case 'rejected':
-          this.$dispatch('show-notification', { type: 'error', message: 'Scan rejected' })
+          notify({ type: 'error', message: 'Scan rejected' })
           break;
         case 'no_files':
-          this.$dispatch('show-notification', { type: 'warning', message: 'No New Files' })
+          notify({ type: 'warning', message: 'No New Files' })
           break;
         default:
           throw new Error(`Unknown scan_enque_result: ${result.scan_enque_result}`);
@@ -231,3 +232,11 @@ function data() {
     },
   }
 }
+
+document.addEventListener('alpine:init', () => {
+  Alpine.store('statusBadges', statusBadges);
+  Alpine.store('notification', notification);
+  Alpine.magic('notify', () => {
+    return (notifData) => notify(notifData);
+  })
+});

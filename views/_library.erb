@@ -5,11 +5,11 @@
       <div class="title-wrapper">
         <h2 class="card-title">Legend</h2>
         <label>On-Going</label>
-        <%= erb :_library_badge, locals: { prefix: "libraryBadges['ongoing']" } %>
+        <%= erb :_library_badge, locals: { prefix: "statusBadges['ongoing']" } %>
         <label>Ended (Incomplete)</label>
-        <%= erb :_library_badge, locals: { prefix: "libraryBadges['ended-incomplete']" } %>
+        <%= erb :_library_badge, locals: { prefix: "statusBadges['ended-incomplete']" } %>
         <label>Ended (Complete)</label>
-        <%= erb :_library_badge, locals: { prefix: "libraryBadges['ended-complete']" } %>
+        <%= erb :_library_badge, locals: { prefix: "statusBadges['ended-complete']" } %>
       </div>
     </article>
     <div x-show="libraryState == 'loading'" class="spinner-container">

@@ -3,7 +3,10 @@
   <head>
     <title>Cisqua</title>
     <link rel="stylesheet" href="css/styles.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
+    >
   </head>
   <body>
     <header class="main-header">
@@ -11,16 +14,13 @@
         <% if test_mode %>TEST MODE<% end %>
       </h1>
     </header>
-    <div class="container" x-data="data()" @show-notification="notif.show($event.detail)">
+    <div class="container" x-data="data()">
       <%= erb :_left_column, locals: { dry_run: dry_run } %>
       <div class="main-content">
-        <div x-show="notif.data">
-          <div
-            class ="notification"
-            :class="{ 'success': notif.data?.type === 'success', 'warning': notif.data?.type === 'warning', 'error': notif.data?.type === 'error' }"
-          >
-            <span x-text="notif.data?.badge"></span>
-            <span x-text="notif.data?.message"></span>
+        <div x-show="$store.notification.data">
+          <div class="notification" :class="$store.notification.data?.css_class">
+            <span x-text="$store.notification.data?.badge"></span>
+            <span x-text="$store.notification.data?.message"></span>
           </div>
         </div>
         <div class="tabs-header">
