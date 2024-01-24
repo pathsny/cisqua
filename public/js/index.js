@@ -30,7 +30,7 @@ function getBadgeDetails(entry) {
   }
 };
 
-function librarySection() {
+function makeLibrary() {
   return {
     libraryData: {},
     libraryState: null,
@@ -140,7 +140,6 @@ function data() {
     latestCheck: window.initialData.last_update || {},
     queriedTimestamp: window.initialData.queried_timestamp,
     activeTab: 'scans',
-    library: librarySection(),
 
 
     submitForm: async function () {
@@ -181,7 +180,7 @@ function data() {
       Object.assign(this.latestCheck, newState.last_update);
       this.scans = mergeScans(this.scans, newState.scans);
       if (newState.library) {
-        this.library.mergeUpdates(newState.library)
+        Alpine.store('library').mergeUpdates(newState.library)
       }
       this.queriedTimestamp = newState.queried_timestamp;
     },
@@ -224,7 +223,7 @@ function data() {
     setActiveTab(tabName) {
       this.activeTab = tabName;
       if (tabName === 'library') {
-        this.library.maybeLoad()
+        Alpine.store('library').maybeLoad();
       }
     },
     isTabActive(tabName) {
@@ -235,6 +234,7 @@ function data() {
 
 document.addEventListener('alpine:init', () => {
   Alpine.store('statusBadges', statusBadges);
+  Alpine.store('library', makeLibrary());
   Alpine.store('notification', notification);
   Alpine.magic('notify', () => {
     return (notifData) => notify(notifData);
