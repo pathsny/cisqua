@@ -135,22 +135,27 @@ function makeLastUpdate() {
   }
 }
 
-function data() {
-  function mergeScans(oldScans, scanUpdates) {
-    // Extract scans from scanUpdates that have entirely new ids
-    const newScans = scanUpdates.filter(newScan =>
-      !oldScans.some(oldScan => oldScan.id === newScan.id)
-    );
+function makeScansData() {
+  return {
+    init() {
+      this.scans = window.initialData.scans;
+    },
+    update(data) {
+      const newScans = data.filter(newScan =>
+        !this.scans.some(scan => scan.id === newScan.id)
+      );
 
-    // Merge attributes of updated scans into old scans
-    const updatedOldScans = oldScans.map(oldScan => {
-      const update = scanUpdates.find(scan => scan.id === oldScan.id);
-      return update ? Object.assign({}, oldScan, update) : oldScan;
-    });
+      const updatedScans = this.scans.map(scan => {
+        const update = data.find(updatedScan => updatedScan.id === scan.id);
+        return update ? Object.assign({}, scan, update) : scan;
+      });
 
-    return newScans.concat(updatedOldScans);
+      this.scans = newScans.concat(updatedScans);
+    }
   }
+}
 
+function data() {
   return {
     scans: window.initialData.scans,
     activeTab: 'scans',
@@ -190,8 +195,8 @@ function data() {
       this.updateState(result.updates)
     },
     updateState(data) {
-      this.scans = mergeScans(this.scans, data.scans);
       Alpine.store('lastUpdate').update(data.last_update);
+      Alpine.store('scansData').update(data.scans)
       if (data.library) {
         Alpine.store('library').mergeUpdates(data.library);
       }
@@ -206,7 +211,6 @@ function data() {
       if (Alpine.store('lastUpdate').scanInProgress) {
         this.startSSE();
       }
-      window.scans = this.scans
     },
     startSSE() {
       if (!this.eventSource) {
@@ -247,6 +251,7 @@ document.addEventListener('alpine:init', () => {
   Alpine.store('statusBadges', statusBadges);
   Alpine.store('lastUpdate', makeLastUpdate())
   Alpine.store('library', makeLibrary());
+  Alpine.store('scansData', makeScansData());
   Alpine.store('notification', notification);
   Alpine.magic('notify', () => {
     return (notifData) => notify(notifData);
