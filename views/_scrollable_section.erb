@@ -1,0 +1,17 @@
+<div
+  class="scrollable-content"
+  x-show="isTabActive('<%= tabName%>')"
+  x-ref="<%= tabName%>ScrollableSection"
+>
+  <div
+    class="sentinel"
+    x-intersect:enter="isScrolled['<%= tabName%>'] = false"
+    x-intersect:leave="isScrolled['<%= tabName%>'] = true"
+  ></div>
+  <%= content %>
+  <button
+    class="scroll-to-top"
+    x-show="isScrolled['<%= tabName%>']"
+    @click="scrollToTop($refs.<%= tabName%>ScrollableSection)"
+  >↑ Top</button>
+</div>

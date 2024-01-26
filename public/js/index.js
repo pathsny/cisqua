@@ -200,22 +200,23 @@ const mainService = {
   }
 }
 
-function data() {
-  return {
-    scans: window.initialData.scans,
-    activeTab: 'scans',
-
-    setActiveTab(tabName) {
-      this.activeTab = tabName;
-      if (tabName === 'library') {
-        Alpine.store('library').maybeLoad();
-      }
-    },
-    isTabActive(tabName) {
-      return this.activeTab === tabName;
-    },
+const mainTab = {
+  activeTab: window.location.hash ? window.location.hash.substring(1) : 'scans',
+  isScrolled: { scans: false, library: false },
+  setActiveTab(tabName) {
+    this.activeTab = tabName;
+    if (tabName === 'library') {
+      Alpine.store('library').maybeLoad();
+    }
+    history.pushState({ tab: tabName }, '', `#${tabName}`);
+  },
+  isTabActive(tabName) {
+    return this.activeTab === tabName;
+  },
+  scrollToTop(elem) {
+    elem.scrollTo({ top: 0, behavior: 'smooth' });
   }
-}
+};
 
 function formHandler(initialDryRun) {
   return {

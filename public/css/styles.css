@@ -15,8 +15,44 @@ body {
 .container {
   display: flex;
   max-width: 1400px;
+  min-height: 85vh;
   margin: 20px auto;
   gap: 20px;
+}
+
+.main-content {
+  position: relative;
+  width: 100%;
+  flex-grow: 1;
+}
+
+.scrollable-content {
+  max-height: calc(100vh - 10vh);
+  padding-top: 10;
+  overflow-y: auto;
+}
+
+.scrollable-content .sentinel {
+  width: 100%;
+  height: 1px;
+}
+
+.scroll-to-top {
+  position: absolute;
+  z-index: 1000;
+  right: 20px;
+  bottom: 50px;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 5px;
+  background-color: #007bff;
+  color: white;
+  cursor: pointer;
+  opacity: 0.7;
+}
+
+.scroll-to-top:hover {
+  opacity: 1;
 }
 
 .left-column {
@@ -106,12 +142,6 @@ body {
   gap: 8px;
 }
 
-.main-content {
-  position: relative;
-  width: 100%;
-  flex-grow: 1;
-}
-
 .scans {
   overflow: auto;
   flex: 1;
@@ -134,11 +164,11 @@ body {
 }
 
 .notification {
-  position: absolute;
+  position: fixed;
   z-index: 10;
-  top: 0;
+  top: 10px;
   right: 0;
-  left: 0;
+  left: 50%;
   max-width: 500px;
   padding: 15px 20px;
   border: 1px solid transparent;
@@ -148,6 +178,7 @@ body {
   background-color: rgb(255 255 255 / 90%);
   box-shadow: 0 4px 8px rgb(0 0 0 / 10%);
   font-size: 16px;
+  transform: translateX(-50%);
 }
 
 .notification.success {

@@ -1,6 +1,10 @@
-<section class="library" x-show="activeTab === 'library'" x-cloak>
+<section class="library">
   <div class="request-fetch">
-    <button id="fetch-library" :disabled="$store.library.libraryState == 'loading'" @click="$store.library.fetchLibrary()">Fetch Library</button>
+    <button
+      id="fetch-library"
+      :disabled="$store.library.libraryState == 'loading'"
+      @click="$store.library.fetchLibrary()"
+    >Fetch Library</button>
     <article class="library-card">
       <div class="title-wrapper">
         <h2 class="card-title">Legend</h2>
@@ -16,6 +20,7 @@
       <div class="spinner"></div>
       <p>Loading library data...</p>
     </div>
+
   </div>
   <div x-show="$store.library.libraryState == 'loaded'">
     <template x-for="[id, c] in Object.entries($store.library.libraryCards)" :key="id">

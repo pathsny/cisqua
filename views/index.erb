@@ -14,7 +14,7 @@
         <% if test_mode %>TEST MODE<% end %>
       </h1>
     </header>
-    <div class="container" x-data="data()">
+    <div class="container" x-data="mainTab">
       <%= erb :_left_column, locals: { dry_run: dry_run } %>
       <div class="main-content">
         <div x-show="$store.notification.data">
@@ -39,8 +39,8 @@
             Library
           </button>
         </div>
-        <%= erb :_scans %>
-        <%= erb :_library %>
+        <%= erb :_scrollable_section, locals: { tabName: :scans, content: erb(:_scans) } %>
+        <%= erb :_scrollable_section, locals: { tabName: :library, content: erb(:_library) } %>
       </div>
     </div>
     <footer>
@@ -50,6 +50,7 @@
       window.initialData = <%= initial_data.to_json.html_safe %>;
     </script>
     <script src="js/index.js" defer></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/intersect@3.x.x/dist/cdn.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
   </body>
 </html>

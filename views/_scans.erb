@@ -1,4 +1,4 @@
-<section class="scans" x-show="activeTab === 'scans'">
+<section class="scans">
   <template x-for="scan in $store.scansData.scans" :key="scan.id">
     <%= erb :_scan_card %>
   </template>
