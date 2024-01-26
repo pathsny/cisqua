@@ -1,11 +1,11 @@
 <div class="left-column">
   <section class="request-scan">
     <form @submit.prevent="submitForm($event)">
-      <button id="start-scan" :disabled="hasRun && latestCheck.scan_in_progress">Start Scan</button>
-      <div x-show="latestCheck.scan_in_progress" class="spinner-container">
+      <button id="start-scan" :disabled="$store.lastUpdate.scanInProgress">Start Scan</button>
+      <div x-show="$store.lastUpdate.scanInProgress" class="spinner-container">
         <div class="spinner"></div>
       </div>
-      <input type="hidden" name="queried-timestamp" x-bind:value="queriedTimestamp">
+      <input type="hidden" name="queried-timestamp" x-bind:value="$store.lastUpdate.checked_timestamp">
       <div class="checkbox-list">
         <label>
           <input type="checkbox" name="debug_mode">
@@ -22,28 +22,28 @@
     <div class="latest-check-header">
       <h2>Latest Check</h2>
       <p class="byline">
-        <span class="highlight-text" x-text="latestCheck.checked_at"></span>
+        <span class="highlight-text" x-text="$store.lastUpdate.elapsed_time"></span>
       </p>
     </div>
-    <div x-show="hasRun">
+    <div x-show="$store.lastUpdate.hasRun">
       <p>
         <strong class="label">Date:</strong>
-        <span x-text="latestCheck.checked_date"></span>
+        <span x-text="$store.lastUpdate.updated_date"></span>
       </p>
       <p>
         <strong class="label">Time:</strong>
-        <span x-text="latestCheck.checked_time"></span>
+        <span x-text="$store.lastUpdate.updated_time"></span>
       </p>
       <p>
         <strong class="label">Source:</strong>
-        <span x-text="latestCheck.reason"></span>
+        <span x-text="$store.lastUpdate.reason"></span>
       </p>
       <p>
         <strong class="label">Result:</strong>
-        <span x-text="latestCheck.result"></span>
+        <span x-text="$store.lastUpdate.result"></span>
       </p>
     </div>
-    <div x-show="!hasRun">
+    <div x-show="!$store.lastUpdate.hasRun">
       <p>
         <strong class="label">Status:</strong>
         <span>NEVER RUN</span>

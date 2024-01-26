@@ -118,6 +118,23 @@ function notify(notifData) {
   Alpine.store('notification').show(notifData);
 }
 
+function makeLastUpdate() {
+  return {
+    init() {
+      this.update(window.initialData.last_update);
+    },
+    update(update_data) {
+      Object.assign(this, update_data);
+    },
+    get hasRun() {
+      return !!this.updated_timestamp;
+    },
+    get scanInProgress() {
+      return !!this.scan_in_progress;
+    }
+  }
+}
+
 function data() {
   function mergeScans(oldScans, scanUpdates) {
     // Extract scans from scanUpdates that have entirely new ids
@@ -136,9 +153,6 @@ function data() {
 
   return {
     scans: window.initialData.scans,
-    hasRun: !!window.initialData.last_update,
-    latestCheck: window.initialData.last_update || {},
-    queriedTimestamp: window.initialData.queried_timestamp,
     activeTab: 'scans',
 
 
@@ -175,32 +189,29 @@ function data() {
       }
       this.updateState(result.updates)
     },
-    updateState(newState) {
-      this.hasRun = true
-      Object.assign(this.latestCheck, newState.last_update);
-      this.scans = mergeScans(this.scans, newState.scans);
-      if (newState.library) {
-        Alpine.store('library').mergeUpdates(newState.library)
+    updateState(data) {
+      this.scans = mergeScans(this.scans, data.scans);
+      Alpine.store('lastUpdate').update(data.last_update);
+      if (data.library) {
+        Alpine.store('library').mergeUpdates(data.library);
       }
-      this.queriedTimestamp = newState.queried_timestamp;
+      if (Alpine.store('lastUpdate').scanInProgress) {
+        this.startSSE();
+      }
+      if (!Alpine.store('lastUpdate').scanInProgress) {
+        this.stopSSE();
+      }
     },
-
     init() {
-      this.$watch('latestCheck.scan_in_progress', (value) => {
-        if (value) {
-          this.startSSE();
-        } else {
-          this.stopSSE();
-        }
-      });
-      if (this.latestCheck.scan_in_progress) {
+      if (Alpine.store('lastUpdate').scanInProgress) {
         this.startSSE();
       }
       window.scans = this.scans
     },
     startSSE() {
       if (!this.eventSource) {
-        const queriedTimestampParam = `queried-timestamp=${this.queriedTimestamp}`;
+        timestamp = Alpine.store('lastUpdate').checked_timestamp
+        const queriedTimestampParam = `queried_timestamp=${timestamp}`;
         this.eventSource = new EventSource(`/refresh?${queriedTimestampParam}`);
         this.eventSource.onmessage = (event) => {
           const data = JSON.parse(event.data);
@@ -234,6 +245,7 @@ function data() {
 
 document.addEventListener('alpine:init', () => {
   Alpine.store('statusBadges', statusBadges);
+  Alpine.store('lastUpdate', makeLastUpdate())
   Alpine.store('library', makeLibrary());
   Alpine.store('notification', notification);
   Alpine.magic('notify', () => {

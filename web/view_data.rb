@@ -15,8 +15,7 @@ module Cisqua
 
     def for_scans(queried_at, batch_check, batch_datas)
       {
-        queried_timestamp: queried_at.to_i,
-        last_update: for_batch_check(batch_check),
+        last_update: for_batch_check(queried_at, batch_check),
         scans: batch_datas.map { |bd| for_batch_data(bd) },
       }
     end
@@ -53,8 +52,9 @@ module Cisqua
 
     private
 
-    def for_batch_check(batch_check)
-      return nil if batch_check.nil?
+    def for_batch_check(queried_at, batch_check)
+      last_update = { checked_timestamp: queried_at.to_i }
+      return last_update if batch_check.nil?
 
       batch_data = batch_check.batch_data
       result = if batch_data.nil?
@@ -64,10 +64,11 @@ module Cisqua
       end
 
       {
-        checked_at: "#{time_ago_in_words(batch_check.updated_at)} ago",
-        checked_date: batch_check.updated_at.strftime('%a, %Y-%m-%d'),
-        checked_time: batch_check.updated_at.strftime('%H:%M:%S'),
-        checked_timestamp: batch_check.updated_at.to_i,
+        **last_update,
+        elapsed_time: "#{time_ago_in_words(batch_check.updated_at)} ago",
+        updated_date: batch_check.updated_at.strftime('%a, %Y-%m-%d'),
+        updated_time: batch_check.updated_at.strftime('%H:%M:%S'),
+        updated_timestamp: batch_check.updated_at.to_i,
         reason: batch_check.request_source,
         result:,
         scan_in_progress: batch_data && !batch_data.complete?,
