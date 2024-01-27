@@ -24,10 +24,20 @@
           </div>
         </div>
         <div class="tabs-header">
-          <button x-bind:class="{ 'active-tab': isTabActive('scans') }" class="tab-button"
-                  x-on:click="setActiveTab('scans')">Scans</button>
-          <button x-bind:class="{ 'active-tab': isTabActive('library') }" class="tab-button"
-                  x-on:click="setActiveTab('library')">Library</button>
+          <button
+            :class="{ 'active-tab': isTabActive('scans') }"
+            class="tab-button"
+            @click="setActiveTab('scans')"
+          >
+            Scans
+          </button>
+          <button
+            :class="{ 'active-tab': isTabActive('library') }"
+            class="tab-button"
+            @click="setActiveTab('library')"
+          >
+            Library
+          </button>
         </div>
         <%= erb :_scans %>
         <%= erb :_library %>
