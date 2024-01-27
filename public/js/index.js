@@ -155,11 +155,55 @@ function makeScansData() {
   }
 }
 
+const mainService = {
+  eventSource: null,
+  init() {
+    if (Alpine.store('lastUpdate').scanInProgress) {
+      this.start();
+    }
+  },
+  updateStores(data) {
+    Alpine.store('lastUpdate').update(data.last_update);
+    Alpine.store('scansData').update(data.scans);
+    if (data.library) {
+      Alpine.store('library').mergeUpdates(data.library);
+    }
+    if (Alpine.store('lastUpdate').scanInProgress) {
+      this.start();
+    }
+    if (!Alpine.store('lastUpdate').scanInProgress) {
+      this.stop();
+    }
+  },
+  start() {
+    if (!this.eventSource) {
+      timestamp = Alpine.store('lastUpdate').checked_timestamp
+      const queriedTimestampParam = `queried_timestamp=${timestamp}`;
+      this.eventSource = new EventSource(`/refresh?${queriedTimestampParam}`);
+      this.eventSource.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        this.updateStores(data)
+      };
+
+      this.eventSource.onerror = (error) => {
+        console.error('EventSource failed:', error);
+        this.eventSource.close();
+        this.eventSource = null;
+      };
+    }
+  },
+  stop() {
+    if (this.eventSource) {
+      this.eventSource.close();
+      this.eventSource = null;
+    }
+  }
+}
+
 function data() {
   return {
     scans: window.initialData.scans,
     activeTab: 'scans',
-
 
     submitForm: async function () {
       let result;
@@ -192,48 +236,7 @@ function data() {
         default:
           throw new Error(`Unknown scan_enque_result: ${result.scan_enque_result}`);
       }
-      this.updateState(result.updates)
-    },
-    updateState(data) {
-      Alpine.store('lastUpdate').update(data.last_update);
-      Alpine.store('scansData').update(data.scans)
-      if (data.library) {
-        Alpine.store('library').mergeUpdates(data.library);
-      }
-      if (Alpine.store('lastUpdate').scanInProgress) {
-        this.startSSE();
-      }
-      if (!Alpine.store('lastUpdate').scanInProgress) {
-        this.stopSSE();
-      }
-    },
-    init() {
-      if (Alpine.store('lastUpdate').scanInProgress) {
-        this.startSSE();
-      }
-    },
-    startSSE() {
-      if (!this.eventSource) {
-        timestamp = Alpine.store('lastUpdate').checked_timestamp
-        const queriedTimestampParam = `queried_timestamp=${timestamp}`;
-        this.eventSource = new EventSource(`/refresh?${queriedTimestampParam}`);
-        this.eventSource.onmessage = (event) => {
-          const data = JSON.parse(event.data);
-          this.updateState(data)
-        };
-
-        this.eventSource.onerror = (error) => {
-          console.error('EventSource failed:', error);
-          this.eventSource.close();
-          this.eventSource = null;
-        };
-      }
-    },
-    stopSSE() {
-      if (this.eventSource) {
-        this.eventSource.close();
-        this.eventSource = null;
-      }
+      mainService.updateStores(result.updates);
     },
     setActiveTab(tabName) {
       this.activeTab = tabName;
