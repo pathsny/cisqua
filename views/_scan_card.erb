@@ -5,7 +5,7 @@
   </div>
   <%= erb :_scan_card_unknowns %>
   <div class="recognized-shows">
-    <template x-for="show in scan.updates">
+    <template x-for="show in scan.updates" :key="show.aid">
       <%= erb :_scan_show %>
     </template>
   </div>

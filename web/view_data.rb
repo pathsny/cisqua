@@ -22,7 +22,7 @@ module Cisqua
 
     def for_batch_datas(batch_datas)
       scans = batch_datas.map { |bd| for_batch_data(bd) }
-      a_ids = scans.flat_map { |scan| scan[:updates].map { |u| u[:id] } }.uniq
+      a_ids = scans.flat_map { |scan| scan[:updates].map { |u| u[:aid] } }.uniq
       {
         scans:,
         library: a_ids.map { |aid| for_anime(Anime.find(aid)) },
@@ -42,6 +42,7 @@ module Cisqua
         air_date: anime.air_date.strftime('%Y-%m-%d'),
         end_date: anime.ended? ? anime.end_date.strftime('%Y-%m-%d') : nil,
         type: anime.type,
+        has_image: anime.metadata&.has_image?,
         eps: range.simple,
         eps_w_grps: range.with_groups,
       }
@@ -79,10 +80,7 @@ module Cisqua
       updates = (bd.updates || {}).map do |aid, update|
         anime = Anime.find(aid)
         {
-          name: combined_name_for_anime(anime),
-          id: anime.id,
-          ended: anime.ended?,
-          complete: anime.movie? ? true : MyList.complete?(anime.id),
+          aid: anime.id,
           **update.transform_values do |range|
             {
               eps: range['simple'],

@@ -1,7 +1,8 @@
-<div class="scan-show">
+<div class="scan-show" :id="`${scan.id}-${show.aid}`" x-data="{anime: $getAnime(show.aid)}">
+  <img :src="`show_images/${anime.thumb}`" alt="Show Thumbnail" class="show-thumbnail">
   <h4>
-    <%= erb :_library_badge, locals: { prefix: "getBadgeDetails(show)" } %>
-    <span x-text="show.name"></span>
+    <%= erb :_library_badge, locals: { prefix: "anime.badge" } %>
+    <span x-text="anime.name"></span>
   </h4>
   <div class="scan-show-detail" x-show="show.success">
     <span class="label added-label">Added:</span>

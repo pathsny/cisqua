@@ -5,6 +5,7 @@
       <h2 class="card-title" x-text="<%=show_var%>.name"></h2>
       <%= erb :_library_badge, locals: { prefix: "#{show_var}.badge" } %>
     </div>
+    <img :src="`show_images/${<%=show_var%>.image}`" alt="Show Image" class="show-image">
     <p><span x-text="<%=show_var%>.type"></span></p>
     <p><span x-text="<%=show_var%>.eps"></span></p>
   </div>

@@ -1,3 +1,14 @@
+function invariant(condition, message) {
+  if (condition) {
+    return
+  }
+  throw new Error(`Invariant Failure: ${message}`)
+}
+
+function invariantIsBool(value, message) {
+  return invariant(typeof value === 'boolean', message);
+}
+
 const statusBadges = {
   'ongoing': {
     wrapperClass: 'ongoing',
@@ -18,17 +29,16 @@ const statusBadges = {
     wrapperClass: 'unknown-file',
     icon: 'fas fa-file-circle-question',
     statusTooltip: 'Unknown File',
+  },
+  forAnime(anime) {
+    invariantIsBool(anime.ended, 'Anime must have ended property');
+    invariantIsBool(anime.complete, 'Anime must have ended property');
+    if (!anime.ended) {
+      return this['ongoing'];
+    }
+    return this[anime.complete ? "ended-complete" : "ended-incomplete"]
   }
 }
-
-function getBadgeDetails(entry) {
-  if (!entry.ended) {
-    // Ongoing Collection
-    return statusBadges["ongoing"];
-  } else {
-    return statusBadges[entry.complete ? "ended-complete" : "ended-incomplete"]
-  }
-};
 
 const libraryBaseUrl = '/library?limit=20';
 
@@ -43,6 +53,9 @@ function makeLibrary() {
     },
     init() {
       this.reset();
+      // We only record the data, but we don't add these to the library list.
+      // Once we fetch the list comprehensively, animes will be ordered.
+      this.update(window.initialData.library);
     },
     async fetchLibrary() {
       if (this.loadingState == 'loading' || this.loadingState == 'error') {
@@ -149,7 +162,10 @@ function makeLibrary() {
         air_date: entry.air_date,
         end_date: entry.end_date,
         english_name: entry.english_name,
-        badge: getBadgeDetails(entry),
+        image: entry.has_image ? `a${entry.id}.jpg` : 'missing.png',
+        thumb: entry.has_image ? `a${entry.id}_t.jpg` : 'missing.png',
+
+        badge: statusBadges.forAnime(entry),
 
         contents() {
           return entry.eps_w_grps

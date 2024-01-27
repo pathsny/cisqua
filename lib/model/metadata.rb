@@ -16,6 +16,19 @@ module Cisqua
       image_status == :fetched || image_status == :missing
     end
 
+    def has_image?
+      image_status == :fetched
+    end
+
+    def image_url
+      File.join(DATA_FOLDER, 'show_images', "a#{id}.jpg")
+    end
+
+    def image_file_exists?
+      # probably not used in prod
+      File.exist?(image_url)
+    end
+
     def anime
       Anime.find(id)
     end

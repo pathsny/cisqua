@@ -30,6 +30,7 @@ module Cisqua
     include SemanticLogger::Loggable
 
     use Rack::JSONBodyParser
+    use Rack::Static, urls: ['/show_images'], root: DATA_FOLDER
 
     set :connections, []
     set :bind, '0.0.0.0'

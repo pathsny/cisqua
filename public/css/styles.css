@@ -288,6 +288,7 @@ footer {
 
 .library-card .left-section {
   display: flex;
+  width: 250px;
   flex: 1;
   flex-direction: column;
   padding: 1em;
@@ -306,6 +307,12 @@ footer {
   color: #444;
   font-size: 1.2em;
   font-weight: bold;
+}
+
+.show-image {
+  width: 100%;
+  height: auto;
+  margin-right: 10px;
 }
 
 .status-badge {
@@ -504,4 +511,10 @@ footer {
 
 .unknown-label {
   background-color: #ca6d59;
+}
+
+.show-thumbnail {
+  width: 45px;
+  height: auto;
+  margin-right: 10px;
 }
