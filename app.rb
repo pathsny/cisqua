@@ -18,6 +18,7 @@ begin
 
   require 'sinatra/base'
   require 'sinatra/custom_logger'
+  require 'rack/contrib'
 rescue StandardError => e
   formatter = Cisqua::ErrorFormatter.new(e)
   abort formatter.formatted
@@ -27,6 +28,8 @@ module Cisqua
   class App < Sinatra::Base
     helpers Sinatra::CustomLogger
     include SemanticLogger::Loggable
+
+    use Rack::JSONBodyParser
 
     set :connections, []
     set :bind, '0.0.0.0'

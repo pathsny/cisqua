@@ -205,21 +205,41 @@ function data() {
     scans: window.initialData.scans,
     activeTab: 'scans',
 
-    submitForm: async function () {
+    setActiveTab(tabName) {
+      this.activeTab = tabName;
+      if (tabName === 'library') {
+        Alpine.store('library').maybeLoad();
+      }
+    },
+    isTabActive(tabName) {
+      return this.activeTab === tabName;
+    },
+  }
+}
+
+function formHandler(initialDryRun) {
+  return {
+    formData: {
+      debug_mode: false,
+      dry_run: initialDryRun,
+      queried_timestamp: ''
+    },
+    async submitForm() {
       let result;
       try {
-        const formData = new FormData(document.querySelector(".request-scan form"));
+        this.formData.queried_timestamp = Alpine.store('lastUpdate').checked_timestamp;
         const response = await fetch('/start_scan', {
           method: 'POST',
-          body: formData,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(this.formData),
         });
         result = await response.json();
       } catch (error) {
         console.error("Error while starting scan:", error);
         notify({ type: 'error', message: `Error: Something went wrong! ${error.message}` })
       }
-
-      // Handle notifications
       switch (result.scan_enque_result) {
         case 'started':
           notify({ type: 'success', message: 'Scan started successfully!' })
@@ -238,17 +258,9 @@ function data() {
       }
       mainService.updateStores(result.updates);
     },
-    setActiveTab(tabName) {
-      this.activeTab = tabName;
-      if (tabName === 'library') {
-        Alpine.store('library').maybeLoad();
-      }
-    },
-    isTabActive(tabName) {
-      return this.activeTab === tabName;
-    },
   }
 }
+
 
 document.addEventListener('alpine:init', () => {
   Alpine.store('statusBadges', statusBadges);

@@ -1,18 +1,17 @@
 <div class="left-column">
-  <section class="request-scan">
+  <section class="request-scan" x-data="formHandler(<%= dry_run %>)">
     <form @submit.prevent="submitForm($event)">
       <button id="start-scan" :disabled="$store.lastUpdate.scanInProgress">Start Scan</button>
       <div x-show="$store.lastUpdate.scanInProgress" class="spinner-container">
         <div class="spinner"></div>
       </div>
-      <input type="hidden" name="queried-timestamp" x-bind:value="$store.lastUpdate.checked_timestamp">
       <div class="checkbox-list">
         <label>
-          <input type="checkbox" name="debug_mode">
+          <input type="checkbox" name="debug_mode" x-model="formData.debug_mode">
           Debug Mode
         </label>
         <label>
-          <input type="checkbox" name="dry_run" <%= 'checked="checked"' if dry_run %>>
+          <input type="checkbox" name="dry_run" x-model="formData.dry_run">
           Dry Run
         </label>
       </div>
