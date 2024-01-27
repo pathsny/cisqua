@@ -1,5 +1,5 @@
 <div class="left-column">
-  <section class="request-scan" x-data="formHandler(<%= dry_run %>)">
+  <section class="request-scan" x-data="formHandler(<%= dry_run %>)" x-show="isTabActive('scans')">
     <form @submit.prevent="submitForm($event)">
       <button id="start-scan" :disabled="$store.lastUpdate.scanInProgress">Start Scan</button>
       <div x-show="$store.lastUpdate.scanInProgress" class="spinner-container">
@@ -17,7 +17,14 @@
       </div>
     </form>
   </section>
-  <section class="latest-check">
+  <section class="request-fetch" x-show="isTabActive('library')">
+    <button
+      id="fetch-library"
+      :disabled="$store.library.isLoading"
+      @click="$store.library.refetchLibrary()"
+    >ReFetch Library</button>
+  </section>
+  <section class="latest-check" x-data>
     <div class="latest-check-header">
       <h2>Latest Check</h2>
       <p class="byline">

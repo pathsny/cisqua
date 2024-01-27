@@ -1,22 +1,15 @@
 <section class="library">
-  <div class="request-fetch">
-    <button
-      id="fetch-library"
-      :disabled="$store.library.isLoading"
-      @click="$store.library.refetchLibrary()"
-    >Fetch Library</button>
-    <article class="library-card">
-      <div class="title-wrapper">
-        <h2 class="card-title">Legend</h2>
-        <label>On-Going</label>
-        <%= erb :_library_badge, locals: { prefix: "statusBadges['ongoing']" } %>
-        <label>Ended (Incomplete)</label>
-        <%= erb :_library_badge, locals: { prefix: "statusBadges['ended-incomplete']" } %>
-        <label>Ended (Complete)</label>
-        <%= erb :_library_badge, locals: { prefix: "statusBadges['ended-complete']" } %>
-      </div>
-    </article>
-  </div>
+  <article class="library-card">
+    <div class="title-wrapper">
+      <h2 class="card-title">Legend</h2>
+      <label>On-Going</label>
+      <%= erb :_library_badge, locals: { prefix: "statusBadges['ongoing']" } %>
+      <label>Ended (Incomplete)</label>
+      <%= erb :_library_badge, locals: { prefix: "statusBadges['ended-incomplete']" } %>
+      <label>Ended (Complete)</label>
+      <%= erb :_library_badge, locals: { prefix: "statusBadges['ended-complete']" } %>
+    </div>
+  </article>
   <div id="library-cards">
     <template x-for="id in $store.library.animeIds" :key="id">
       <%= erb :_library_card, locals: { show_var: "$getAnime(id)" } %>

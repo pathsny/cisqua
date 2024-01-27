@@ -114,13 +114,8 @@ module Cisqua
     end
 
     def normalize(name)
-      # Convert to lowercase
       name = name.downcase
-
-      # Remove non-alphanumeric characters except numbers
       name = name.gsub(/[^a-z0-9\s]/, '')
-
-      # Trim spaces
       name.strip
     end
 
