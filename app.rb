@@ -65,7 +65,7 @@ module Cisqua
     end
 
     get '/' do
-      initial_data = @view_data.for_scans(
+      initial_data = @view_data.updates(
         Time.now,
         BatchCheck.find_if_exists,
         BatchData.latest(50),
@@ -99,7 +99,7 @@ module Cisqua
         complete: batch_data.complete?,
         conns: settings.connections.count,
       })
-      data = @view_data.for_scans_with_lib_updates(
+      data = @view_data.updates(
         Time.now,
         BatchCheck.find_if_exists,
         [batch_data],
@@ -112,7 +112,7 @@ module Cisqua
     end
 
     def updates_from(queried_timestamp)
-      @view_data.for_scans_with_lib_updates(
+      @view_data.updates(
         Time.now,
         BatchCheck.find_if_exists,
         BatchData.updated_since(queried_timestamp),

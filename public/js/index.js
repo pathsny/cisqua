@@ -228,11 +228,9 @@ const mainService = {
     }
   },
   updateStores(data) {
-    Alpine.store('lastUpdate').update(data.last_update);
-    Alpine.store('scansData').update(data.scans);
-    if (data.library) {
-      Alpine.store('library').update(data.library);
-    }
+    Alpine.store('lastUpdate').update(data.last_update)
+    Alpine.store('scansData').update(data.scans)
+    Alpine.store('library').update(data.library)
     if (Alpine.store('lastUpdate').scanInProgress) {
       this.start();
     }

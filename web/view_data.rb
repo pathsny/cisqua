@@ -13,18 +13,18 @@ module Cisqua
     include ActionView::Helpers::DateHelper
     include SemanticLogger::Loggable
 
-    def for_scans(queried_at, batch_check, batch_datas)
+    def updates(queried_at, batch_check, batch_datas)
       {
         last_update: for_batch_check(queried_at, batch_check),
-        scans: batch_datas.map { |bd| for_batch_data(bd) },
+        **for_batch_datas(batch_datas),
       }
     end
 
-    def for_scans_with_lib_updates(queried_at, batch_check, batch_datas)
-      scan_data = for_scans(queried_at, batch_check, batch_datas)
-      a_ids = scan_data[:scans].flat_map { |scan| scan[:updates].map { |u| u[:id] } }.uniq
+    def for_batch_datas(batch_datas)
+      scans = batch_datas.map { |bd| for_batch_data(bd) }
+      a_ids = scans.flat_map { |scan| scan[:updates].map { |u| u[:id] } }.uniq
       {
-        **scan_data,
+        scans:,
         library: a_ids.map { |aid| for_anime(Anime.find(aid)) },
       }
     end
