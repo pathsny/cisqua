@@ -1,1 +1,5 @@
---ignore data/* --ignore script/* --ignore public/*
+--ignore data/*
+--ignore script/*
+--ignore public/*
+--ignore node_modules
+--ignore package*.json

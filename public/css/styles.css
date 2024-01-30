@@ -1,13 +1,13 @@
 /* Reset */
 * {
-  margin: 0;
-  padding: 0;
   box-sizing: border-box;
-  font-family: 'Arial', sans-serif;
+  padding: 0;
+  margin: 0;
+  font-family: Arial, sans-serif;
 }
 
 body {
-  background-color: #F4F6F9;
+  background-color: #f4f6f9;
   color: #333;
   font-size: 16px;
 }
@@ -20,28 +20,21 @@ body {
 }
 
 .left-column {
-  width: 250px;
-  /* fixed width for the column */
-  padding: 10px;
-  /* spacing around the content of the column */
-  background-color: #f5f5f5;
-  /* light grey background for the column */
-  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
-  /* subtle shadow for depth */
   display: flex;
+  width: 250px;
   flex-direction: column;
+  padding: 10px;
+  background-color: #f5f5f5;
+  box-shadow: 0 2px 5px rgb(0 0 0 / 10%);
   gap: 20px;
-  /* space between the two sections/cards */
 }
 
-/* General styling for cards in the left column */
-.left-column>section {
+.left-column > section {
   padding: 15px;
   border: 1px solid #ccc;
   border-radius: 5px;
-  background-color: #ffffff;
-  /* white background for the cards */
-  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.05);
+  background-color: #fff;
+  box-shadow: 0 2px 5px rgb(0 0 0 / 5%);
 }
 
 .request-scan {
@@ -53,45 +46,31 @@ body {
 .request-scan button,
 .request-fetch button {
   padding: 12px 20px;
-  /* vertical padding | horizontal padding */
-  font-size: 1.2rem;
-  /* This will increase the text size */
-  margin-bottom: 15px;
-  /* More space below the button */
   border: none;
-  /* Removes default borders */
-  background-color: #007BFF;
-  /* A blue background for the button */
-  color: #ffffff;
-  /* White text color */
   border-radius: 5px;
-  /* Rounded corners */
+  margin-bottom: 15px;
+  background-color: #007bff;
+  color: #fff;
   cursor: pointer;
-  /* Changes the cursor to a hand when hovering over the button */
+  font-size: 1.2rem;
   transition: background-color 0.3s ease;
-  /* Smooth transition for hover effect */
 }
 
 .request-scan button:hover,
 .request-fetch button:hover {
   background-color: #0056b3;
-  /* A darker blue when the button is hovered over */
 }
 
 .request-scan button:disabled,
 .request-fetch button:disabled {
   background-color: #ccc;
-  /* A light grey background for the disabled state */
-  cursor: not-allowed;
-  /* Cursor indicating the button is not clickable */
   color: #888;
-  /* A grey text color for the disabled state */
+  cursor: not-allowed;
 }
 
 .latest-check {
   margin-top: 10px;
   font-size: 14px;
-  /* Adjusted to work in conjunction with the "gap" property on the .left-column */
 }
 
 .latest-check-header {
@@ -101,32 +80,24 @@ body {
 }
 
 .latest-check h2 {
-  /* ... existing styles ... */
   margin-bottom: 0;
-  /* remove the space below the h2 */
 }
 
 .byline {
-  font-size: 0.9rem;
-  /* reduce the font size a bit */
   margin-bottom: 20px;
-  /* add some space below the byline */
   color: #666;
-  /* make the byline a bit more subtle */
+  font-size: 0.9rem;
 }
 
 .latest-check-details p {
   margin-bottom: 6px;
-  /* space between items */
 }
 
 .label {
   display: inline-block;
   width: 60px;
-  /* Set this width to accommodate the longest label */
-  text-align: center;
   margin-right: 10px;
-  /* Space between the label and value */
+  text-align: center;
 }
 
 .checkbox-list {
@@ -136,72 +107,66 @@ body {
 }
 
 .main-content {
-  flex-grow: 1;
-  /* Allow the main content to take up the available space */
-  width: 100%;
-  /* Ensure the width fills the container */
   position: relative;
+  width: 100%;
+  flex-grow: 1;
 }
 
 .scans {
+  overflow: auto;
   flex: 1;
   padding: 20px;
-  background-color: #ffffff;
-  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
-  overflow: auto;
+  background-color: #fff;
+  box-shadow: 0 2px 5px rgb(0 0 0 / 10%);
 }
 
 .main-header {
+  padding: 20px 0;
+  margin-bottom: 20px;
   background-color: #2c3e50;
   color: #ecf0f1;
-  padding: 20px 0;
   text-align: center;
-  margin-bottom: 20px;
 }
 
 .main-header h1 {
-  font-size: 2rem;
   margin-bottom: 10px;
+  font-size: 2rem;
 }
 
 .notification {
-  padding: 15px 20px;
-  border-radius: 4px;
-  margin-top: 20px;
-  max-width: 500px;
-  font-size: 16px;
-  margin: 10px 0;
-  border: 1px solid transparent;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  /* This makes the notification span the entire width */
   z-index: 10;
-  /* Ensure the notification stays above the other content */
-  background-color: rgba(255, 255, 255, 0.9);
-  /* semi-transparent background, adjust as necessary */
+  top: 0;
+  right: 0;
+  left: 0;
+  max-width: 500px;
+  padding: 15px 20px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  margin: 10px 0;
+  margin-top: 20px;
+  background-color: rgb(255 255 255 / 90%);
+  box-shadow: 0 4px 8px rgb(0 0 0 / 10%);
+  font-size: 16px;
 }
 
 .notification.success {
-  background-color: #D4EDDA;
+  border: 1px solid #c3e6cb;
+  background-color: #d4edda;
   color: #155724;
-  border: 1px solid #C3E6CB;
 }
 
 .notification.warning {
-  background-color: #FFF3CD;
+  border: 1px solid #ffeeba;
+  background-color: #fff3cd;
   color: #856404;
-  border: 1px solid #FFEEBA;
 }
 
 .notification.error {
-  background-color: #F8D7DA;
-  color: #721C24;
-  border: 1px solid #F5C6CB;
+  border: 1px solid #f5c6cb;
+  background-color: #f8d7da;
+  color: #721c24;
 }
-
 
 .collapsible {
   color: #3498db;
@@ -209,29 +174,26 @@ body {
 }
 
 footer {
-  text-align: center;
   padding: 20px 0;
   background-color: #2c3e50;
   color: #ecf0f1;
+  text-align: center;
 }
 
 .spinner-container {
   display: flex;
   justify-content: center;
-  /* Centers horizontally */
   padding-top: 10px;
-  /* Gives some spacing from the top */
   padding-bottom: 10px;
-  /* Optional: you can add some space below spinner */
 }
 
 .spinner {
-  border: 4px solid rgba(255, 255, 255, 0.3);
-  border-radius: 50%;
-  border-top: 4px solid #3498db;
   /* Color of the spinner */
   width: 24px;
   height: 24px;
+  border: 4px solid rgb(255 255 255 / 30%);
+  border-radius: 50%;
+  border-top: 4px solid #3498db;
   animation: spin 1s linear infinite;
 }
 
@@ -245,41 +207,26 @@ footer {
   }
 }
 
-/* Existing styles ... */
-
-/* Tabs Styling */
-
 .tabs-header {
   display: flex;
-  border-bottom: 2px solid #007BFF;
-  /* Blue underline for the tabs container */
-  margin-bottom: 20px;
   justify-content: space-between;
-  background-color: #f5f5f5;
-  /* Same as the left-column's background */
   border: 1px solid #ccc;
-  /* Border for the entire tab header */
-  border-bottom: none;
-  /* Removing the bottom border as we already have a distinct underline */
   border-radius: 4px 4px 0 0;
-  /* Rounded corners on the top */
+  border-bottom: none;
+  margin-bottom: 20px;
+  background-color: #f5f5f5;
 }
 
 .tab-button {
   flex-grow: 1;
-  /* allows the buttons to take up equal widths */
-  border: 1px solid #ccc;
   padding: 12px 20px;
-  /* Increased padding for larger appearance */
-  cursor: pointer;
-  background-color: #f5f5f5;
+  border: 1px solid #ccc;
   border-bottom: 1px solid #ccc;
+  background-color: #f5f5f5;
+  cursor: pointer;
   font-size: 1.2rem;
-  /* Adjust font size if necessary */
   text-align: center;
-  /* Center the text within each tab */
   transition: background-color 0.3s ease;
-  /* Smooth transition for hover and active effects */
 
   &:last-child {
     border-right: none;
@@ -291,93 +238,83 @@ footer {
 }
 
 .tab-button.active-tab {
-  color: #007BFF;
-  background-color: #ffffff;
-  border-bottom: 2px solid #007BFF;
-  /* Removing the border to let the tabs-header's underline show through */
+  border-bottom: 2px solid #007bff;
+  background-color: #fff;
+  color: #007bff;
   font-weight: bold;
-  /* Making active tab bold can also help distinguish it */
 }
 
 /* Library Card Styling */
 .library-card {
-  border: 1px solid #eaeaea;
-  padding: 20px;
-  background-color: #f9f9f9;
   display: flex;
-  gap: 20px;
-  /* This will provide a gap between the left and right sections */
+  padding: 20px;
+  border: 1px solid #eaeaea;
   margin-bottom: 20px;
-  /* Space between each library card */
-  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.05);
-  /* Subtle shadow for depth */
+  background-color: #f9f9f9;
+  box-shadow: 0 2px 5px rgb(0 0 0 / 5%);
+  gap: 20px;
 }
 
 .library-card .left-section {
-  flex: 1;
-  padding: 1em;
   display: flex;
+  flex: 1;
   flex-direction: column;
+  padding: 1em;
   margin: 12 px 0;
 }
 
 .library-card .title-wrapper {
   display: flex;
   align-items: center;
-  /* Vertically aligns child items */
-  gap: 15px;
-  /* Spacing between direct children, adjust as needed */
   margin-bottom: 20px;
-  /* moved from h2 */
+  gap: 15px;
 }
 
 .library-card .title-wrapper h2 {
-  font-size: 1.2em;
   margin: 0;
-  /* Reset the margin on the h2 */
-  font-weight: bold;
   color: #444;
-}
-
-.library-card .title-wrapper .status-badge {
-  padding: 4px 8px;
+  font-size: 1.2em;
+  font-weight: bold;
 }
 
 .status-badge {
   display: inline-flex;
   align-items: center;
   border-radius: 4px;
-  font-size: 1.2rem;
   color: #155724;
+  font-size: 1.2rem;
+}
+
+.library-card .title-wrapper .status-badge {
+  padding: 4px 8px;
 }
 
 .status-badge.ended-complete {
-  background-color: #ffffff;
-  color: #007BFF;
+  background-color: #fff;
+  color: #007bff;
 }
 
 .status-badge.ended-incomplete {
-  background-color: #FFF3CD;
+  background-color: #fff3cd;
   color: #856404;
 }
 
 .status-badge.ongoing {
-  background-color: #FFF;
-  color: #007BFF;
+  background-color: #fff;
+  color: #007bff;
 }
 
 .status-badge.unknown-file {
-  background-color: #FFF;
-  color: #CA6D59;
+  background-color: #fff;
+  color: #ca6d59;
 }
 
 .library-card .right-section {
+  display: flex;
   flex: 1;
+  flex-direction: column;
   padding: 1em;
   border-left: 1px solid #eaeaea;
-  /* A subtle separator between the two sections */
-  display: flex;
-  flex-direction: column;
   margin: 14 px 0;
 }
 
@@ -389,23 +326,20 @@ footer {
 .library-card .right-section strong,
 .library-card .right-section span {
   flex: 1;
-  /* Both labels and values will take equal width. */
 }
 
-
-
 .highlight-text {
-  color: #87CEEB;
+  color: #87ceeb;
 }
 
 .scan-card {
-  border-bottom: 1px solid #eaeaea;
-  background-color: #ffffff;
-  margin-top: 20px;
+  padding-bottom: 10px;
   border: 1px solid #ccc;
   border-radius: 5px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  padding-bottom: 10px;
+  border-bottom: 1px solid #eaeaea;
+  margin-top: 20px;
+  background-color: #fff;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 10%);
 }
 
 .scan-card-header {
@@ -413,13 +347,13 @@ footer {
   flex-direction: column;
   align-items: flex-start;
   justify-content: space-between;
-  font-size: 1.1em;
+  padding: 20px 20px 10px;
   margin-bottom: 15px;
   background: linear-gradient(to right, #2c3e50, #5a8bbd);
-  color: #ecf0f1;
   border-top-left-radius: 5px;
   border-top-right-radius: 5px;
-  padding: 20px 20px 10px 20px;
+  color: #ecf0f1;
+  font-size: 1.1em;
 }
 
 .scan-card.in-progress .scan-card-header {
@@ -432,9 +366,9 @@ footer {
 
 .scan-card-header .header-content {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
   width: 100%;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .scan-card-header .right-group {
@@ -443,26 +377,22 @@ footer {
   margin-left: auto;
 }
 
-.right-group>span {
+.right-group > span {
   margin-right: 5px;
 }
 
 .expand-indicator {
-  font-size: 1.2 em;
-  cursor: pointer;
-  transition: transform 0.3s ease;
   margin-left: 5px;
+  cursor: pointer;
+  font-size: 1.2 em;
+  transition: transform 0.3s ease;
 }
 
 .run-time-details {
-  border-top: 1px solid rgba(236, 240, 241, 0.3);
-  /* A light border using the existing text color */
-  padding-top: 10px;
-  /* Some padding to space out the content from the border */
-  box-sizing: border-box;
-  /* Ensure padding doesn't affect width */
   width: 100%;
-  /* Ensure it spans the full width */
+  box-sizing: border-box;
+  padding-top: 10px;
+  border-top: 1px solid rgb(236 240 241 / 30%);
 }
 
 .run-time-details p {
@@ -472,29 +402,28 @@ footer {
 }
 
 .run-time-details p strong {
-  flex-shrink: 0;
   width: 120px;
-  text-align: right;
+  flex-shrink: 0;
   margin-right: 10px;
+  color: rgb(236 240 241 / 80%);
   font-size: 0.9em;
   font-weight: bold;
-  color: rgba(236, 240, 241, 0.8);
+  text-align: right;
 }
 
 .run-time-details span {
   flex-grow: 1;
 }
 
-
-.scan-card>*:not(.scan-card-header) {
+.scan-card > *:not(.scan-card-header) {
   padding-left: 20px;
 }
 
 .scan-card h4 {
-  font-size: 1em;
   display: flex;
   align-items: center;
   margin-bottom: 10px;
+  font-size: 1em;
 }
 
 .scan-show {
@@ -502,39 +431,39 @@ footer {
 }
 
 .scan-show-detail {
-  font-size: 0.9em;
   display: flex;
   align-items: center;
   margin-bottom: 5px;
   margin-left: 30px;
+  font-size: 0.9em;
 }
 
 .scan-show-detail .label {
-  font-size: 0.8em;
   padding: 2px 6px;
   border-radius: 10px;
   margin-right: 4px;
   color: white;
+  font-size: 0.8em;
 }
 
 .final-status {
-  font-weight: bold;
-  background: linear-gradient(to right, #2c3e50, #5a8bbd);
-  color: white;
   padding-top: 3px;
   padding-bottom: 3px;
+  background: linear-gradient(to right, #2c3e50, #5a8bbd);
+  color: white;
+  font-weight: bold;
 }
 
 .added-label {
-  background-color: #4CAF50;
+  background-color: #4caf50;
 }
 
 .replacement-label {
-  background-color: #8BC34A;
+  background-color: #8bc34a;
 }
 
 .duplicates-label {
-  background-color: #FF9800;
+  background-color: #ff9800;
 }
 
 .scan-show-detail .final-status-label {
@@ -543,5 +472,5 @@ footer {
 }
 
 .unknown-label {
-  background-color: #CA6D59;
+  background-color: #ca6d59;
 }
