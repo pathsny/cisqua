@@ -4,7 +4,7 @@
     <div class="subhead-links">
       <button
         class="copy-id-button"
-        @click.prevent="copyText(<%=show_var%>.id); $notify({ type: 'success', message: `Copied ID ${<%=show_var%>.id} to Clipboard`})"
+        @click.prevent="utils.copyText(<%=show_var%>.id); $notify({ type: 'success', message: `Copied ID ${<%=show_var%>.id} to Clipboard`})"
       >
         <span x-text="`ID: ${<%=show_var%>.id}`"></span><i class="fas fa-copy"></i>
       </button>

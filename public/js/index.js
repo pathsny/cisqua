@@ -9,6 +9,19 @@ function invariantIsBool(value, message) {
   return invariant(typeof value === 'boolean', message);
 }
 
+const utils = {
+  sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  },
+  copyText(aid) {
+    navigator.clipboard.writeText(aid)
+  },
+  // Remove the proxy stuff
+  dd(obj) {
+    return JSON.parse(JSON.stringify(obj))
+  },
+}
+
 const statusBadges = {
   'ongoing': {
     wrapperClass: 'ongoing',
@@ -34,11 +47,7 @@ const statusBadges = {
     return this[anime.complete ? "ended-complete" : "ended-incomplete"]
   }
 }
-function copyText(aid) {
-  navigator.clipboard.writeText(aid)
-}
 
-// Remove the proxy stuff
 function makeAnime(anime_data) {
   return {
     ...anime_data,
