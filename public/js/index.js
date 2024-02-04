@@ -39,6 +39,30 @@ const statusBadges = {
     return this[anime.complete ? "ended-complete" : "ended-incomplete"]
   }
 }
+function copyText(aid) {
+  navigator.clipboard.writeText(aid)
+}
+
+// Remove the proxy stuff
+function makeAnime(anime_data) {
+  return {
+    ...anime_data,
+    image: anime_data.has_image ? `a${anime_data.id}.jpg` : 'missing.png',
+    thumb: anime_data.has_image ? `a${anime_data.id}_t.jpg` : 'missing.png',
+    contents: anime_data.eps_w_grps,
+    get badge() {
+      if (this.ended) {
+        // Ongoing Collection
+        return statusBadges[this.complete ? "ended-complete" : "ended-incomplete"]
+      } else {
+        return statusBadges["ongoing"];
+      }
+    },
+    hasSpecials() {
+      return this.special_ep_count > 0;
+    },
+  };
+}
 
 const libraryBaseUrl = '/library?limit=20';
 
@@ -106,7 +130,7 @@ function makeLibrary() {
     appendAnimes(library_data) {
       library_data.forEach(anime_data => {
         this.animeIds.push(anime_data.id);
-        this.animeDetails.set(anime_data.id, this.libraryCard(anime_data));
+        this.animeDetails.set(anime_data.id, makeAnime(anime_data));
       });
     },
     update(library_data) {
@@ -115,11 +139,12 @@ function makeLibrary() {
     // These are updates that are not necessarily in sorted order.
     insertAnime(anime_data) {
       // We always store the data in the overall map
-      const newAnime = this.libraryCard(anime_data);
+      const newAnime = makeAnime(anime_data);
       this.animeDetails.set(anime_data.id, newAnime);
       if (this.loadingState == 'error' || this.loadingState == 'init') {
         return; // We've not started fetching the library.
       }
+
       let index = this.animeIds.findIndex(id => {
         return this.animeDetails.get(id).name.localeCompare(newAnime.name) >= 0;
       })
@@ -153,27 +178,7 @@ function makeLibrary() {
     get isLoading() {
       return this.loadingState == 'loading'
     },
-    libraryCard(entry) {
-      const card_data = {
-        id: entry.id,
-        name: entry.name,
-        type: entry.type,
-        eps: entry.eps,
-        air_date: entry.air_date,
-        end_date: entry.end_date,
-        english_name: entry.english_name,
-        image: entry.has_image ? `a${entry.id}.jpg` : 'missing.png',
-        thumb: entry.has_image ? `a${entry.id}_t.jpg` : 'missing.png',
-
-        badge: statusBadges.forAnime(entry),
-
-        contents() {
-          return entry.eps_w_grps
-        },
-      };
-      return card_data;
-    },
-  }
+  };
 }
 
 const notification = {

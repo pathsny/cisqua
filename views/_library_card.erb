@@ -1,24 +1,56 @@
 <article class="library-card">
-  <!-- Left Side: Primary Information -->
-  <div class="left-section">
-    <div class="title-wrapper">
-      <h2 class="card-title" x-text="<%=show_var%>.name"></h2>
-      <%= erb :_library_badge, locals: { prefix: "#{show_var}.badge" } %>
+  <div class="library-card-header">
+    <h2 x-text="<%=show_var%>.name" class='card-title'></h2>
+    <div class="subhead-links">
+      <button
+        class="copy-id-button"
+        @click.prevent="copyText(<%=show_var%>.id); $notify({ type: 'success', message: `Copied ID ${<%=show_var%>.id} to Clipboard`})"
+      >
+        <span x-text="`ID: ${<%=show_var%>.id}`"></span><i class="fas fa-copy"></i>
+      </button>
+      <a class="anidb-link" :href="`https://anidb.net/anime/${<%=show_var%>.id}`" target="_blank">
+        visit anidb page
+      </a>
     </div>
-    <img :src="`show_images/${<%=show_var%>.image}`" alt="Show Image" class="show-image">
-    <p><span x-text="<%=show_var%>.type"></span></p>
-    <p><span x-text="<%=show_var%>.eps"></span></p>
   </div>
-  <!-- Right Side: Detailed Information -->
-  <div class="right-section">
-    <p><strong>ID:</strong>
-      <span x-text="<%=show_var%>.id"></span></p>
-    <p><strong>English Name:</strong><span x-text="<%=show_var%>.english_name || '---'"></span></p>
-    <p><strong>Collection:</strong>
-      <span x-text="<%=show_var%>.contents"></span></p>
-    <p><strong>Air Date:</strong>
-      <span x-text="<%=show_var%>.air_date"></span></p>
-    <p><strong>End Date:</strong>
-      <span x-text="<%=show_var%>.end_date"></span></p>
+  <div class="library-card-content">
+    <div class="left-section">
+      <img :src="`show_images/${<%=show_var%>.image}`" alt="Show Image" class="show-image">
+    </div>
+    <div class="right-section">
+      <table class="info-table">
+        <tr>
+          <td>Status</td>
+          <td>
+            <%= erb :_library_badge, locals: { prefix: "#{show_var}.badge" } %>
+            <span x-text="<%=show_var%>.badge.statusTooltip"></span>
+          </td>
+        </tr>
+        <tr>
+          <td>Type</td>
+          <td><span x-text="<%=show_var%>.type"></span></td>
+        </tr>
+        <tr>
+          <td>English Name</td>
+          <td><span x-text="<%=show_var%>.english_name || '---'"></span></td>
+        </tr>
+        <tr>
+          <td>Collection</td>
+          <td><span x-text="<%=show_var%>.contents"></span></td>
+        </tr>
+        <tr>
+          <td>Air Date</td>
+          <td><span x-text="<%=show_var%>.air_date"></span></td>
+        </tr>
+        <tr>
+          <td>End Date</td>
+          <td><span x-text="<%=show_var%>.end_date"></span></td>
+        </tr>
+        <tr class="stretch-row">
+          <td></td>
+          <td></td>
+        </tr>
+      </table>
+    </div>
   </div>
 </article>

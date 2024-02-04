@@ -275,56 +275,12 @@ footer {
   font-weight: bold;
 }
 
-/* Library Card Styling */
-.library-card {
-  display: flex;
-  padding: 20px;
-  border: 1px solid #eaeaea;
-  margin-bottom: 20px;
-  background-color: #f9f9f9;
-  box-shadow: 0 2px 5px rgb(0 0 0 / 5%);
-  gap: 20px;
-}
-
-.library-card .left-section {
-  display: flex;
-  width: 250px;
-  flex: 1;
-  flex-direction: column;
-  padding: 1em;
-  margin: 12 px 0;
-}
-
-.library-card .title-wrapper {
-  display: flex;
-  align-items: center;
-  margin-bottom: 20px;
-  gap: 15px;
-}
-
-.library-card .title-wrapper h2 {
-  margin: 0;
-  color: #444;
-  font-size: 1.2em;
-  font-weight: bold;
-}
-
-.show-image {
-  width: 100%;
-  height: auto;
-  margin-right: 10px;
-}
-
 .status-badge {
   display: inline-flex;
   align-items: center;
   border-radius: 4px;
   color: #155724;
   font-size: 1.2rem;
-}
-
-.library-card .title-wrapper .status-badge {
-  padding: 4px 8px;
 }
 
 .status-badge.ended-complete {
@@ -347,23 +303,97 @@ footer {
   color: #ca6d59;
 }
 
+.show-image {
+  width: 100%;
+  height: auto;
+  margin-right: 10px;
+}
+
+.show-id-link {
+  color: blue;
+  text-decoration: none;
+}
+
+.show-id-link:visited {
+  color: blue;
+}
+
+.show-id-link:hover {
+  text-decoration: underline;
+}
+
+/* Library Card Styling */
+.library-card {
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  border: 1px solid #eaeaea;
+  margin-bottom: 20px;
+  background-color: #f9f9f9;
+  box-shadow: 0 2px 5px rgb(0 0 0 / 5%);
+}
+
+.library-card-header {
+  margin-bottom: 10px;
+  color: #444;
+  font-size: 1.4em;
+  font-weight: bold;
+}
+
+.library-card-header .card-title {
+  margin-left: 20px;
+}
+
+.library-card-header .subhead-links {
+  display: flex;
+  align-items: center;
+  margin-left: 40px;
+  font-size: 0.7em;
+  gap: 15px;
+}
+
+.copy-id-button i {
+  margin-left: 5px;
+}
+
+.library-card-content {
+  display: flex;
+}
+
+.library-card-content .left-section {
+  width: 250px;
+}
+
 .library-card .right-section {
   display: flex;
   flex: 1;
   flex-direction: column;
-  padding: 1em;
+  padding-left: 1em;
   border-left: 1px solid #eaeaea;
-  margin: 14 px 0;
+  font-size: 1em;
 }
 
-.library-card .right-section p {
-  display: flex;
-  justify-content: space-between;
+.library-card .info-table {
+  width: 100%;
+  height: 100%;
+  border-collapse: collapse;
 }
 
-.library-card .right-section strong,
-.library-card .right-section span {
-  flex: 1;
+.library-card .info-table .stretch-row {
+  height: 100%;
+}
+
+.library-card .info-table td {
+  padding: 5px 5px 5px 15px;
+  vertical-align: top;
+}
+
+.library-card .info-table tr td:first-child {
+  width: 25%;
+  padding: 5px;
+  background-color: #add8e6;
+  font-weight: bolder;
+  white-space: nowrap;
 }
 
 .highlight-text {
