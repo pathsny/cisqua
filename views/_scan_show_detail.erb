@@ -1,0 +1,4 @@
+<div class="scan-show-detail" x-show="show.<%=detail%>">
+  <span class="label <%=detail.gsub('_', '-')%>-label"><%= name %>:</span>
+  <span x-text="show.<%=detail%>?.eps_w_grps"></span>
+</div>

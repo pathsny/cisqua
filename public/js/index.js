@@ -221,23 +221,32 @@ function makeLastUpdate() {
   }
 }
 
+function makeScan(scan) {
+  return {
+    ...scan,
+    updates: scan.updates.map(anime_updates => {
+      return {
+        ...anime_updates,
+        final_status: anime_updates.latest,
+      };
+    }),
+  };
+}
+
 function makeScansData() {
   return {
     init() {
-      this.scans = window.initialData.scans;
+      this.scans = window.initialData.scans.map((scan) => makeScan(scan));
     },
     update(data) {
-      const newScans = data.filter(newScan =>
-        !this.scans.some(scan => scan.id === newScan.id)
-      );
-
-      const updatedScans = this.scans.map(scan => {
-        const update = data.find(updatedScan => updatedScan.id === scan.id);
-        return update ? Object.assign({}, scan, update) : scan;
+      const newScans = data.map(scan => makeScan(scan));
+      const unmodifiedScans = this.scans.filter(scan => {
+        isUpdated = data.find(updatedScan => updatedScan.id === scan.id);
+        return !isUpdated;
       });
 
-      this.scans = newScans.concat(updatedScans);
-    }
+      this.scans = newScans.concat(unmodifiedScans);
+    },
   }
 }
 

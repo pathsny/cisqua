@@ -1,23 +1,18 @@
+# encoding: UTF-8
 <div class="scan-show" :id="`${scan.id}-${show.aid}`" x-data="{anime: $getAnime(show.aid)}">
   <img :src="`show_images/${anime.thumb}`" alt="Show Thumbnail" class="show-thumbnail">
-  <h4>
-    <%= erb :_library_badge, locals: { prefix: "anime.badge" } %>
-    <span x-text="anime.name"></span>
-  </h4>
-  <div class="scan-show-detail" x-show="show.success">
-    <span class="label added-label">Added:</span>
-    <span x-text="show.success?.eps_w_grps"></span>
-  </div>
-  <div class="scan-show-detail" x-show="show.replacement">
-    <span class="label replacement-label">Replaced:</span>
-    <span x-text="show.replacement?.eps_w_grps"></span>
-  </div>
-  <div class="scan-show-detail" x-show="show.duplicate">
-    <span class="label duplicates-label">Duplicate:</span>
-    <span x-text="show.duplicate?.eps_w_grps"></span>
-  </div>
-  <div class="scan-show-detail final-status">
-    <span class="label final-status-label">Status:</span>
-    <span x-text="show.latest.eps_w_grps"></span>
+  <div class="scan-show-details">
+    <div class="scan-show-title-wrapper">
+      <h4>
+        <%= erb :_library_badge, locals: { prefix: "anime.badge" } %>
+        <span x-text="anime.name"></span>
+      </h4>
+    </div>
+    <%= erb :_scan_show_detail, locals: { detail: "success", name: "Added" } %>
+    <%= erb :_scan_show_detail, locals: { detail: "duplicate", name: "Duplicate" } %>
+    <%= erb :_scan_show_detail, locals: { detail: "replacement", name: "Replacement" } %>
+    <span class="final-status">
+      <%= erb :_scan_show_detail, locals: { detail: "final_status", name: "Status" } %>
+    </span>
   </div>
 </div>

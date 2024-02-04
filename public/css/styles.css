@@ -415,13 +415,20 @@ footer {
   flex-direction: column;
   align-items: flex-start;
   justify-content: space-between;
-  padding: 20px 20px 10px;
   margin-bottom: 15px;
   background: linear-gradient(to right, #2c3e50, #5a8bbd);
   border-top-left-radius: 5px;
   border-top-right-radius: 5px;
   color: #ecf0f1;
   font-size: 1.1em;
+}
+
+.scan-card .progress-bar {
+  width: 0%;
+  height: 4px;
+  background-color: #34c759;
+  border-bottom-left-radius: 5px;
+  border-bottom-right-radius: 5px;
 }
 
 .scan-card.in-progress .scan-card-header {
@@ -437,6 +444,7 @@ footer {
   width: 100%;
   align-items: center;
   justify-content: space-between;
+  padding: 20px 20px 10px;
 }
 
 .scan-card-header .right-group {
@@ -484,29 +492,44 @@ footer {
 }
 
 .scan-card > *:not(.scan-card-header) {
+  padding-right: 20px;
   padding-left: 20px;
 }
 
-.scan-card h4 {
+.scan-show {
   display: flex;
   align-items: center;
+  padding-bottom: 10px;
+}
+
+.scan-show-title-wrapper {
+  display: flex;
+  width: 100%;
+  align-items: center;
+}
+
+.scan-show h4 {
+  display: flex;
+  align-items: end;
   margin-bottom: 10px;
   font-size: 1em;
 }
 
-.scan-show {
-  padding-bottom: 10px;
+.scan-show-details {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
 }
 
 .scan-show-detail {
   display: flex;
   align-items: center;
   margin-bottom: 5px;
-  margin-left: 30px;
   font-size: 0.9em;
 }
 
 .scan-show-detail .label {
+  width: 64px;
   padding: 2px 6px;
   border-radius: 10px;
   margin-right: 4px;
@@ -515,23 +538,26 @@ footer {
 }
 
 .final-status {
-  padding-top: 3px;
-  padding-bottom: 3px;
+  padding-top: 2px;
   background: linear-gradient(to right, #2c3e50, #5a8bbd);
   color: white;
   font-weight: bold;
 }
 
-.added-label {
+.scan-show-detail .success-label {
   background-color: #4caf50;
 }
 
-.replacement-label {
+.scan-show-detail .replacement-label {
   background-color: #8bc34a;
 }
 
-.duplicates-label {
+.scan-show-detail .duplicate-label {
   background-color: #ff9800;
+}
+
+.scan-show-detail .junk-label {
+  background-color: #af9c12;
 }
 
 .scan-show-detail .final-status-label {
@@ -543,7 +569,7 @@ footer {
   background-color: #ca6d59;
 }
 
-.show-thumbnail {
+.scan-show .show-thumbnail {
   width: 45px;
   height: auto;
   margin-right: 10px;

@@ -8,7 +8,10 @@
       <time class="highlight-text" x-text="scan.started_at"></time>
     </strong>
     <div class="right-group">
-      <span x-show="!scan.complete" x-text="scan.scanned_count + ' of'"></span>
+      <span
+        x-show="!scan.complete || scan.scanned_count < scan.file_count"
+        x-text="scan.scanned_count + ' of'"
+      ></span>
       <span x-text="scan.file_count"></span>
       <span>
         files</span>
@@ -18,16 +21,8 @@
       </span>
     </div>
   </div>
-  <div
-    x-show="scan.showDetails"
-    x-transition:enter="transition-transform ease-out duration-300"
-    x-transition:enter-start="opacity-0 transform scale-y-0"
-    x-transition:enter-end="opacity-100 transform scale-y-1"
-    x-transition:leave="transition-transform ease-in duration-300"
-    x-transition:leave-start="opacity-100 transform scale-y-1"
-    x-transition:leave-end="opacity-0 transform scale-y-0"
-    class="run-time-details"
-  >
+  <div x-show="scan.showDetails"
+    x-collapse class="run-time-details">
     <p><strong>Date:</strong><span x-text="scan.start_date"></span></p>
     <p><strong>Time:</strong><span x-text="scan.start_time"></span></p>
     <p><strong>Duration:</strong>
@@ -36,4 +31,9 @@
       <span x-text="scan.source"></span></p>
     <p><strong>Scan ID:</strong><span x-text="scan.id"></span></p>
   </div>
+  <div
+    class="progress-bar"
+    x-show="!scan.complete"
+    :style="'width:' + (scan.scanned_count / scan.file_count * 100) + '%'"
+  ></div>
 </header>
