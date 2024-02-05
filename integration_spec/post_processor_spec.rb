@@ -182,6 +182,7 @@ end
 def prepare_data(t)
   t.files.each do |f|
     FileUtils.rm_f(f.src.path)
+    FileUtils.mkdir_p(File.dirname(f.src.path))
     FileUtils.cp(
       f.pristine.path,
       f.src.path,

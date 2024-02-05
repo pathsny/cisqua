@@ -25,11 +25,6 @@ const statusBadges = {
     icon: 'fas fa-exclamation-circle',
     statusTooltip: 'Ended (InComplete)',
   },
-  'unknown-file': {
-    wrapperClass: 'unknown-file',
-    icon: 'fas fa-file-circle-question',
-    statusTooltip: 'Unknown File',
-  },
   forAnime(anime) {
     invariantIsBool(anime.ended, 'Anime must have ended property');
     invariantIsBool(anime.complete, 'Anime must have ended property');

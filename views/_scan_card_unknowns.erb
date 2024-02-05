@@ -1,6 +1,5 @@
-<div x-show="scan.unknowns && scan.unknowns.length > 0" class="scan-show">
+<div x-show="scan.unknowns && scan.unknowns.length > 0" class="scan-card-unknowns">
   <h4>
-    <%= erb :_library_badge, locals: { prefix: "statusBadges['unknown-file']" } %>
     <span>
       <span class="highlight-text" x-text="scan.unknowns.length"></span>
       <span>
@@ -11,10 +10,13 @@
       <i class="fa-solid fa-circle-chevron-up" x-show="scan.showUnrecognized"></i>
     </span>
   </h4>
-  <div x-show="scan.showUnrecognized">
+  <div x-show="scan.showUnrecognized"
+    x-collapse class="scan-card-unknowns-details">
     <template x-for="file in scan.unknowns">
-      <div class="scan-show-detail">
-        <span class="label unknown-label">Unknown:</span>
+      <div class="scan-card-unknown-detail">
+        <span class="status-badge">
+          <i class="fas fa-file-circle-question"></i>
+        </span>
         <span x-text="file"></span>
       </div>
     </template>
