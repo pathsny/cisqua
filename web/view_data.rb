@@ -32,17 +32,23 @@ module Cisqua
     def for_anime(anime)
       range = Range.find_by_id(anime.id)
       {
-        id: anime.id,
         name: anime.romaji_name,
         combined_name: combined_name_for_anime(anime),
-        english_name: anime.english_name,
         ended: anime.ended?,
         complete: anime.movie? ? true : MyList.complete?(anime.id),
-        year: anime.year,
         air_date: anime.air_date.strftime('%Y-%m-%d'),
         end_date: anime.ended? ? anime.end_date.strftime('%Y-%m-%d') : nil,
         type: anime.type,
         has_image: anime.metadata&.has_image?,
+        **anime.attributes.slice(
+          :id,
+          :english_name,
+          :year,
+          :type,
+          :episode_count,
+          :highest_episode_number,
+          :special_ep_count,
+        ),
         eps: range.simple,
         eps_w_grps: range.with_groups,
       }
