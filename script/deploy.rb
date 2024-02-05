@@ -120,6 +120,13 @@ class Deploy
         Net::SCP.start(CONFIG[:remote_host], CONFIG[:remote_user]) do |scp|
           scp.upload!(local_db_file, remote_db_file)
         end
+      when :download_db
+        remote_db_file = File.join(CONFIG[:remote_db_location], 'dump.rdb')
+        local_db_file = File.expand_path(data.first)
+        comment "have to download #{remote_db_file} to #{local_db_file}"
+        Net::SCP.start(CONFIG[:remote_host], CONFIG[:remote_user]) do |scp|
+          scp.download!(remote_db_file, local_db_file)
+        end
       when :restart
         comment 'finding deployments'
         result = exec_remote_command(
@@ -225,6 +232,10 @@ OptionParser.new do |opts|
   opts.on('-d', '--push_db DB', 'Shuts down deployment and updates remote db') do |db|
     options[:push_db] = db
   end
+
+  opts.on('-e', '--extract_db DB', 'Extracts remote db to local file') do |db|
+    options[:extract_db] = db
+  end
 end.parse!
 
 if (options.keys.count > 1 || options[:remote].count > 1) && options[:remote][:logs]
@@ -247,6 +258,9 @@ else
   end
   if options[:push]
     d.push
+  end
+  if options[:extract_db]
+    d.remote([:stop, [:download_db, options[:extract_db]]])
   end
   if options[:push_db]
     d.remote([:stop, :backup_db, [:copy_db, options[:push_db]]])
