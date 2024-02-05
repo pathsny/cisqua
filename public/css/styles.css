@@ -641,6 +641,13 @@ footer {
   flex-direction: column;
 }
 
+.scan-show-details .final-status {
+  padding-top: 2px;
+  background: linear-gradient(to right, #2c3e50, #5a8bbd);
+  color: white;
+  font-weight: bold;
+}
+
 .scan-show-detail {
   display: flex;
   align-items: center;
@@ -657,14 +664,7 @@ footer {
   font-size: 0.8em;
 }
 
-.final-status {
-  padding-top: 2px;
-  background: linear-gradient(to right, #2c3e50, #5a8bbd);
-  color: white;
-  font-weight: bold;
-}
-
-.scan-show-detail .success-label {
+.scan-show-detail .added-label {
   background-color: #4caf50;
 }
 
@@ -680,6 +680,10 @@ footer {
   background-color: #af9c12;
 }
 
+.scan-show-detail .previous-label {
+  background-color: #819ca9;
+}
+
 .scan-show-detail .final-status-label {
   background: white;
   color: #2c3e50;
@@ -689,4 +693,46 @@ footer {
   width: 45px;
   height: auto;
   margin-right: 10px;
+}
+
+.scan-show-detail .ranges {
+  font-size: 0.8em;
+  font-weight: normal;
+}
+
+.scan-show-detail .group-name {
+  font-weight: bolder;
+}
+
+.scan-show-detail .group-separator {
+  padding: 0 5px;
+  font-size: 0.8em;
+}
+
+.scan-show-detail .replacement-section {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.8em;
+  gap: 3px;
+}
+
+.scan-show-detail .replacement-attribute {
+  padding: 3px;
+  border-radius: 15px;
+  margin-left: 3px;
+  background-color: #eee;
+  font-weight: bold;
+}
+
+.scan-show-detail .replacement-old-value {
+  color: red;
+}
+
+.scan-show-detail .replacement-new-value {
+  color: green;
+}
+
+.scan-show-detail .arrow-symbol {
+  color: #333;
+  font-size: 1.3em;
 }

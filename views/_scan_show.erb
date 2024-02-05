@@ -19,9 +19,28 @@
         <span x-text="anime.name"></span>
       </h4>
     </div>
-    <%= erb :_scan_show_detail, locals: { detail: "success", name: "Added" } %>
+    <%= erb :_scan_show_detail, locals: { detail: "added", name: "Added" } %>
+    <div class="scan-show-detail" x-show="show.replaced.length > 0">
+      <span class="label replacement-label">Replaced:</span>
+      <template x-for="({eps, reason}, index) in show.replaced" :key="index">
+        <span>
+          <%= erb :_scan_range, locals: { range_var: "eps", has_specials: "$getAnime(show.aid).hasSpecials()" } %>
+          <span class="replacement-reason">
+            <template x-for="name in Object.keys(reason.old)" :key="name">
+              <span class="replacement-section">
+                <span x-text="name" class="replacement-attribute"></span>
+                <span x-text="reason.old[name]" class="replacement-old-value"></span>
+                <span class="arrow-symbol">&#x27A1;</span>
+                <span x-text="reason.new[name]" class="replacement-new-value"></span>
+              </span>
+            </template>
+          </span>
+        </span>
+      </template>
+    </div>
     <%= erb :_scan_show_detail, locals: { detail: "duplicate", name: "Duplicate" } %>
-    <%= erb :_scan_show_detail, locals: { detail: "replacement", name: "Replacement" } %>
+    <%= erb :_scan_show_detail, locals: { detail: "junk", name: "Junk" } %>
+    <%= erb :_scan_show_detail, locals: { detail: "previous", name: "Previous" } %>
     <span class="final-status">
       <%= erb :_scan_show_detail, locals: { detail: "final_status", name: "Status" } %>
     </span>

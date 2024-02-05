@@ -1,4 +1,8 @@
-<div class="scan-show-detail" x-show="show.<%=detail%>">
+<div class="scan-show-detail" x-show="show.<%=detail%>.length > 0">
   <span class="label <%=detail.gsub('_', '-')%>-label"><%= name %>:</span>
-  <span x-text="show.<%=detail%>?.eps_w_grps"></span>
+  <%= erb :_scan_range,
+  locals: {
+    range_var: "show.#{detail}",
+    has_specials: "$getAnime(show.aid).hasSpecials()",
+  } %>
 </div>

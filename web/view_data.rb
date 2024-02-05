@@ -27,11 +27,13 @@ module Cisqua
     end
 
     def for_batch_datas(batch_datas)
-      scans = batch_datas.map { |bd| for_batch_data(bd) }
-      a_ids = scans.flat_map { |scan| scan[:updates].map { |u| u[:aid] } }.uniq
+      batch_datas.each_with_object({ aids: [], scans: [] }) do |bd, data|
+        data[:aids] << bd.affected_anime_ids
+        data[:scans] << for_batch_data(bd)
+      end => {aids:, scans: }
       {
+        library: aids.flatten.uniq.map { |aid| for_anime(Anime.find(aid)) },
         scans:,
-        library: a_ids.map { |aid| for_anime(Anime.find(aid)) },
       }
     end
 
@@ -73,7 +75,6 @@ module Cisqua
       else
         batch_data.complete? ? 'Complete' : 'In Progress'
       end
-
       {
         **last_update,
         elapsed_time: "#{time_ago_in_words(batch_check.updated_at)} ago",
@@ -87,16 +88,16 @@ module Cisqua
     end
 
     def for_batch_data(bd)
-      updates = (bd.updates || {}).map do |aid, update|
+      updates = bd.affected_anime_ids.map do |aid|
         anime = Anime.find(aid)
         {
-          aid: anime.id,
-          **update.transform_values do |range|
-            {
-              eps: range['simple'],
-              eps_w_grps: range['with_groups'],
-            }
-          end,
+          aid:,
+          added: range_formatter.from_fids(anime, bd.processed_fids(aid, :success)),
+          duplicate: range_formatter.from_fids(anime, bd.processed_fids(aid, :dups)),
+          junk: range_formatter.from_fids(anime, bd.processed_fids(aid, :junk)),
+          replaced: for_replacements(anime, bd.replaced_fids(aid)),
+          previous: range_formatter.from_fids(anime, bd.processed_fids(aid, :existing)),
+          final_status: range_formatter.from_fids(anime, bd.final_fids(aid)),
         }
       end
       {
@@ -112,6 +113,28 @@ module Cisqua
         complete: bd.complete?,
         updates:,
       }
+    end
+
+    def for_replacements(anime, replaced_fids)
+      replaced_files = replaced_fids.map do |r|
+        {
+          **r,
+          new: AnimeFile.find(r[:new]),
+          old: AnimeFile.find(r[:old]),
+        }
+      end
+      different_eps = replaced_files.select { |r| r[:new].eid != r[:old].eid }
+      different_grps = replaced_files.select { |r| r[:new].gid != r[:old].gid }
+      assert(different_eps.empty?, "replaced files have different eps #{different_eps}")
+      assert(different_grps.empty?, "replaced files have different eps #{different_grps}")
+
+      reason_groups = replaced_files.group_by { |r| r[:reason].to_json }
+      reason_groups.map do |_, grp|
+        {
+          eps: range_formatter.from_files(anime, grp.map { |i| i[:new] }),
+          reason: grp.first[:reason],
+        }
+      end
     end
 
     def english_name_is_similar?(romaji_name, english_name)
