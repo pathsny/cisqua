@@ -274,6 +274,10 @@ footer {
   font-weight: bold;
 }
 
+.highlight-text {
+  color: #87ceeb;
+}
+
 .status-badge {
   display: inline-flex;
   align-items: center;
@@ -389,8 +393,88 @@ footer {
   white-space: nowrap;
 }
 
-.highlight-text {
-  color: #87ceeb;
+.library-card .group-eps {
+  position: relative;
+  display: flex;
+  width: 300px;
+  align-items: flex-start;
+  margin-bottom: 5px;
+}
+
+.library-card .group-name {
+  margin-left: 10px;
+  font-style: italic;
+}
+
+.library-card .episodes-bar {
+  display: flex;
+  width: 300px;
+  margin-bottom: 2px;
+}
+
+.episodes-bar .normal-episodes {
+  display: flex;
+  height: 10px;
+  flex-basis: 90%;
+  flex-grow: 1;
+  border: 1px solid black;
+  margin-right: 5px;
+  overflow-x: visible;
+}
+
+.episodes-bar .normal-episodes div {
+  height: 100%;
+  flex-grow: 1;
+}
+
+.episodes-bar .episode-missing,
+.episodes-bar .episode-present {
+  flex-basis: 0;
+}
+
+.episodes-bar .episode-present {
+  background-color: green;
+}
+
+.episodes-bar .episode-missing {
+  background-color: darkgrey;
+}
+
+.episodes-bar .special-episodes {
+  display: flex;
+  height: 10px;
+  flex-basis: 10%;
+  flex-grow: 0;
+  border: 1px solid grey;
+  background-color: lightgrey;
+}
+
+.episodes-bar .special-episodes div {
+  flex-grow: 1;
+}
+
+.episodes-bar .specials-present {
+  background-color: blue;
+}
+
+.library-card .ranges {
+  display: flex;
+  width: 300px;
+  align-items: center;
+}
+
+.library-card .normal-range {
+  flex-basis: 90%;
+  margin-left: 10px;
+  font-weight: bold;
+}
+
+.library-card .special-range {
+  position: absolute;
+  bottom: 0;
+  left: calc(90% + 5px);
+  font-weight: bold;
+  white-space: nowrap;
 }
 
 .scan-card {

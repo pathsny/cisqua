@@ -36,7 +36,37 @@
         </tr>
         <tr>
           <td>Collection</td>
-          <td><span x-text="<%=show_var%>.contents"></span></td>
+          <td>
+            <template x-for="{group, normal, special } in <%=show_var%>?.eps_by_group" :key="group">
+              <div class="group-eps">
+                <div>
+                  <div class="group-name small-text" x-text="group"></div>
+                  <div class="episodes-bar">
+                    <div class="normal-episodes">
+                      <template x-for="(section, index) in normal.bar_data" :key="index">
+                        <div
+                          :class="section.present ? 'episode-present' : 'episode-missing'"
+                          :style="{'flex-grow': section.count }"
+                        >
+                        </div>
+                      </template>
+                    </div>
+                    <div class="special-episodes" x-show="<%=show_var%>?.hasSpecials()">
+                      <div class="specials-present" :style="{'flex-grow': special?.bar_data.count}">
+                      </div>
+                      <div class="specials-absent" :style="{'flex-grow': special?.bar_data.remaining}">
+                      </div>
+                    </div>
+                  </div>
+                  <div class="ranges small-text">
+                    <span class="normal-range" x-text="normal.ranges"></span>
+                    <span x-show="<%=show_var%>?.hasSpecials()" class="special-range" x-text="special?.ranges">
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </template>
+          </td>
         </tr>
         <tr>
           <td>Air Date</td>

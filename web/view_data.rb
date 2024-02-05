@@ -13,6 +13,12 @@ module Cisqua
     include ActionView::Helpers::DateHelper
     include SemanticLogger::Loggable
 
+    attr_reader :range_formatter
+
+    def initialize(range_formatter)
+      @range_formatter = range_formatter
+    end
+
     def updates(queried_at, batch_check, batch_datas)
       {
         last_update: for_batch_check(queried_at, batch_check),
@@ -30,7 +36,7 @@ module Cisqua
     end
 
     def for_anime(anime)
-      range = Range.find_by_id(anime.id)
+      eps_by_group = range_formatter.from_mylist(anime)
       {
         name: anime.romaji_name,
         combined_name: combined_name_for_anime(anime),
@@ -38,7 +44,7 @@ module Cisqua
         complete: anime.movie? ? true : MyList.complete?(anime.id),
         air_date: anime.air_date.strftime('%Y-%m-%d'),
         end_date: anime.ended? ? anime.end_date.strftime('%Y-%m-%d') : nil,
-        type: anime.type,
+        eps_by_group:,
         has_image: anime.metadata&.has_image?,
         **anime.attributes.slice(
           :id,
@@ -49,8 +55,6 @@ module Cisqua
           :highest_episode_number,
           :special_ep_count,
         ),
-        eps: range.simple,
-        eps_w_grps: range.with_groups,
       }
     rescue StandardError, SolidAssert::AssertionFailedError => e
       logger.error('error generating view data', { anime: anime.id, exception: e })

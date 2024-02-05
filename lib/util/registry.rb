@@ -11,6 +11,7 @@ module Cisqua
       :options,
       :options_file,
       :proxy_client,
+      :range_formatter,
       :redis,
       :renamer,
       :scanner,
@@ -38,7 +39,8 @@ module Cisqua
         FileProcessor.instance.set_dependencies(scanner, api_client, renamer)
         BatchProcessor.instance.options = options
         BatchProcessor.instance.scanner = scanner
-        self.view_data = ViewData.new
+        self.range_formatter = RangeFormatter.new
+        self.view_data = ViewData.new(range_formatter)
         Model::Redisable.redis = redis
         make_metadata_scraper
       end
