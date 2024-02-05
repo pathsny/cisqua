@@ -446,6 +446,10 @@ footer {
   margin-left: auto;
 }
 
+.main-content .hover-anime-card {
+  z-index: 100%;
+}
+
 .right-group > span {
   margin-right: 5px;
 }
@@ -541,6 +545,10 @@ footer {
   align-items: end;
   margin-bottom: 10px;
   font-size: 1em;
+}
+
+.show-hover:hover {
+  cursor: pointer;
 }
 
 .scan-show-details {

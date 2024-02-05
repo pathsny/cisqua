@@ -1,5 +1,16 @@
-<section class="scans">
+<section class="scans" x-data="scanShow()" id="scans">
   <template x-for="scan in $store.scansData.scans" :key="scan.id">
     <%= erb :_scan_card %>
+  </template>
+  <template x-if="hover.anime">
+    <div
+      class="hover-anime-card"
+      x-show="hover.anime"
+      x-anchor.right-end="document.getElementById(hover.anchorId)"
+      @mouseenter="onEnterHoverCard"
+      @mouseleave="onLeaveHoverCard"
+    >
+      <%= erb :_library_card, locals: { show_var: "hover.anime" } %>
+    </div>
   </template>
 </section>

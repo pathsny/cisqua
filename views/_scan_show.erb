@@ -1,9 +1,20 @@
 # encoding: UTF-8
 <div class="scan-show" :id="`${scan.id}-${show.aid}`" x-data="{anime: $getAnime(show.aid)}">
-  <img :src="`show_images/${anime.thumb}`" alt="Show Thumbnail" class="show-thumbnail">
+  <img
+    :id="`${scan.id}-${anime.id}-img`"
+    :src="`show_images/${anime.thumb}`"
+    alt="Show Thumbnail"
+    class="show-thumbnail show-hover"
+    @mouseenter="setHoverAnime(scan.id, anime.id)"
+    @mouseleave="clearHoverAnime()"
+  >
   <div class="scan-show-details">
     <div class="scan-show-title-wrapper">
-      <h4>
+      <h4
+        class="show-hover"
+        @mouseenter="setHoverAnime(scan.id, anime.id)"
+        @mouseleave="clearHoverAnime()"
+      >
         <%= erb :_library_badge, locals: { prefix: "anime.badge" } %>
         <span x-text="anime.name"></span>
       </h4>
