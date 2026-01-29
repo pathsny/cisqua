@@ -1,18 +1,24 @@
-<article class="library-card">
-  <div class="library-card-header">
-    <h2 x-text="<%=show_var%>.name" class='card-title'></h2>
-    <div class="subhead-links">
-      <button
-        class="copy-id-button"
-        @click.prevent="utils.copyText(<%=show_var%>.id); $notify({ type: 'success', message: `Copied ID ${<%=show_var%>.id} to Clipboard`})"
-      >
-        <span x-text="`ID: ${<%=show_var%>.id}`"></span><i class="fas fa-copy"></i>
-      </button>
-      <a class="anidb-link" :href="`https://anidb.net/anime/${<%=show_var%>.id}`" target="_blank">
-        visit anidb page
-      </a>
+<article class="content-card">
+  <header class="content-card-header">
+    <div class="header-content">
+      <div class="header-content-left">
+        <div x-text="<%=show_var%>.name" class='card-title'></div>
+        <div class="subhead">
+          <button
+            class="copy-id-button"
+            @click.prevent="$copyText(<%=show_var%>.id, {message: `Copied ID ${<%=show_var%>.id} to Clipboard`})"
+          >
+            <span x-text="`ID: ${<%=show_var%>.id}`"></span><i class="fas fa-copy"></i>
+          </button>
+          <a class="anidb-link" :href="`https://anidb.net/anime/${<%=show_var%>.id}`" target="_blank">
+            visit anidb page
+          </a>
+        </div>
+      </div>
+      <div class="header-content-right">
+      </div>
     </div>
-  </div>
+  </header>
   <div class="library-card-content">
     <div class="left-section">
       <img :src="`show_images/${<%=show_var%>.image}`" alt="Show Image" class="show-image">

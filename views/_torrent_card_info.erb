@@ -1,0 +1,27 @@
+<div class="torrent-info">
+  <div class="label-value-row">
+    <strong>Added:</strong>
+    <span x-text="torrent.added_date"></span>
+    <strong>Total Size:</strong>
+    <span>
+       <span x-text="torrent.size_when_done"></span>
+       <template x-if="torrent.total_size !== torrent.size_when_done">
+        <span class="torrent-info-different-total-size-text" x-text="torrent.total_size"></span>
+       </template>
+    </span>
+  </div>
+  <div class="label-value-row">
+    <strong>Activity:</strong> <span x-text="torrent.activity_date"></span>
+    <strong>Speeds:</strong>
+    <span>
+      <span>↑</span> <span x-text="torrent.rate_upload"></span>,
+      <span>↓</span> <span x-text="torrent.rate_download"></span>
+    </span>
+  </div>
+  <div class="label-value-row" x-show="torrent.done_date">
+    <strong>Done:</strong> <span x-text="torrent.done_date"></span>
+  </div>
+  <div class="label-value-row" x-show="!torrent.isComplete">
+    <strong>ETA:</strong> <span x-text="torrent.displayETA"></span>
+  </div>
+</div>

@@ -1,0 +1,53 @@
+<div
+  x-show="!isInsideCollapsedFolder(item)"
+  class="file-folder-item"
+  :class="{ 'not-wanted': !item.wanted, 'file': item.type === 'file', 'folder': item.type === 'folder', }"
+  :style="'--level: ' + item.level + '; padding-left: ' + (10 + (item.level * 20)) + 'px'"
+>
+
+  <template x-if="item.type === 'folder'">
+    <div class="name-container folder-name" @click="toggleCollapse(item)">
+      <template x-for="(namePart, index) in item.nameParts" :key="index">
+        <span class="item-name folder-part" :class="{ 'not-wanted': !item.wanted }">
+          <!-- Show the folder icon only for the first part -->
+          <template x-if="index === 0">
+            <i class="fa-solid" :class="isCollapsed(item) ? 'fa-folder' : 'fa-folder-open'"></i>
+          </template>
+          <span x-text="namePart"></span>
+          <i
+            class="fa-solid fa-circle-chevron-right"
+            x-show="index < item.nameParts.length - 1"
+            class="chevron-icon"
+          ></i>
+        </span>
+      </template>
+    </div>
+  </template>
+
+  <template x-if="item.type === 'file'">
+    <div class="name-container file-name" :class="fileType(item)">
+      <i class="fa-solid" :class="fileIcon(item)"></i>
+      <span class="item-name" :class="{ 'not-wanted': !item.wanted }" x-text="item.name"></span>
+    </div>
+  </template>
+
+  <div class="details-container">
+    <span class="file-size" x-text="size(item)"></span>
+
+    <div
+      class="progress-bar-container"
+      :class="item.type === 'file' ? 'file-progress' : 'folder-progress'"
+    >
+      <div
+        class="progress-bar"
+        :style="`width: ${item.percent_done}%; background-color: ${item.percent_done == 100 ? 'green' : 'blue'};`"
+      >
+        <span x-text="`${item.percent_done}%`"></span>
+      </div>
+    </div>
+
+    <button class="copy-path-button" @click.prevent="copyPath(item)" title="Copy Path">
+      <i class="fas fa-copy"></i>
+    </button>
+  </div>
+</div>

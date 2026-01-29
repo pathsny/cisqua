@@ -8,6 +8,11 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
     >
   </head>
+  <style type="text/css">
+    template-root {
+      display: contents ;
+    }
+  </style>
   <body>
     <header class="main-header">
       <h1>Cisqua
@@ -38,18 +43,28 @@
           >
             Library
           </button>
+          <button
+            :class="{ 'active-tab': isTabActive('torrents') }"
+            class="tab-button"
+            @click="setActiveTab('torrents')"
+          >
+            Torrents
+          </button>
         </div>
         <%= erb :_scrollable_section, locals: { tabName: :scans, content: erb(:_scans) } %>
         <%= erb :_scrollable_section, locals: { tabName: :library, content: erb(:_library) } %>
+        <%= erb :_scrollable_section, locals: { tabName: :torrents, content: erb(:_torrents) } %>
       </div>
     </div>
     <footer>
       <p>&copy; 2023 cisqua</p>
     </footer>
-    <script>
+    <script type="module">
       window.initialData = <%= initial_data.to_json.html_safe %>;
     </script>
-    <script src="js/index.js" defer></script>
+    <script src="js/index.js" type="module"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/date-fns@3.6.0/cdn.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/filesize@8.0.0/lib/filesize.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/anchor@3.x.x/dist/cdn.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/intersect@3.x.x/dist/cdn.min.js"></script>

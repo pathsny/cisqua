@@ -1,8 +1,16 @@
-<div class="left-column">
-  <section class="request-scan" x-data="formHandler(<%= dry_run %>)" x-show="isTabActive('scans')">
+<div
+  class="left-column"
+  x-data
+  :class="$store.lastUpdate.connection.isConnected ? 'connected' : 'disconnected'"
+>
+  <section
+    class="request-scan"
+    x-data="requestScanForm(<%= dry_run %>)"
+    x-show="isTabActive('scans')"
+  >
     <form @submit.prevent="submitForm($event)">
-      <button id="start-scan" :disabled="$store.lastUpdate.scanInProgress">Start Scan</button>
-      <div x-show="$store.lastUpdate.scanInProgress" class="spinner-container">
+      <button id="start-scan" :disabled="$store.lastUpdate.scans.scanInProgress">Start Scan</button>
+      <div x-show="$store.lastUpdate.scans.scanInProgress" class="spinner-container">
         <div class="spinner"></div>
       </div>
       <div class="checkbox-list">
@@ -28,32 +36,55 @@
     <div class="latest-check-header">
       <h2>Latest Check</h2>
       <p class="byline">
-        <span class="highlight-text" x-text="$store.lastUpdate.elapsed_time"></span>
+        <span>Checked</span>
+        <span class="highlight-text" x-text="$store.lastUpdate.scans.timeSinceLastCheck"></span>
       </p>
     </div>
-    <div x-show="$store.lastUpdate.hasRun">
+    <div x-show="$store.lastUpdate.scans.hasRun">
       <p>
         <strong class="label">Date:</strong>
-        <span x-text="$store.lastUpdate.updated_date"></span>
+        <span x-text="$store.lastUpdate.scans.scannedDate"></span>
       </p>
       <p>
         <strong class="label">Time:</strong>
-        <span x-text="$store.lastUpdate.updated_time"></span>
+        <span x-text="$store.lastUpdate.scans.scannedTime"></span>
       </p>
       <p>
         <strong class="label">Source:</strong>
-        <span x-text="$store.lastUpdate.reason"></span>
+        <span x-text="$store.lastUpdate.scans.reason"></span>
       </p>
       <p>
         <strong class="label">Result:</strong>
-        <span x-text="$store.lastUpdate.result"></span>
+        <span x-text="$store.lastUpdate.scans.result"></span>
       </p>
     </div>
-    <div x-show="!$store.lastUpdate.hasRun">
+    <div x-show="!$store.lastUpdate.scans.hasRun">
       <p>
         <strong class="label">Status:</strong>
         <span>NEVER RUN</span>
       </p>
     </div>
   </section>
+  <section class="latest-check" :class="{ 'is-stale': $store.lastUpdate.torrents.is_stale }" x-data>
+    <div class="latest-check-header">
+      <h2>Latest Torrent Sync</h2>
+      <p class="byline">
+        <span class="highlight-text" x-text="$store.lastUpdate.torrents.timeSinceLastSync"></span>
+        <span x-show="$store.lastUpdate.torrents.is_stale">(STALE)</span>
+      </p>
+      <div x-show="$store.lastUpdate.torrents.sync_error_name">
+        <p><span class="label" x-text="$store.lastUpdate.torrents.sync_error_name"></span></p>
+        <p><span x-text="$store.lastUpdate.torrents.sync_error_msg"></span></p>
+      </div>
+    </div>
+  </section>
+  <section x-data>
+    <h2 x-text="$store.lastUpdate.connection.connected ? 'Connected' : 'Disconnected'"></h2>
+    <p x-show="$store.lastUpdate.connection.isConnected" class="byline">
+      <span class="highlight-text">Last update</span>
+      <span class="highlight-text" x-text="$store.lastUpdate.connection.timeSinceLastQueried"></span>
+    </p>
+    <p x-show="!$store.lastUpdate.connection.isConnected" class="byline">
+      <span class="highlight-text" x-text="$store.lastUpdate.connection.timeSinceDisconnected"></span>
+    </p>
 </div>

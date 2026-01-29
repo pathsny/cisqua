@@ -1,13 +1,15 @@
-<header class="scan-card-header">
+<header class="content-card-header">
   <div class="header-content">
-    <strong>
-      <span class="highlight-text" x-text="scan.source"></span>
-      <span>
-        Scan from
-      </span>
-      <time class="highlight-text" x-text="scan.started_at"></time>
-    </strong>
-    <div class="right-group">
+    <div class="header-content-left">
+      <strong>
+        <span class="highlight-text" x-text="scan.source"></span>
+        <span>
+          Scan from
+        </span>
+        <time class="highlight-text" x-text="scan.started_at"></time>
+      </strong>
+    </div>
+    <div class="header-content-right">
       <span
         x-show="!scan.complete || scan.scanned_count < scan.file_count"
         x-text="scan.scanned_count + ' of'"
@@ -15,13 +17,13 @@
       <span x-text="scan.file_count"></span>
       <span>
         files</span>
-      <span class="expand-indicator" x-on:click="scan.showDetails = !scan.showDetails">
-        <i class="fa-solid fa-circle-chevron-down" x-show="!scan.showDetails"></i>
-        <i class="fa-solid fa-circle-chevron-up" x-show="scan.showDetails"></i>
+      <span class="expand-indicator" x-on:click="toggleScanHeaderDetails(scan.id)">
+        <i class="fa-solid fa-circle-chevron-down" x-show="!scanHeaderExpanded(scan.id)"></i>
+        <i class="fa-solid fa-circle-chevron-up" x-show="scanHeaderExpanded(scan.id)"></i>
       </span>
     </div>
   </div>
-  <div x-show="scan.showDetails"
+  <div x-show="scanHeaderExpanded(scan.id)"
     x-collapse class="run-time-details">
     <p><strong>Date:</strong><span x-text="scan.start_date"></span></p>
     <p><strong>Time:</strong><span x-text="scan.start_time"></span></p>
@@ -30,10 +32,34 @@
     <p><strong>Source:</strong>
       <span x-text="scan.source"></span></p>
     <p><strong>Scan ID:</strong><span x-text="scan.id"></span></p>
+    <p><strong>Sources:</strong><span></span></p>
+    <ul>
+      <template x-for="(source, index) in scan.sources" :key="index">
+        <li>
+          <template x-if="!source.result && !scan.complete">
+            <span class="spinner"></span>
+          </template>
+          <template x-if="source.result">
+            <span
+              class="label"
+              :class="{ 'added-label': source.result === 'added', 'replacement-label': source.result === 'replacement', 'duplicate-label': source.result === 'duplicate', 'junk-label': source.result === 'junk', 'unknown-label': source.result === 'unknown'}"
+              x-text="source.result"
+            ></span>
+          </template>
+          <span x-text="source.name"></span>
+          <template x-if="source.result">
+            <span>
+              <span class="arrow-symbol">&#x27A1;</span>
+              <span x-text="source.ep_name"></span>
+            </span>
+          </template>
+        </li>
+      </template>
+    </ul>
   </div>
   <div
     class="progress-bar"
+    :style="scan.complete ? '': 'width:' + (scan.scanned_count / scan.file_count * 100) + '%'"
     x-show="!scan.complete"
-    :style="'width:' + (scan.scanned_count / scan.file_count * 100) + '%'"
   ></div>
 </header>

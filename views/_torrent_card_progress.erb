@@ -1,0 +1,10 @@
+<div class="torrent-progress">
+  <div class="progress-bar-container">
+    <div
+      class="progress-bar"
+      :style="`width: ${torrent.percent_done}%; background-color: ${torrent.isComplete ? 'green' : 'blue'};`"
+    >
+      <span x-text="`${torrent.percent_done}%`"></span>
+    </div>
+  </div>
+</div>

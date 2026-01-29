@@ -1,0 +1,7 @@
+<section class="torrents">
+  <div id="torrent-cards">
+    <template x-for="torrent in $store.torrents.torrents" :key="torrent.hash_string">
+      <%= erb :_torrent_card, locals: { torrent_var: "torrent" } %>
+    </template>
+  </div>
+</section>

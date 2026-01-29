@@ -1,0 +1,39 @@
+<div class="header-content">
+  <div class="header-content-left">
+    <div class="torrent-name">
+      <template x-for="(part, index) in torrent.nameParts.textChunks" :key="index">
+        <span x-text="part.content"></span>
+      </template>
+      <span class="spacer"></span>
+      <template x-for="(part, index) in torrent.nameParts.pillChunks" :key="index">
+        <span class="pill" x-text="part.content"></span>
+      </template>
+    </div>
+    <div class="subhead">
+      <span class="subhead-content" :class="torrent.status.type" x-text="torrent.status.content"></span>
+      <template x-if="torrent.has_error">
+        <span class="error" x-text="torrent.error_string"></span>
+      </template>
+    </div>
+  </div>
+  <div class="header-content-right">
+    <div class="torrent-header-data">
+      <span>Name:</span>
+      <button
+        class="copy-button"
+        @click.prevent="$copyText(torrent.name, {message: `Copied torrent name: ${torrent.name} to Clipboard`})"
+      >
+        <i class="fas fa-copy"></i>
+      </button>
+    </div>
+    <div class="torrent-header-data">
+      <span>Hash:</span>
+      <button
+        class="copy-button"
+        @click.prevent="$copyText(torrent.hash_string, {message: `Copied torrent hash to Clipboard`})"
+      >
+        <i class="fas fa-copy"></i>
+      </button>
+    </div>
+  </div>
+</div>

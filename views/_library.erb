@@ -1,22 +1,25 @@
-<section class="library">
-  <article class="library-card">
-    <div class="title-wrapper">
+<section class="library" x-data="searchLibrary()" :class="{'in-search-mode': searchTerm}">
+  <article class="content-card legend-card">
+    <div class="legend-section">
       <h2 class="card-title">Legend</h2>
-      <label>On-Going</label>
-      <%= erb :_library_badge, locals: { prefix: "statusBadges['ongoing']" } %>
-      <label>Ended (Incomplete)</label>
-      <%= erb :_library_badge, locals: { prefix: "statusBadges['ended-incomplete']" } %>
-      <label>Ended (Complete)</label>
-      <%= erb :_library_badge, locals: { prefix: "statusBadges['ended-complete']" } %>
+      <div class="status-badge"><%= erb :_library_badge, locals: { prefix: "$store.statusBadges['ongoing']" } %><label>On-Going</label></div>
+      <div class="status-badge"><%= erb :_library_badge, locals: { prefix: "$store.statusBadges['ended-incomplete']" } %><label>Ended (Incomplete)</label></div>
+      <div class="status-badge"><%= erb :_library_badge, locals: { prefix: "$store.statusBadges['ended-complete']" } %><label>Ended (Complete)</label></div>
     </div>
+    <div class="search-section">
+      <input type="text" x-model="searchInput" placeholder="Search..." @input.debounce.300ms="search">
+      <span x-show="!searchTerm" x-text="`Showing ${$store.library.animeCount(searchTerm)} Shows`"></span>
+      <span x-show="searchTerm" x-text="`Found ${$store.library.animeCount(searchTerm)} Shows`"></span>
+    </div>
+    <div class="spacer"></div>
   </article>
   <div id="library-cards">
-    <template x-for="id in $store.library.animeIds" :key="id">
-      <%= erb :_library_card, locals: { show_var: "$getAnime(id)" } %>
+    <template x-for="anime in $store.library.getAnimes(searchTerm)" :key="anime.id">
+      <%= erb :_library_card, locals: { show_var: "anime" } %>
     </template>
     <div
-      x-intersect.margin.1000px="$store.library.fetchLibrary()"
-      x-show="$store.library.hasMoreItems()"
+      x-intersect.margin.1000px="$store.library.fetchMore(searchTerm)"
+      x-show="$store.library.hasMoreItems(searchTerm)"
       class="spinner-container"
     >
       <div class="spinner"></div>

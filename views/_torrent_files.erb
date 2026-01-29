@@ -1,0 +1,18 @@
+<div class="file-list-container" x-data="torrentFiles(torrent)">
+  <div class="file-list-toggle" @click="showFileList = !showFileList">
+    <span class="expand-indicator">
+      <i class="fa-solid fa-circle-chevron-down" x-show="!showFileList"></i>
+      <i class="fa-solid fa-circle-chevron-up" x-show="showFileList"></i>
+    </span>
+    <span>Files</span>
+    <span class="expand-indicator">
+      <i class="fa-solid fa-circle-chevron-down" x-show="!showFileList"></i>
+      <i class="fa-solid fa-circle-chevron-up" x-show="showFileList"></i>
+    </span>
+  </div>
+  <div class="file-list" x-collapse x-show="showFileList">
+    <template x-for="item in torrent.flatFileList">
+      <%= erb :_torrent_file %>
+    </template>
+  </div>
+</div>
