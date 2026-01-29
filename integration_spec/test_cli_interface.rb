@@ -1,14 +1,8 @@
-class TestCLIInterface < TestInterface
-  def prep
-    Cisqua::TestUtil.prep_for_integration_test(log_level: :debug)
-  end
-
+class TestCLIInterface
   def start
-    unless should_run_fast_mode
-      Cisqua::RedisScripts.instance.start_redis(
-        Cisqua::Registry.instance.options.redis.conf_path,
-      )
-    end
+    TransmissionStub.instance.use_file('torrents.json')
+    TransmissionStub.instance.register_middleware
+
     @processor = Cisqua::PostProcessor.new(
       Cisqua::Registry.instance.options,
       Cisqua::Registry.instance.scanner,
@@ -19,10 +13,30 @@ class TestCLIInterface < TestInterface
 
   def stop
     @processor.stop
-    Cisqua::RedisScripts.instance.stop_redis unless should_run_fast_mode
   end
 
   def run
     @processor.run
+  end
+
+  def hack_udp_cache_for_test(cache_swap)
+    Cisqua::TestUtil.hack_udp_cache(cache_swap)
+  end
+
+  def anime_data(aid)
+    make_comparable(Cisqua::Registry.instance.view_data.for_anime_id(aid))
+  end
+
+  def scan_count
+    Cisqua::BatchCheck.instance.latest(:all).count
+  end
+
+  def scan_data(scan_id)
+    make_comparable(Cisqua::Registry.instance.view_data.for_batch_data(Cisqua::BatchData.find(scan_id)))
+  end
+
+  # serializes to json and parses back. This is to deal with strings vs symbols
+  def make_comparable(data)
+    JSON.parse(data.to_json)
   end
 end

@@ -7,10 +7,12 @@ describe Cisqua::Renamer::Renamer do
   end
 
   before do
-    Cisqua::Renamer::NameGenerator.any_instance
-      .stubs(:generate_name_and_path)
-      .returns(['Anime Name', 'Anime Name - episode number'])
-    Cisqua::MyList.stubs(:complete?).returns(false)
+    Cisqua::Renamer::NameGenerator.stubs(:generate_name).returns('Anime Name - episode number')
+    Cisqua::Renamer::NameGenerator.stubs(:generate_dir_name_for_file).returns('Anime Name')
+
+    Cisqua::MyList.stubs(:instance).returns(
+      stub(entries: stub(:[] => stub(complete?: false))),
+    )
     FileUtils.mkdir_p('/path/to/src_dir')
   end
 
@@ -66,9 +68,15 @@ describe Cisqua::Renamer::Renamer do
     let(:junk_video) { create_source_file('/path/to/src_dir/junk_file.mkv') }
     let(:dup_video) { create_source_file('/path/to/src_dir/dup_file.mkv') }
     let(:source_item) { dummy_work_item(source_video[:path]) }
-    let(:dest_item) { dummy_work_item(dest_video[:path]) }
     let(:junk_item) { dummy_work_item(junk_video[:path]) }
     let(:dup_item) { dummy_work_item(dup_video[:path]) }
+    let(:dest_item) do
+      dummy_work_item(
+        dest_video[:path],
+        request_type: :duplicate_set,
+        duplicate_work_items: [source_item, junk_item, dup_item],
+      )
+    end
     let(:junk_loc) { '/path/to/duplicate_junk' }
     let(:dup_loc) { '/path/to/duplicate' }
     let(:old_symlink_dir) { '/path/to/anime/somewhere/deep' }
@@ -99,7 +107,7 @@ describe Cisqua::Renamer::Renamer do
             junk: [junk_item, source_item],
             dups: [dup_item],
           })
-        subject.process(dest_item, [source_item, junk_item, dup_item])
+        subject.process(dest_item)
       end
 
       it_behaves_like 'handles junk and duplicates'
@@ -117,7 +125,8 @@ describe Cisqua::Renamer::Renamer do
             junk: [junk_item],
             dups: [dup_item],
           })
-        subject.process(dest_item, [source_item, junk_item, dup_item])
+        dest_item[:quality] = stub(compare_with_info: { left: stub, right: stub })
+        subject.process(dest_item)
       end
 
       it_behaves_like 'handles junk and duplicates'

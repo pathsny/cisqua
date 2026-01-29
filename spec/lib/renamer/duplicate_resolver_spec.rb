@@ -3,16 +3,18 @@ describe Cisqua::Renamer::DuplicateResolver do
   let(:sources) { Renamer::DuplicateResolver::Sources }
   let(:quality) { Renamer::DuplicateResolver::Quality }
   let(:current_info) { { version: 2, source: 'www', quality: 'high', video_resolution: '1280x720' } }
-  let(:current) { make_item(current_info) }
+  let(:current) { make_item('current', current_info) }
   let(:clone_1) { clone_item(current) }
   let(:wierdly_similar) { wierdly_similar_item(current) }
-  let(:version_1) { make_item(current_info.merge(version: 1)) }
-  let(:version_3) { make_item(current_info.merge(version: 3)) }
-  let(:camcorder) { make_item(current_info.merge(source: 'camcorder')) }
-  let(:vhs_with_version_3) { make_item(current_info.merge(source: 'VHS', version: 3)) }
-  let(:hdtv_with_eyecancer) { make_item(current_info.merge(source: 'HDTV', quality: 'eyecancer')) }
-  let(:vcd_with_very_high) { make_item(current_info.merge(source: 'VCD', quality: 'very high')) }
-  let(:blu_ray) { make_item(current_info.merge(source: 'Blu-ray')) }
+  let(:version_1) { make_item('version 1', current_info.merge(version: 1)) }
+  let(:version_3) { make_item('version 3', current_info.merge(version: 3)) }
+  let(:camcorder) { make_item('camcorder', current_info.merge(source: 'camcorder')) }
+  let(:vhs_with_version_3) { make_item('vhs with version 3', current_info.merge(source: 'VHS', version: 3)) }
+  let(:hdtv_with_eyecancer) do
+    make_item('hdtv with eyecancer', current_info.merge(source: 'HDTV', quality: 'eyecancer'))
+  end
+  let(:vcd_with_very_high) { make_item('vcd with very high', current_info.merge(source: 'VCD', quality: 'very high')) }
+  let(:blu_ray) { make_item('blu-ray', current_info.merge(source: 'Blu-ray')) }
 
   def resolve(current, duplicates)
     described_class.resolve(current, duplicates).tap do |resolved|
@@ -24,17 +26,22 @@ describe Cisqua::Renamer::DuplicateResolver do
     Faker::Number.number(digits: 5).to_i
   end
 
-  def make_item(file_params, fid = nil)
-    info = { fid: fid || make_fid, anime: {}, file: common_file.merge(file_params) }
-    Cisqua::WorkItem.new(file: Faker::Lorem.sentence, info:)
+  def make_item(friendly_name, file_params)
+    file = file_from_info(fid: make_fid, anime: {}, file: common_file.merge(file_params))
+    source = Cisqua::WorkItemSource.new(name: "#{friendly_name} #{Faker::Lorem.sentence}", path: Faker::Lorem.sentence)
+    Cisqua::WorkItem.new(file:, source:, index: 0)
   end
 
   def clone_item(item)
-    make_item(item.info[:file], item.info[:fid])
+    source = Cisqua::WorkItemSource.new(name: "clone of #{item.source.name}", path: Faker::Lorem.sentence)
+    Cisqua::WorkItem.new(file: item.file, source:, index: 0)
   end
 
   def wierdly_similar_item(item)
-    make_item(item.info[:file])
+    raw_data = item.file.raw_data
+    file = stub(id: make_fid, anime: item.file.anime, raw_data:, **raw_data[:file])
+    source = Cisqua::WorkItemSource.new(name: "wierdly similar to #{item.source.name}", path: Faker::Lorem.sentence)
+    Cisqua::WorkItem.new(file:, source:, index: 0)
   end
 
   context 'when all the dups are clones of the current' do

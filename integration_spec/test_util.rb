@@ -1,10 +1,15 @@
+require_relative 'transmission_stub'
+
 module Cisqua
   class TestUtil
+    include SemanticLogger::Loggable
     class << self
       def prep_redis
+        logger.info('shutting down redis')
         RedisScripts.instance.shutdown!
+        logger.info('copying dump.rdb')
         FileUtils.cp(
-          File.join(DATA_FOLDER, 'test_data', 'dump.rdb'),
+          File.join(TEST_DATA_FOLDER, 'dump.rdb'),
           DATA_FOLDER,
         )
       end
@@ -12,7 +17,6 @@ module Cisqua
       def prep_options(options_file, dry_run: false, log_level: :info)
         Registry.options_file_override = options_file
         Registry.load_options.tap do |options|
-          options[:redis][:db] = 1
           options[:post_batch_actions][:plex_scan_library_files] = nil
           options[:renamer][:dry_run_mode] = dry_run
           options[:log_level] = log_level
@@ -25,7 +29,7 @@ module Cisqua
         Registry.options_override = options
 
         AppLogger.log_level = log_level
-        AppLogger.log_file = log_file_path || File.join(DATA_FOLDER, 'test_data', 'log', 'anidb.log')
+        AppLogger.log_file = log_file_path || File.join(TEST_DATA_FOLDER, 'log', 'anidb.log')
       end
 
       def prep(options_file: nil, dry_run: false, log_level: :info, log_file_path: nil)
@@ -33,13 +37,8 @@ module Cisqua
         RedisScripts.instance.shutdown!
       end
 
-      def prep_for_integration_test(options_file: nil, dry_run: false, log_level: :info, log_file_path: nil)
-        prep_registry(options_file:, dry_run:, log_level:, log_file_path:)
-        prep_redis
-      end
-
       def mylist_file_entries(files)
-        mylist_entries = files.group_by { |file| MyList.files_key(file.aid) }
+        mylist_entries = files.group_by { |file| MyList.instance.files_key(file.aid) }
         mylist_entries.transform_values { |entry_files| entry_files.map(&:id) }
       end
 
@@ -61,7 +60,7 @@ module Cisqua
 
         {
           keys_to_remove: {
-            anime: animes_to_del.map(&:make_key_for_instance),
+            anime: animes_to_del.map(&:redis_key),
             association_keys: animes_to_del.map { |anime| "aid:#{anime.id}:episodes" },
           },
           sets_to_update: {
@@ -94,7 +93,7 @@ module Cisqua
         eps_to_keep = ep_maps_to_keep.to_h.keys
         { episodes: {
           keys_to_remove: {
-            episode: eps_to_del.map(&:make_key_for_instance),
+            episode: eps_to_del.map(&:redis_key),
             association_keys: eps_to_del.map { |ep| "eid:#{ep.id}:files" },
           },
           sets_to_update: {
@@ -114,7 +113,7 @@ module Cisqua
 
           raise "got error #{e} while trying to find #{w_file.name}"
         end
-        unique_searches, negative_searches = searches.compact.uniq(&:make_key_for_instance).partition do |s|
+        unique_searches, negative_searches = searches.compact.uniq(&:redis_key).partition do |s|
           !s.fid.nil?
         end
         files = unique_searches.map(&:file)
@@ -122,10 +121,10 @@ module Cisqua
 
         data_to_remove = episode_data_to_remove(files).merge(files: {
           keys_to_remove: {
-            searches: unique_searches.map(&:make_key_for_instance),
-            files: files.map(&:make_key_for_instance),
-            miscs: files.map(&:misc).map(&:make_key_for_instance),
-            negative_searches: negative_searches.map(&:make_key_for_instance),
+            searches: unique_searches.map(&:redis_key),
+            files: files.map(&:redis_key),
+            miscs: files.map(&:misc).map(&:redis_key),
+            negative_searches: negative_searches.map(&:redis_key),
           },
           sets_to_update: {
             mylist_entries:,
@@ -254,13 +253,26 @@ module Cisqua
         files = episode.files
 
         files.each do |file|
-          redis.srem(MyList.files_key(file.aid), file.id)
-          redis.del(file.misc.make_key_for_instance)
-          redis.del(file.make_key_for_instance)
+          redis.srem(MyList.instance.files_key(file.aid), file.id)
+          redis.del(file.misc.redis_key)
+          redis.del(file.redis_key)
           file.episodes.each do |ep|
             redis.srem("eid:#{ep.id}:files", file.id)
           end
         end
+      end
+
+      def hack_udp_cache(cache_hack)
+        cache_hack['swaps'].each do |swap|
+          Registry.instance.proxy_client.hack_cache_for_test(
+            swap['actual'],
+            swap['hack'],
+          )
+        end
+        # Setting data source to 'hacked' so we know to expire the record
+        Anime.find(cache_hack['anime_to_expire']).update(
+          data_source: 'hacked',
+        )
       end
     end
   end

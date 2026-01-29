@@ -6,13 +6,15 @@ require 'pathname'
 
 module Cisqua
   class TestDataProvider
-    TEST_DATA_ROOT = File.expand_path('../data/test_data', __dir__)
+    DATA_ROOT = File.expand_path('../data', __dir__)
+    TEST_DATA_ROOT = File.join(DATA_ROOT, 'test_data')
     include Singleton
 
-    attr_reader :test_data, :options
+    attr_reader :test_data, :options, :test_aid
 
     def initialize
-      @options = Registry.instance.options
+      @options = YAML.load_file(File.join(DATA_ROOT, 'options.yml'))
+      @test_aid = 13
       test_info = JSON.load_file!(File.join(
         TEST_DATA_ROOT, 'test_data.json'
       ))
@@ -86,6 +88,41 @@ module Cisqua
         segment: location_name,
         containing_location: root_location,
       )
+    end
+
+    def test_pre_scan_library_data
+      name = 'test_library_data_before_scan.json'
+      [load_anime_data(name), name]
+    end
+
+    def test_post_scan_library_data
+      name = 'test_library_data_after_scan.json'
+      [load_anime_data(name), name]
+    end
+
+    def test_post_scan_batch_data(id)
+      name = "test_batch_data_after_scan_#{id}.json"
+      [load_batch_data(name), name]
+    end
+
+    def save_bad_data(name, data)
+      bad_data_path = File.join(TEST_DATA_ROOT, "bad_#{name}")
+      File.write(bad_data_path, JSON.pretty_generate(data))
+    end
+
+    def clear_bad_data(name)
+      bad_data_path = File.join(TEST_DATA_ROOT, "bad_#{name}")
+      File.delete(bad_data_path) if File.file?(bad_data_path)
+    end
+
+    def load_batch_data(file)
+      anime_data_path = File.join(TEST_DATA_ROOT, file)
+      JSON.parse(File.read(anime_data_path))
+    end
+
+    def load_anime_data(file)
+      anime_data_path = File.join(TEST_DATA_ROOT, file)
+      JSON.parse(File.read(anime_data_path))
     end
   end
 end

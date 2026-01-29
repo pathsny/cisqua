@@ -5,6 +5,7 @@ require 'active_support/testing/time_helpers'
 require 'mocha/api'
 require 'rspec'
 require 'faker'
+require 'pp' # rubocop:disable Lint/RedundantRequireStatement
 require 'fakefs/spec_helpers'
 require 'date'
 
@@ -39,14 +40,26 @@ end
 OPTIONS_BAK = YAML.load_file(File.expand_path('../script/helpers/options.yml.bak', __dir__))
 DUMMY_INFO = YAML.load_file(File.expand_path('dummy_info.yml', __dir__))
 
-def dummy_work_item(path)
-  file = Cisqua::WorkItemFile.new(name: File.basename(path), path:)
-  Cisqua::WorkItem.new(file:, info: DUMMY_INFO, request_type: :standard)
+def file_from_info(info)
+  anime = stub(
+    id: info[:aid],
+    **info[:anime],
+    is_18_restricted: false,
+    movie?: false,
+  )
+  stub(id: info[:fid], anime:, raw_data: info, **info[:file])
+end
+
+def dummy_work_item(path, **kwargs)
+  file = file_from_info(DUMMY_INFO)
+  Cisqua::AnimeFile.stubs(find: file)
+  source = Cisqua::WorkItemSource.new(name: File.basename(path), path:)
+  Cisqua::WorkItem.new(source:, file:, request_type: :standard, index: 0, **kwargs)
 end
 
 def unknown_work_item(path)
-  file = Cisqua::WorkItemFile.new(name: File.basename(path), path:)
-  Cisqua::WorkItem.new(file:, request_type: :standard)
+  source = Cisqua::WorkItemSource.new(name: File.basename(path), path:)
+  Cisqua::WorkItem.new(source:, request_type: :standard, index: 0)
 end
 
 def write_file(name, content)

@@ -25,9 +25,12 @@ TestDataType = Struct.new(
   'TestDataType',
   :src,
   :dst,
+  :hack_udp_cache,
   :pristine,
   # directory if one is created
   :dst_dir,
+  # directory that should not exist
+  :not_exist_dir,
   # locations that symlink to dst_dir. String or Array
   :dst_dir_symlink_locs,
   # info about each file and how it is processed Array[TestDataTypeFileInfo]
@@ -35,10 +38,12 @@ TestDataType = Struct.new(
   # Array of test_info to recheck
   :recheck,
   :anidb_id,
+  :skip_checks_in_fast_mode,
 ) do
   def initialize(name, test_data, base_locations)
     self.src = base_locations[:src_loc]
     self.pristine = base_locations[:pristine_loc]
+    self.hack_udp_cache = test_data['hack_udp_cache']
 
     if test_data['dst_loc']
       self.dst = base_locations[:dst_locs].find do |loc|
@@ -75,6 +80,12 @@ TestDataType = Struct.new(
       self.dst_dir = nil
       self.dst_dir_symlink_locs = nil
     end
+    if test_data.key?('not_exist_dir')
+      self.not_exist_dir = TestDataLocation.new(
+        segment: test_data['not_exist_dir'],
+        containing_location: dst,
+      )
+    end
     initialize_file_info(
       name,
       test_data['src_name'],
@@ -88,6 +99,7 @@ TestDataType = Struct.new(
         base_locations,
       )
     end
+    self.skip_checks_in_fast_mode = test_data['skip_checks_in_fast_mode'] || []
     self.anidb_id = test_data['anidb_id']
   end
 

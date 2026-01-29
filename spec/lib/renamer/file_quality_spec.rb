@@ -5,7 +5,7 @@ RSpec::Matchers.define :be_equivalent_to do |expected|
 end
 
 def comparison_result(q1, q2)
-  described_class.new(q1).compare_with_info(described_class.new(q2))
+  make_instance(q1).compare_with_info(make_instance(q2))
 end
 
 describe Cisqua::Renamer::Source do
@@ -60,64 +60,67 @@ describe Cisqua::Renamer::FileQuality do
 
   context 'when sources are equivalent' do
     it 'ranks a higher quality over a lower quality, all else being equal' do
-      expect(described_class.new(common_info)).to be > described_class.new(
+      expect(make_instance(common_info)).to be > make_instance(
         common_info.merge(quality: 'med'),
       )
-      expect(described_class.new(common_info)).to be < described_class.new(
+      expect(make_instance(common_info)).to be < make_instance(
         common_info.merge(quality: 'very high'),
       )
     end
 
     it 'ranks a higher version over a lower version, all else being equal' do
-      expect(described_class.new(common_info)).to be > described_class.new(
+      expect(make_instance(common_info)).to be > make_instance(
         common_info.merge(version: 1),
       )
-      expect(described_class.new(common_info)).to be < described_class.new(
+      expect(make_instance(common_info)).to be < make_instance(
         common_info.merge(version: 3),
       )
     end
 
     it 'ranks a higher resolution over a lower resolution, all else being equal' do
-      expect(described_class.new(common_info)).to be > described_class.new(
+      expect(make_instance(common_info)).to be > make_instance(
         common_info.merge(video_resolution: '640x480'),
       )
-      expect(described_class.new(common_info)).to be < described_class.new(
+      expect(make_instance(common_info)).to be < make_instance(
         common_info.merge(video_resolution: '1920x1080'),
       )
     end
 
+    # rubocop:disable RSpec/ExampleLength
     it 'ranks one file quality over another if resolution, version and quality all improve or stay the same' do
-      expect(described_class.new(common_info)).to be < described_class.new(common_info.merge(
+      expect(make_instance(common_info)).to be < make_instance(common_info.merge(
         video_resolution: '1920x1080',
         version: 3,
       ))
-      expect(described_class.new(common_info)).to be > described_class.new(common_info.merge(
+      expect(make_instance(common_info)).to be > make_instance(common_info.merge(
         video_resolution: '640x480',
         quality: 'med',
       ))
-      expect(described_class.new(common_info)).to be > described_class.new(common_info.merge(
+      expect(make_instance(common_info)).to be > make_instance(common_info.merge(
         version: 1,
         quality: 'med',
       ))
-      expect(described_class.new(common_info)).to be < described_class.new(common_info.merge(
+      expect(make_instance(common_info)).to be < make_instance(common_info.merge(
         video_resolution: '1920x1080',
         version: 3,
         quality: 'very high',
       ))
     end
+    # rubocop:enable RSpec/ExampleLength
 
     it 'ranks as equal file qualities where resolution, version and quality move in different directions' do
-      expect(described_class.new(common_info)).to be_equivalent_to described_class.new(
+      expect(make_instance(common_info)).to be_equivalent_to make_instance(
         common_info.merge(video_resolution: '1920x1080', version: 1),
       )
     end
 
     it 'remains true for sources that are not equal but of the same score' do
-      expect(described_class.new(common_info)).to be > described_class.new(
+      expect(make_instance(common_info)).to be > make_instance(
         common_info.merge(quality: 'med', source: 'HKDVD'),
       )
     end
 
+    # rubocop:disable RSpec/ExampleLength
     it 'returns information to understand the comparison result' do
       expect(comparison_result(
         common_info,
@@ -163,46 +166,55 @@ describe Cisqua::Renamer::FileQuality do
         right: { video_resolution: '1920x1080', version: '1' },
       )
     end
+    # rubocop:enable RSpec/ExampleLength
   end
 
   context 'when sources are not equivalent' do
     it 'ranks a higher source over a lower source, all else being equal' do
-      expect(described_class.new(common_info)).to be > described_class.new(
+      expect(make_instance(common_info)).to be > make_instance(
         common_info.merge(source: 'VHS'),
       )
-      expect(described_class.new(common_info)).to be < described_class.new(
+      expect(make_instance(common_info)).to be < make_instance(
         common_info.merge(source: 'Blu-ray'),
       )
     end
 
     it 'ranks one file quality as better than another if resolution and/or quality move the same way' do
-      expect(described_class.new(common_info)).to be > described_class.new(
+      expect(make_instance(common_info)).to be > make_instance(
         common_info.merge(source: 'VHS', video_resolution: '640x480'),
       )
-      expect(described_class.new(common_info)).to be < described_class.new(
+      expect(make_instance(common_info)).to be < make_instance(
         common_info.merge(source: 'Blu-ray', quality: 'very high'),
       )
     end
 
+    # rubocop:disable RSpec/ExampleLength
     it 'ranks as equal file qualities where resolution and/or quality move in the opposite direction of source' do
-      expect(described_class.new(common_info)).to be_equivalent_to described_class.new(
+      expect(make_instance(common_info)).to be_equivalent_to make_instance(
         common_info.merge(source: 'VHS', video_resolution: '1920x1080'),
       )
-      expect(described_class.new(common_info)).to be_equivalent_to described_class.new(
+      expect(make_instance(common_info)).to be_equivalent_to make_instance(
         common_info.merge(source: 'Blu-ray', quality: 'low'),
       )
-      expect(described_class.new(common_info)).to be_equivalent_to described_class.new(
+      expect(make_instance(common_info)).to be_equivalent_to make_instance(
         common_info.merge(source: 'Blu-ray', quality: 'low', video_resolution: '1920x1080'),
       )
     end
+    # rubocop:enable RSpec/ExampleLength
 
     it 'ignores version' do
-      expect(described_class.new(common_info)).to be > described_class.new(
+      expect(make_instance(common_info)).to be > make_instance(
         common_info.merge(source: 'VHS', version: 3),
       )
-      expect(described_class.new(common_info)).to be < described_class.new(
+      expect(make_instance(common_info)).to be < make_instance(
         common_info.merge(source: 'Blu-ray', version: 1),
       )
     end
+  end
+
+  def make_instance(quality_data)
+    described_class.new(
+      stub(**quality_data),
+    )
   end
 end
