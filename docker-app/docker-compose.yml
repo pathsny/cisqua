@@ -1,0 +1,44 @@
+version: '3.8'
+name: cisqua
+
+services:
+  cisqua:
+    image: pathsny/cisqua:latest
+    container_name: cisqua-web
+    pull_policy: always
+    ports:
+      - "4567:4567"
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - TZ=Etc/UTC
+      - RACK_ENV=production
+      - UMASK=0022
+    volumes:
+      - ../data:/usr/src/app/data
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4567/"]
+      interval: 60s
+      timeout: 5s
+      retries: 2
+      start_period: 60s
+
+  redis:
+    image: redis/redis-stack-server:latest
+    container_name: cisqua-redis
+    pull_policy: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - ../data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 60s
+      timeout: 5s
+      retries: 2
+      start_period: 60s

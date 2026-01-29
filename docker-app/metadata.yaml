@@ -1,0 +1,13 @@
+name: cisqua
+version: 2.0.3
+description: Cisqua - A tool for managing torrents
+icon: https://raw.githubusercontent.com/pathsny/scale_apps/main/charts/cisqua/2.0.3/cisqua.png
+category: media
+tags:
+  - torrents
+  - transmission
+  - media
+  - download
+website: https://github.com/pathsny/cisqua
+source: https://github.com/pathsny/cisqua
+license: MIT
