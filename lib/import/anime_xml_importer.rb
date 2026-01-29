@@ -142,8 +142,8 @@ module Cisqua
         other_episodes = ep_relations.filter_map do |ep_rel|
           next nil if ep_rel['id'] != file_node['id']
 
-          start_pct = Integer(ep_rel['start'])
-          end_pct = Integer(ep_rel['end'])
+          start_pct = Integer(ep_rel['start'], 10)
+          end_pct = Integer(ep_rel['end'], 10)
           ep_pct = end_pct - start_pct
           assert(ep_pct.positive?, "error calculating other episodes #{ep_rel}")
           "#{ep_rel['episode']},#{ep_pct}"
@@ -171,7 +171,7 @@ module Cisqua
           data_source: 'mylist-import',
         }
         file = AnimeFile.new(file_data).save_unique
-        MyList.add_file(file.id)
+        MyList.instance.add_file(file.id)
 
         if file.gid == '0'
           group_name = 'raw/unknown'

@@ -3,8 +3,6 @@ require 'fileutils'
 require 'pathname'
 
 module Cisqua
-  require File.join(ROOT_FOLDER, 'rename_rules')
-
   module Renamer
     class Renamer
       include SemanticLogger::Loggable
@@ -15,84 +13,132 @@ module Cisqua
         @api_client = api_client
         @mover = VideoFileMover.new(options)
         @symlinker = Symlinker.new(options)
-        @name_generator = NameGenerator.new(method(:generate_name))
       end
 
       attr_reader :options
 
-      def process(work_item, override_options = {})
+      def process(work_item)
         case work_item.request_type
         when :standard
-          process_standard(work_item, override_options)
+          process_standard(work_item)
         when :duplicate_set
-          process_duplicate_set(work_item, override_options)
+          process_duplicate_set(work_item)
         else
           assert(false, "unknown request type #{work_item.request_type}")
         end
       end
 
-      def process_standard(work_item, override_options)
-        unless work_item.info
+      def process_standard(work_item)
+        unless work_item.file
           unknown_location = File.absolute_path(options[:unknown_location], ROOT_FOLDER)
           response = @mover.process(
-            work_item.file.path,
-            unknown_location,
-            { unambiguous: true, **override_options },
+            src_file: work_item.source.path,
+            dst_dir: unknown_location,
+            unambiguous: true,
+            symlink_source: options[:symlink_source],
           )
           assert(response.type == :success, 'moving unknown files should not fail')
           return Response.unknown(response.destination)
         end
 
-        location, path, name = generate_location(work_item.info)
-        process_file(name, work_item, location, path, override_options)
+        move_data = generate_location(work_item.file)
+        process_file(
+          work_item.file,
+          src_file: work_item.source.path,
+          symlink_source: options[:symlink_source],
+          **move_data,
+        )
       rescue StandardError
         logger.error(
           'error while renaming',
-          source: work_item.file.path,
-          data: work_item.info,
+          source: work_item.source.path,
+          fid: work_item.file&.id,
           exception: $ERROR_INFO,
         )
         raise
+      end
+
+      def process_name_change(anime)
+        new_dir_name = NameGenerator.generate_dir_name_for_anime(anime)
+        old_dir_name = NameGenerator.generate_old_dir_name_for_anime(anime)
+        logger.info('post process name change', old_dir_name:, new_dir_name:)
+        assert(new_dir_name != old_dir_name, 'directory name should change')
+
+        src_dir = File.join(@output_location, old_dir_name)
+        result = @mover.move_directory_contents(
+          src_dir:,
+          dst_dir: File.join(@output_location, new_dir_name),
+          src_file_prefix: old_dir_name,
+          dst_file_prefix: new_dir_name,
+          update_links_from: fix_symlinks_root,
+        )
+
+        return unless result
+
+        # we successfully moved the directory contents. Now we have to update
+        # symlinks.
+        update_symlinks_for(
+          anime,
+          dst_dir_name: new_dir_name,
+          dst_dir: File.join(@output_location, new_dir_name),
+          old_dst_dir_name: old_dir_name,
+        )
+        FileUtils.rmdir(src_dir)
       end
 
       private
 
       # given a work_item indicating the existing file and given
       # a list of duplicates, processes all of them
-      def process_duplicate_set(work_item, _override_options)
+      def process_duplicate_set(work_item)
         existing = work_item
         duplicates = work_item.duplicate_work_items
+
         result = DuplicateResolver.resolve(existing, duplicates)
         # get data shared by all files
-        location, path, name = generate_location(existing[:info])
-        junk = curried_method(:move_to_junk)[name]
-        dup = curried_method(:move_to_dup)[name]
-        result[:junk].each(&junk)
-        result[:dups].each(&dup)
+        move_data = generate_location(existing.file)
+        duplicate_location, junk_duplicate_location = %i[duplicate_location junk_duplicate_location].map do |type|
+          File.absolute_path(options[type], ROOT_FOLDER)
+        end
+        { junk: junk_duplicate_location, dups: duplicate_location }.each do |k, location|
+          result[k].each do |item|
+            @mover.process(
+              **move_data.slice(:new_name),
+              src_file: item.source.path,
+              dst_dir: location,
+              unambiguous: true,
+              symlink_source: options[:symlink_source],
+            )
+          end
+        end
+
         if result[:keep_current]
           return Response.unchanged(
-            existing.file.path,
+            existing.source.path,
             **result.slice(:junk, :dups),
           )
         end
 
-        junk_duplicate_location = File.absolute_path(options[:junk_duplicate_location], ROOT_FOLDER)
-        fix_symlinks_root = File.absolute_path(options[:fix_symlinks_root], ROOT_FOLDER)
         clear_location_resp = @mover.process(
-          existing.file.path,
-          junk_duplicate_location,
-          new_name: name,
+          src_file: existing.source.path,
+          **move_data,
+          dst_dir: junk_duplicate_location,
           unambiguous: true,
           symlink_source: false,
           update_links_from: fix_symlinks_root,
         )
         assert(clear_location_resp.type == :success, 'moving the existing file should not fail')
-        @api_client.remove_from_mylist(existing.info[:fid])
+        @api_client.remove_from_mylist(existing.file.id)
 
-        replacement_resp = process_file(name, result[:selected], location, path)
+        replacement_resp = process_file(
+          result[:selected].file,
+          src_file: result[:selected].source.path,
+          symlink_source: options[:symlink_source],
+          **move_data,
+        )
         assert(replacement_resp.type == :success, 'we just cleared the location')
-        reason = existing.quality.compare_with_info(
-          result[:selected].quality,
+        reason = existing[:quality].compare_with_info(
+          result[:selected][:quality],
         ).slice(:left, :right)
         Response.replaced(
           replacement_resp.destination,
@@ -106,51 +152,41 @@ module Cisqua
         )
       end
 
-      def curried_method(sym)
-        proc(&method(sym)).curry
+      def fix_symlinks_root
+        File.absolute_path(options[:fix_symlinks_root], ROOT_FOLDER)
       end
 
-      def move_to_junk(name, work_item)
-        junk_duplicate_location = File.absolute_path(options[:junk_duplicate_location], ROOT_FOLDER)
-        @mover.process(
-          work_item.file.path,
-          junk_duplicate_location,
-          new_name: name,
-          unambiguous: true,
-        )
-      end
-
-      def move_to_dup(name, work_item)
-        duplicate_location = File.absolute_path(options[:duplicate_location], ROOT_FOLDER)
-        @mover.process(
-          work_item.file.path,
-          duplicate_location,
-          new_name: name,
-          unambiguous: true,
-        )
-      end
-
-      def process_file(name, work_item, location, path, override_options = {})
-        @mover.process(
-          work_item.file.path,
-          location,
-          { new_name: name, **override_options },
-        ).tap do |response|
-          if response.type == :success
-            @api_client.add_to_mylist(work_item.info[:fid])
-            ensure_anidb_id_file(location, work_item.info)
-            update_symlinks_for(work_item, path, location) if options[:create_symlinks]
+      def process_file(anime_file, dst_dir:, **move_data)
+        response = @mover.process(dst_dir:, **move_data) do |is_duplicate|
+          unless is_duplicate
+            # we're about to move the file. Lets add it to mylist
+            @api_client.add_to_mylist(anime_file)
+          end
+        end
+        response.tap do |r|
+          if r.type == :success
+            update_symlinks_for(
+              anime_file.anime,
+              dst_dir:,
+              old_dst_dir_name: move_data[:dst_dir_name],
+              **move_data,
+            )
+            ensure_anidb_id_file(dst_dir, anime_file)
           end
         end
       end
 
-      def generate_location(info)
-        path, name = @name_generator.generate_name_and_path(info)
-        [File.join(@output_location, path), path, name]
+      def generate_location(anime_file)
+        dst_dir_name = NameGenerator.generate_dir_name_for_file(anime_file)
+        {
+          new_name: NameGenerator.generate_name(anime_file),
+          dst_dir_name:,
+          dst_dir: File.join(@output_location, dst_dir_name),
+        }
       end
 
-      def ensure_anidb_id_file(location, info)
-        idfile_path = File.join(location, 'anidb.id')
+      def ensure_anidb_id_file(dst_dir, anime_file)
+        idfile_path = File.join(dst_dir, 'anidb.id')
         return if File.exist?(idfile_path) || !options[:create_anidb_id_files]
 
         logger.debug(
@@ -158,19 +194,27 @@ module Cisqua
           name: idfile_path,
           DRY_RUN: @options[:dry_run_mode],
         )
-        File.write(idfile_path, "#{info[:file][:aid]}\n") unless options[:dry_run_mode]
+        File.write(idfile_path, "#{anime_file.aid}\n") unless options[:dry_run_mode]
       end
 
-      def update_symlinks_for(work_item, folder, location)
+      def update_symlinks_for(anime, dst_dir_name:, old_dst_dir_name:, dst_dir:, **)
         symlink_types = %i[movies incomplete_series complete_series
                            incomplete_other complete_other adult_location]
         all_locations = symlink_types.map do |k|
           File.absolute_path(options[:create_symlinks][k], ROOT_FOLDER)
         end.compact
-        correct_location = decide_symlink_location(work_item)
-        incorrect_locations = all_locations.reject { |a| a == correct_location }
-        incorrect_locations.each do |l|
-          s = File.join(l, folder)
+        correct_location = decide_symlink_location(anime)
+
+        locations_with_incorrect_symlinks = all_locations
+        if dst_dir_name == old_dst_dir_name
+          # since the directory name didnt change, the correct location symlink
+          # is correct.
+          locations_with_incorrect_symlinks = all_locations.reject do |a|
+            a == correct_location
+          end
+        end
+        locations_with_incorrect_symlinks.each do |l|
+          s = File.join(l, old_dst_dir_name)
           next unless File.symlink?(s)
 
           logger.info(
@@ -181,24 +225,23 @@ module Cisqua
           )
           File.unlink(s) unless options[:dry_run_mode]
         end
-        return if File.symlink?("#{correct_location}/#{folder}")
+        return if File.symlink?("#{correct_location}/#{dst_dir_name}")
 
-        symlink(location, correct_location, folder)
+        symlink(dst_dir, correct_location, dst_dir_name)
         logger.info(
           'SYMLINKING',
-          to: location,
-          from: "#{correct_location}/#{folder}",
+          to: dst_dir,
+          from: "#{correct_location}/#{dst_dir_name}",
         )
       end
 
-      def decide_symlink_location(work_item)
-        ainfo = work_item.info[:anime]
+      def decide_symlink_location(anime)
         symlink_locations = options[:create_symlinks]
-        return File.absolute_path(symlink_locations[:adult_location], ROOT_FOLDER) if ainfo[:is_18_restricted] == '1'
-        return File.absolute_path(symlink_locations[:movies], ROOT_FOLDER) if ainfo[:type] == 'Movie'
+        return File.absolute_path(symlink_locations[:adult_location], ROOT_FOLDER) if anime.is_18_restricted
+        return File.absolute_path(symlink_locations[:movies], ROOT_FOLDER) if anime.movie?
 
-        type = ['Web', 'TV Series', 'OVA', 'TV Special'].include?(ainfo[:type]) ? :series : :other
-        mylist_status = MyList.complete?(work_item.info[:file][:aid]) ? :complete : :incomplete
+        type = ['Web', 'TV Series', 'OVA', 'TV Special'].include?(anime.type) ? :series : :other
+        mylist_status = MyList.instance.entries[anime.id].complete? ? :complete : :incomplete
         File.absolute_path(symlink_locations[:"#{mylist_status}_#{type}"], ROOT_FOLDER)
       end
 

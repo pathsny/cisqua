@@ -3,7 +3,7 @@ require 'faraday'
 module Cisqua
   class TmdbScraper
     include SemanticLogger::Loggable
-    def initialize(options, override: false)
+    def initialize(options, override: false, **)
       @options = options
       @override = override
       @image_config_data = nil

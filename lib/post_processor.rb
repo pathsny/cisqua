@@ -8,43 +8,45 @@ module Cisqua
       @options = options
       @file_process = file_processor
       @scanner = scanner
+      @signal = Queue.new
     end
 
     def start
-      BatchProcessor.instance.start
+      LifeCycle.instance.start_processors
+      BatchProcessor.instance.on_update(&method(:on_batch_update))
     end
 
     def stop
-      BatchProcessor.instance.stop
+      LifeCycle.instance.stop_processors
     end
 
-    def make_on_process
-      lambda do |state, batch_data|
-        case state
-        when :started, :process
-          logger.info('progress', {
-            count: batch_data.count,
-            processed: batch_data.processed,
-          })
-        when :complete
-          yield
-        else
-          raise "Unexpected state #{state} in script"
-        end
+    def on_batch_update(event:, result: nil, batch_data: nil)
+      logger.info('Batch Process Event', event:)
+
+      case event
+      when :check
+        logger.info('Check Result', result:)
+      when :process
+        logger.info('progress', {
+          count: batch_data.count,
+          processed: batch_data.processed,
+        })
+      when :complete
+        @signal << true
+      else
+        raise "invalid event type #{event}"
       end
     end
 
     def run
-      signal = Queue.new
-      on_process = make_on_process { signal << true }
-      result = BatchProcessor.instance.enqueue_request('Script', on_process)
+      result = BatchProcessor.instance.enqueue_request('Script')
       case result[:status]
       when :no_files
         log_no_files_banner
       when :started
         batch_data = result[:batch_data]
         log_start_banner(batch_data.count)
-        signal.pop
+        @signal.pop
         log_end_banner(batch_data.count)
       else
         "invalid result #{result} from batch processor for script"

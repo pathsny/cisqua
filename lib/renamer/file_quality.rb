@@ -151,11 +151,11 @@ module Cisqua
       extend Cisqua::Reloadable
       include Comparable
 
-      def initialize(options)
-        @version = options[:version]
-        @quality = Quality.new(options[:quality])
-        @source = Source.new(options[:source])
-        @video_resolution = VideoResolution.new(options[:video_resolution])
+      def initialize(anime_file)
+        @version = anime_file.version
+        @quality = Quality.new(anime_file.quality)
+        @source = Source.new(anime_file.source)
+        @video_resolution = VideoResolution.new(anime_file.video_resolution)
         assert(
           @version.is_a?(Integer) && @version >= 1 && @version <= 5,
           'quality requires a valid version',

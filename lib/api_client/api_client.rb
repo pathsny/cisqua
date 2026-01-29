@@ -6,59 +6,83 @@ module Cisqua
 
   class APIClient
     include SemanticLogger::Loggable
+
+    class SynchronizedClient
+      def initialize(client)
+        @client = client
+        @mutex = Mutex.new
+      end
+
+      def synchronize
+        @mutex.synchronize do
+          yield @client
+        end
+      end
+    end
+
     # Since the scraper can be re-created, we use a setter rather than an initializer
     attr_writer :metadata_scraper
 
     def initialize(client, redis, options)
-      @client = client
+      @client = SynchronizedClient.new(client)
       @redis = redis
       @options = options
     end
 
     def process(_name, ed2k, size)
       search = AnimeFileSearch.find_by_ed2k_and_size(ed2k, size)
-      was_found = check_data_or_api_call(AnimeFileSearch, search) do
-        response = @client.search_file(ed2k, size)
-        logger.debug(
-          'identified file',
-          response,
-        )
-        search = AnimeFileSearch.from_api_response(
-          response&.slice(:fid) || {},
-          ed2k:,
-          size:,
-        ).save
-        return nil unless search.known?
+      AnimeFileSearch.db_provider.write do |transaction|
+        was_found = check_data_or_api_call(AnimeFileSearch, search) do
+          response = @client.synchronize { |c| c.search_file(ed2k, size) }
+          logger.debug(
+            'identified file',
+            response:,
+          )
+          search = AnimeFileSearch.from_api_response(
+            transaction:,
+            api_response: response&.slice(:fid) || {},
+            ed2k:,
+            size: size.to_s,
+          )
+          return nil unless search.known?
 
-        file = AnimeFile.from_api_response(
-          response[:file],
-          id: response[:fid],
-        ).save
-        retrieve_other_details(search.file)
-        Group.from_api_response({
-          name: response[:anime][:group_name],
-          short_name: response[:anime][:group_short_name],
-        },
-          id: file.gid).save
-        AnimeFileMisc.from_api_response(
-          response[:anime],
-          id: file.id,
-        ).save
-      end
-      if was_found
-        return nil unless search.known?
+          file = AnimeFile.from_api_response(
+            transaction:,
+            api_response: response[:file],
+            id: response[:fid].to_s,
+          )
+          retrieve_other_details(transaction, file)
+          Group.from_api_response(
+            transaction:,
+            api_response: {
+              name: response[:anime][:group_name],
+              short_name: response[:anime][:group_short_name],
+            },
+            id: file.gid,
+          )
+          AnimeFileMisc.from_api_response(
+            transaction:,
+            api_response: response[:anime],
+            id: file.id,
+          )
+        end
+        if was_found
+          return nil unless search.known?
 
-        retrieve_other_details(search.file)
+          retrieve_other_details(transaction, search.file)
+        end
       end
-      add_to_mylist(search.fid)
       @metadata_scraper.ensure_metadata(search.file.aid) if @options.fetch_metadata
-      munge_into_expected_format(search.fid)
+      search.file
+    rescue StandardError => e
+      logger.error('error processing file', e)
+      raise
     end
 
-    def retrieve_other_details(file)
-      retrieve_show_details(file.aid)
+    def retrieve_other_details(transaction, file)
+      retrieve_show_details(transaction, file.aid)
       file.eids.each do |eid|
-        retrieve_episode_details(eid)
+        retrieve_episode_details(transaction, eid)
       end
     end
 
@@ -75,7 +99,7 @@ module Cisqua
       logger.debug('searching local database', {
         name: record_type.name,
         status:,
-        key: record&.make_key_for_instance,
+        key: record&.redis_key,
       })
       return true if status == :ok
 
@@ -83,106 +107,65 @@ module Cisqua
       false
     end
 
-    def munge_into_expected_format(fid)
-      file = AnimeFile.find(fid)
-      misc_m = AnimeFileMisc.find(fid)
-      anime = Anime.find(file.aid)
-      misc = {
-        highest_episode_number: misc_m.highest_episode_number,
-        year: misc_m.year,
-        type: misc_m.type,
-        romaji_name: misc_m.romaji_name,
-        english_name: misc_m.english_name,
-        epno: misc_m.epno,
-        ep_english_name: misc_m.ep_english_name,
-        ep_romaji_name: misc_m.ep_romaji_name,
-        group_name: misc_m.group_name,
-        group_short_name: misc_m.group_short_name,
-      }.merge(
-        dateflags: anime.dateflags,
-        year: anime.year,
-        type: anime.type,
-        romaji_name: anime.romaji_name,
-        english_name: anime.english_name,
-        episodes: anime.episode_count,
-        highest_episode_number: anime.highest_episode_number,
-        air_date: anime.air_date.to_i.to_s,
-        end_date: anime.end_date.to_i.to_s,
-        is_18_restricted: anime.is_18_restricted ? '1' : '0',
-        ended: anime.ended?,
-      )
-      {
-        file: {
-          aid: file.aid,
-          eid: file.eid,
-          gid: file.gid,
-          state: file.state,
-          quality: file.quality,
-          source: file.source,
-          video_resolution: file.video_resolution,
-          dub_language: file.dub_language,
-          sub_language: file.sub_language,
-          length: file.length,
-          crc_status: file.crc_status,
-          censored: file.censored,
-          version: file.version,
-        },
-        anime: misc,
-        fid:,
-      }
-    end
-
     def disconnect
-      @client.disconnect
+      @client.synchronize { |c| c.disconnect }
     end
 
-    def add_to_mylist(fid)
-      if MyList.exist?(fid)
+    def add_to_mylist(file)
+      if MyList.instance.exist?(file.id)
         logger.debug('already in mylist')
         return
       end
 
-      lid = @client.mylist_add(fid)
-      MyList.add_file(fid)
+      lid = @client.synchronize { |c| c.mylist_add(file.id) }
+      MyList.instance.add_file(file.id)
       logger.debug('Added to my list as ', lid)
       lid
     end
 
     def remove_from_mylist(fid)
-      unless MyList.exist?(fid)
+      unless MyList.instance.exist?(fid)
         logger.debug('already not in mylist')
         return
       end
 
-      @client.mylist_del_by_fid(fid).tap do |resp|
+      @client.synchronize { |c| c.mylist_del_by_fid(fid) }.tap do |resp|
         logger.debug('Removed from my list', fid:, resp:)
       end
-      MyList.remove_file(fid)
+      MyList.instance.remove_file(fid)
     end
 
     private
 
-    def retrieve_show_details(aid)
+    def retrieve_show_details(transaction, aid)
       anime = Anime.find_by_id(aid)
       check_data_or_api_call(Anime, anime) do
-        response = @client.anime(aid)
+        response = @client.synchronize { |c| c.anime(aid) }
         logger.debug(
           'fetched show',
           response,
         )
-        Anime.from_api_response(response[:anime], id: aid).save
+        Anime.from_api_response(
+          transaction:,
+          api_response: response[:anime],
+          id: aid,
+        )
       end
     end
 
-    def retrieve_episode_details(eid)
+    def retrieve_episode_details(transaction, eid)
       episode = Episode.find_by_id(eid)
       check_data_or_api_call(Episode, episode) do
-        response = @client.episode(eid)
+        response = @client.synchronize { |c| c.episode(eid) }
         logger.debug(
           'fetched episode',
           response,
         )
-        Episode.from_api_response(response[:episode], id: eid).save
+        Episode.from_api_response(
+          transaction:,
+          api_response: response[:episode],
+          id: eid,
+        )
       end
     end
   end

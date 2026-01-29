@@ -8,10 +8,11 @@ module Cisqua
     include SemanticLogger::Loggable
     attr_reader :image_scrapers
 
-    def initialize(options, image_scrapers:, override: false)
+    def initialize(options, image_scrapers:, override: false, test_mode: false)
       @options = options
       @image_scrapers = image_scrapers
       @override = override
+      @test_mode = test_mode
     end
 
     def ensure_mapping
@@ -21,8 +22,8 @@ module Cisqua
       download_mapping
     end
 
-    def ensure_metadata(aid)
-      m = ensure_metadata_only(aid)
+    def ensure_metadata(aid, transaction: nil)
+      m = ensure_metadata_only(aid, transaction:)
       if m.nil?
         return false
       end
@@ -30,11 +31,11 @@ module Cisqua
       fetch_image_from_meta(m)
     end
 
-    def ensure_metadata_only(aid)
+    def ensure_metadata_only(aid, transaction: nil)
       m = Metadata.find_by_id(aid) unless @override
       return m unless m.nil?
 
-      update_metadata(aid)
+      update_metadata(aid, transaction:)
     end
 
     def fetch_image(aid)
@@ -81,7 +82,7 @@ module Cisqua
       )
     end
 
-    def update_from_overrides(aid, overrides)
+    def update_from_overrides(aid, overrides, transaction:)
       return unless overrides.key?(aid)
 
       override_value = overrides[aid][:value]
@@ -89,17 +90,17 @@ module Cisqua
         id: aid,
         updated_at: Time.now,
         **override_value,
-      ).save
+      ).save(transaction:)
     end
 
-    def update_metadata(aid)
+    def update_metadata(aid, transaction:)
       logger.debug('setting metadata for', aid:)
 
       overrides = YAML.load_file(File.join(DATA_FOLDER, 'metadata_overrides.yml'))
-      m = update_from_overrides(aid, overrides)
+      m = update_from_overrides(aid, overrides, transaction:)
       return m unless m.nil?
 
-      meta = try_tvdb_metadata(aid)
+      meta = try_tvdb_metadata(aid, transaction:)
       return meta unless meta.nil?
 
       tmdb_id = get_tmdb_id(aid)
@@ -110,7 +111,7 @@ module Cisqua
           source_id: tmdb_id,
           updated_at: Time.now,
           source_data: {},
-        ).save
+        ).save(transaction:)
       end
 
       imdb_id = get_imdb_id(aid)
@@ -121,11 +122,13 @@ module Cisqua
           source_id: imdb_id,
           updated_at: Time.now,
           source_data: {},
-        ).save
+        ).save(transaction:)
       end
       existing = Cisqua::Metadata.find_by_id(aid)
       # delete a record if its already there since we have no meta
-      Cisqua::Metadata.clear_record(aid) if existing
+      return if existing.nil?
+
+      existing.delete!(transaction:)
       nil
     end
 
@@ -136,7 +139,7 @@ module Cisqua
       nil
     end
 
-    def try_tvdb_metadata(aid)
+    def try_tvdb_metadata(aid, transaction: nil)
       doc = mapping
       tvdb_node = doc.at_xpath("/anime-list/anime[@anidbid=\"#{aid}\" and @tvdbid]")
       tvdb_id = tvdb_node&.[]('tvdbid')
@@ -146,7 +149,7 @@ module Cisqua
         aid:,
         source_id: tvdb_id,
         source_data: { 'defaulttvdbseason' => tvdb_node&.[]('defaulttvdbseason') },
-      )
+      ).save(transaction:)
     end
 
     def tvdb_metadata_node(aid:, source_id:, source_data:)
@@ -156,7 +159,7 @@ module Cisqua
         source_id:,
         updated_at: Time.now,
         source_data:,
-      ).save
+      )
     end
 
     def get_imdb_id(aid)
@@ -177,7 +180,7 @@ module Cisqua
     end
 
     def file_is_current(file_path, url)
-      return true if file_is_recent(file_path)
+      return true if file_is_recent(file_path) || @test_mode
 
       if etag_is_unchanged(url)
         FileUtils.touch(mapping_path)

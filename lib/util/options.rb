@@ -19,7 +19,7 @@ module Cisqua
         invalid_value_types.empty?,
         "#{self.class.name} initialized with keys with invalid value types #{invalid_value_types}",
       )
-      super(**kwargs)
+      super
     end
   end
 
@@ -31,15 +31,6 @@ module Cisqua
     # if this is false. Only the top level files of each directory in the basedir are scanned.
     # if this is true, all the files are picked up recursively
     :recursive,
-    keyword_init: true,
-  ) do
-    include StrictInitialize
-  end
-
-  reloadable_const_define :RedisOptions, Struct.new(
-    # which redis db to use
-    :db,
-    :conf_path,
     keyword_init: true,
   ) do
     include StrictInitialize
@@ -154,6 +145,20 @@ module Cisqua
     end
   end
 
+  reloadable_const_define :TransmissionOptions do
+    Struct.new(
+      :host,
+      :port,
+      :user,
+      :pass,
+      :watch_dir,
+      :poll_interval_sec,
+      keyword_init: true,
+    ) do
+      include StrictInitialize
+    end
+  end
+
   reloadable_const_define :MetadataOptions do
     Struct.new(
       # tvdb mapping file age in days before it should be updated
@@ -168,11 +173,11 @@ module Cisqua
     Struct.new(
       :api_client,
       :scanner,
-      :redis,
       :renamer,
       :metadata,
       :post_batch_actions,
       :log_level,
+      :transmission,
       keyword_init: true,
     ) do
       include StrictInitialize
@@ -188,8 +193,6 @@ module Cisqua
             m[k] = case k
             when :api_client
               make_api_client_options(v)
-            when :redis
-              make_redis_options(v)
             when :scanner
               ScannerOptions.new(**v)
             when :renamer
@@ -198,6 +201,8 @@ module Cisqua
               make_metadata_options(v)
             when :post_batch_actions
               make_post_batch_actions(v)
+            when :transmission
+              make_transmission_options(v)
             else
               v
             end
@@ -224,19 +229,6 @@ module Cisqua
             m[k] = case k
             when :plex_scan_library_files
               v && PlexScanLibraryOption.new(**v)
-            else
-              v
-            end
-          end,
-        )
-      end
-
-      def self.make_redis_options(option_args)
-        RedisOptions.new(
-          **option_args.each_with_object({}) do |(k, v), m|
-            m[k] = case k
-            when :conf_path
-              File.join(ROOT_FOLDER, v)
             else
               v
             end
@@ -273,6 +265,12 @@ module Cisqua
               end
             end,
         )
+      end
+
+      def self.make_transmission_options(option_args)
+        # Make sure the watch dir is absolute
+        option_args[:watch_dir] = File.absolute_path(option_args[:watch_dir], ROOT_FOLDER)
+        TransmissionOptions.new(**option_args)
       end
     end
   end

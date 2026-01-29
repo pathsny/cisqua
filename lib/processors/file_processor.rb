@@ -24,6 +24,7 @@ module Cisqua
     end
 
     attr_reader :on_done_map
+    attr_accessor :record_file_identity_callback
 
     def set_dependencies(scanner, api_client, renamer)
       @scanner = scanner
@@ -51,11 +52,7 @@ module Cisqua
         @api_client.disconnect
       end
       make_worker('renamer') do
-        while_queue_has_items(@renamer_queue) do |w|
-          result = rename(w)
-          on_done = on_done_map.delete(w)
-          on_done.call(result)
-        end
+        while_queue_has_items(@renamer_queue) { |w| process_file(w) }
       end
     end
 
@@ -78,20 +75,23 @@ module Cisqua
       worker.abort_on_exception = true
     end
 
-    def rename(work_item)
-      @renamer.process(work_item)
+    def process_file(work_item)
+      record_file_identity_callback&.call(work_item.file) if work_item.file
+      result = @renamer.process(work_item)
+      on_done = on_done_map.delete(work_item)
+      on_done.call(result)
     end
 
     def fetch_info(work_item)
-      file = work_item.file
-      work_item.info = @api_client.process(file.path, file.ed2k, file.size_bytes)
+      source = work_item.source
+      work_item.file = @api_client.process(source.path, source.ed2k, source.size_bytes)
     end
 
     def scan(work_item)
-      file = work_item.file
-      size, ed2k = @scanner.ed2k_file_hash(file.path)
-      file.size_bytes = size
-      file.ed2k = ed2k
+      source = work_item.source
+      size, ed2k = @scanner.ed2k_file_hash(source.path)
+      source.size_bytes = size
+      source.ed2k = ed2k
       logger.debug(
         'file scanned',
         ed2k:,
@@ -101,7 +101,7 @@ module Cisqua
 
     def while_queue_has_items(queue)
       until (work_item = queue.pop) == :end
-        SemanticLogger.tagged(file: work_item.file.path) do
+        SemanticLogger.tagged(file: work_item.source.path) do
           yield work_item
         end
       end

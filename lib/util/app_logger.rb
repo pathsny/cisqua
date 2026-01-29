@@ -1,3 +1,5 @@
+require 'logger'
+
 module Cisqua
   module AppLogger
     def self.log_level=(log_level)
@@ -25,16 +27,30 @@ module Cisqua
       Pathname.new(log_file).sub_ext('.debug.log').to_path
     end
 
-    def self.setup_logging
+    def self.rack_logger
+      return @rack_logger unless @rack_logger.nil?
+
+      rack_log_path = Pathname.new(log_file).sub_ext('.rack.log').to_path
+      rack_log_file = File.new(rack_log_path, 'a+')
+      rack_log_file.sync = true
+
+      @rack_logger = Logger.new(rack_log_file)
+    end
+
+    def self.setup_logging(test_mode: nil)
+      @test_mode = test_mode unless test_mode.nil?
+
       SemanticLogger.clear_appenders!
+      current_formatter = formatter(test_mode: @test_mode)
+
       SemanticLogger.add_appender(
         file_name: log_file,
-        formatter:,
+        formatter: current_formatter,
         level: :info,
       )
       SemanticLogger.add_appender(
         file_name: debug_log_file,
-        formatter:,
+        formatter: current_formatter,
         level: :debug,
       )
 
@@ -42,21 +58,32 @@ module Cisqua
 
       SemanticLogger.add_appender(
         io: $stdout,
-        formatter:,
-        level: @stdout_log_level,
+        formatter: current_formatter,
+        level: @stdout_log_level || (test_mode ? :debug : :info),
       )
     end
 
-    def self.formatter
+    def self.formatter(test_mode: false)
       color_map = SemanticLogger::Formatters::Color::ColorMap.new(
         warn: SemanticLogger::AnsiColors::YELLOW,
       )
       ap = { multiline: true, ruby19_syntax: true }
-      @formatter ||= AppLogFormatter.new(ap:, color_map:, precision: 2)
+
+      if test_mode
+        @test_formatter ||= TestLogFormatter.new(ap:, color_map:, precision: 2)
+      else
+        @formatter ||= AppLogFormatter.new(ap:, color_map:, precision: 2)
+      end
     end
 
     class AppLogFormatter < SemanticLogger::Formatters::Color
       def pid; end
+    end
+
+    class TestLogFormatter < AppLogFormatter
+      def call(log, logger)
+        "🧪 [TEST] #{super}"
+      end
     end
   end
 

@@ -1,7 +1,7 @@
 module Cisqua
   class Maintenance
     def remove_invalid_batch_datas
-      bds = BatchData.latest(20)
+      bds = BatchCheck.instance.latest(20)
       invalids = bds.select do |bd|
         bd.updates.nil? &&
           bd.success_fids.empty? &&
@@ -16,13 +16,13 @@ module Cisqua
       redis = Registry.instance.redis
 
       redis.zrem('bd:timestamps', bd.id)
-      redis.del(bd.make_key_for_instance)
+      redis.del(bd.redis_key)
     end
 
     def refetch_anime_info(aid)
       proxy_client = Registry.instance.proxy_client
       response = proxy_client.anime(aid)
-      Anime.from_api_response(response[:anime], id: aid).save
+      Anime.from_api_response(response[:anime], id: aid)
     end
   end
 end

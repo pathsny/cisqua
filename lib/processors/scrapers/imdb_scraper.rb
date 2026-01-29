@@ -3,7 +3,7 @@ require 'faraday'
 module Cisqua
   class ImdbScraper
     include SemanticLogger::Loggable
-    def initialize(tmdb_scraper)
+    def initialize(tmdb_scraper, **)
       @tmdb_scraper = tmdb_scraper
     end
 

@@ -5,23 +5,23 @@ module Cisqua
       class << self
         def extract_clones(original, duplicates)
           clones_of_original, rest = duplicates.partition do |item|
-            item.info[:fid] == original.info[:fid]
+            item.file.id == original.file.id
           end
-          rest_uniq = rest.uniq { |item| item.info[:fid] }
+          rest_uniq = rest.uniq { |i| i.file.id }
           [clones_of_original + rest - rest_uniq, rest_uniq]
         end
 
         def verify_data(original, duplicates)
           assert(
-            duplicates.all? { |i| i.info[:file][:aid] == original.info[:file][:aid] },
+            duplicates.all? { |d| d.file.aid == original.file.aid },
             'all files must be for the same anime',
           )
           assert(
-            duplicates.all? { |i| i.info[:file][:eid] == original.info[:file][:eid] },
+            duplicates.all? { |d| d.file.eid == original.file.eid },
             'all files must be for the same episode',
           )
           assert(
-            duplicates.all? { |i| i.info[:file][:gid] == original.info[:file][:gid] },
+            duplicates.all? { |d| d.file.gid == original.file.gid },
             'all files must be for the same group',
           )
         end
@@ -43,7 +43,9 @@ module Cisqua
         end
 
         def compare_items(item_1, item_2)
-          item_1.quality <=> item_2.quality
+          item_1[:quality] ||= FileQuality.new(item_1.file)
+          item_2[:quality] ||= FileQuality.new(item_2.file)
+          item_1[:quality] <=> item_2[:quality]
         end
       end
     end

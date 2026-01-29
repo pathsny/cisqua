@@ -22,6 +22,7 @@ module Cisqua
         DATA_FOLDER,
       )
       @test_mode = test_mode
+      @hack_cache_for_test = {}
     end
 
     def method_missing(method, *)
@@ -52,6 +53,10 @@ module Cisqua
       cache_key = args.zip(param_names)
         .map { |value, name| "#{name}_#{value}" }.join('__')
 
+      if @hack_cache_for_test.key?(cache_key)
+        cache_key = @hack_cache_for_test[cache_key]
+      end
+
       file_path = File.join(cache_dir, "#{cache_key}.yml")
       if File.exist?(file_path)
         YAML.load_file(file_path)
@@ -61,6 +66,10 @@ module Cisqua
           File.write(file_path, result.to_yaml)
         end
       end
+    end
+
+    def hack_cache_for_test(old_name, new_name)
+      @hack_cache_for_test[old_name] = new_name
     end
 
     def disconnect

@@ -26,6 +26,7 @@ module Cisqua
 
   reloadable_const_define :ROOT_FOLDER, File.expand_path('..', __dir__)
   reloadable_const_define :DATA_FOLDER, File.join(ROOT_FOLDER, 'data')
+  reloadable_const_define :TEST_DATA_FOLDER, File.join(DATA_FOLDER, 'test_data')
 
   Dir[File.join(__dir__, '**/*.rb')].each do |f|
     require f unless f == __FILE__

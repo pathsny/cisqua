@@ -9,6 +9,7 @@ module Cisqua
       @input = Queue.new
       @signal = Queue.new
       @current = nil
+      @on_update_callback = nil
     end
 
     # Since BatchProcessor is a singleton, the scanner has to be set rather than passed as an initializer.
@@ -18,9 +19,13 @@ module Cisqua
     attr_writer :scanner, :metadata_scraper
     attr_accessor :input, :signal, :options
 
+    def on_update(&block)
+      @on_update_callback = block
+    end
+
     def start
-      raise 'cannot start more than once' if @started
-      raise 'cannot start unless dependencies are set' if options.nil?
+      assert(@started.nil?, 'cannot start more than once')
+      assert(!options.nil?, 'cannot start unless dependencies are set')
 
       fixup_batch_datas
 
@@ -29,10 +34,9 @@ module Cisqua
       @worker_thread = Thread.new do
         Thread.current.name = 'batch_worker'
         loop do
+          assert(@current.nil?, 'This should never happen while processing a batch')
           item = input.pop
-          break if item == :end
-
-          assert(item[:status] == :started, 'at this point the batch should have started')
+          break if item == :end # Trying to quit
 
           process(**item)
         end
@@ -41,7 +45,7 @@ module Cisqua
     end
 
     def fixup_batch_datas
-      previous_batch_datas = BatchData.latest(10)
+      previous_batch_datas = BatchCheck.instance.latest(10)
       previous_batch_datas.each do |bd|
         unless bd.complete?
           logger.warn('batch_data incomplete on startup. Probably aborted', batch_data: bd.id)
@@ -56,165 +60,204 @@ module Cisqua
       @worker_thread.join
     end
 
-    def enqueue_request(request_source, on_update)
+    # Runs on the thread of the caller
+    def enqueue_request(request_source)
       return { status: :rejected } if input.size == 1 # There is already a queued up job waiting.
 
       if @current.nil?
-        check_and_process(request_source:, on_update:)
+        check_and_create_batch(request_source:).tap do |result|
+          input << result
+        end
       else
         # A job is running. So we just queue up a job to wait
-        { status: :waiting, on_update:, request_source: }.tap { |d| input << d }
+        { status: :waiting, request_source: }.tap { |d| input << d }
       end
+    end
+
+    def record_anime_name_change(aid, old_name, new_name, transaction:)
+      return unless @started && !@current.nil?
+
+      AnimeNameChange.new.update(
+        transaction:,
+        batch_data_id: @current.id,
+        aid:,
+        old_name:,
+        new_name:,
+      )
     end
 
     private
 
-    def check_and_process(request_source:, on_update:, **)
-      assert(@current.nil?, 'cannot start a new batch while one is in progress')
+    # Triggers a check from the request_source
+    # Creates a new batch to process if appropriate.
+    def check_and_create_batch(request_source:)
+      assert(@current.nil?, 'cannot create a new batch when a process is running')
 
-      work_items = @scanner.work_item_files.map do |file|
-        WorkItem.new(file:, request_type: :standard)
+      sources = @scanner.work_item_sources
+      logger.debug('got a request', { count: sources.count })
+      if sources.empty?
+        BatchCheck.update_no_files(request_source:)
+        return { status: :no_files, request_source: }
       end
 
-      logger.debug('got a request', { count: work_items.count })
+      work_items = []
+      batch_data = BatchCheck.update_new_files(request_source:, source_count: sources.count) do |index|
+        source = sources[index]
+        work_items << WorkItem.new(source:, request_type: :standard, index:)
+        source.name
+      end
+      { status: :started, request_source:, work_items:, batch_data: }
+    end
 
-      if work_items.empty?
-        BatchCheck.update(request_source:, batch_data_id: '')
-        return { status: :no_files }
+    def process(result)
+      if result[:status] == :waiting
+        result = check_and_create_batch(request_source:)
       end
 
-      batch_data = BatchData.create(
-        request_source,
-        work_items.count,
+      if result[:status] == :no_files
+        @on_update_callback.call(event: :check, result:)
+        return
+      end
+
+      assert(result[:status] == :started, 'only valid status')
+      @current = result[:batch_data]
+      @on_update_callback.call(
+        event: :check,
+        result: result.slice(:status, :request_source),
+        batch_data: result[:batch_data],
       )
-      BatchCheck.update(request_source:, batch_data_id: batch_data.id)
-      @current = batch_data
-      { status: :started, work_items:, batch_data:, on_update: }.tap { |d| input << d }
+      process_batch(**result)
     end
 
-    def complete_batch(batch_data, on_update)
-      batch_data.update(is_complete: true)
-      @current = nil
-      # We want to complete the batch, and it could be as simple as marking it complete
-      # and triggering the callback. But there is a chance that there is a job waiting.
-      # so lets make sure we allow the next job to start before we call the callback
-      unless input.empty?
-        data = input.pop
-        if data == :end
-          # it was trying to end, lets allow it continue doing so
-          input << data
-        else
-          assert(data[:status] == :waiting, 'The only possibility is that there was a waiting job')
-          check_and_process(**data)
-        end
-      end
-      on_update.call(:complete, batch_data)
-    end
-
-    def process(work_items:, batch_data:, on_update:, **)
+    def process_batch(work_items:, batch_data:, **)
       @metadata_scraper.ensure_mapping
-      on_update.call(:started, batch_data)
+      logger.info('Processing batch', id: batch_data.id, count: work_items.count)
+
+      FileProcessor.instance.record_file_identity_callback = batch_data.method(:record_file_identity)
+
       atleast_one_success_phase_1, dups = process_items(
         :standard,
         batch_data,
-        on_update,
         work_items,
       )
       atleast_one_success ||= atleast_one_success_phase_1
       dest_root = File.absolute_path(options.renamer[:output_location], ROOT_FOLDER)
-      dup_work_items = dups.map do |destination, duplicates|
+
+      dup_work_items = dups.map.with_index do |(destination, duplicates), index|
         name = Pathname.new(destination).relative_path_from(Pathname.new(dest_root)).to_s
         WorkItem.new(
-          file: WorkItemFile.new(path: destination, name:),
+          source: WorkItemSource.new(path: destination, name:),
           request_type: :duplicate_set,
           duplicate_work_items: duplicates,
+          index: "dup_set_#{index}",
         )
       end
 
       unless dup_work_items.empty?
+        logger.info('Processing duplicate set', count: dup_work_items.count)
         atleast_one_success_phase_2, dup_dups = process_items(
           :duplicate_set,
           batch_data,
-          on_update,
           dup_work_items,
         )
         atleast_one_success ||= atleast_one_success_phase_2
         assert(dup_dups.empty?, 'cannot get dups of dups')
       end
 
+      FileProcessor.instance.record_file_identity_callback = nil
+
       post_batch_actions(atleast_one_success)
 
-      complete_batch(batch_data, on_update)
+      complete_batch(batch_data)
     end
 
-    def on_process(batch_data, on_update, work_item, result)
+    def complete_batch(batch_data)
+      batch_data.update(is_complete: true)
+      @current = nil
+      @on_update_callback.call(event: :complete, batch_data:)
+    end
+
+    def on_process(batch_data, work_item, result, batch_progress)
       if result.type == :unknown
+        batch_data.record_file_result(work_item.index, result: result.type)
         logger.warn(
           'UNKNOWN file',
-          source: work_item.file.path,
+          source: work_item.source.path,
           dest: result.destination,
+          batch_progress:,
+          processed: "#{batch_data.processed}/#{batch_data.count}",
         )
-        batch_data.add_unknown(work_item.file.name)
       else
-        fid = work_item.info[:fid]
-        aid = AnimeFile.find(fid).aid
-        success = []
-        dups = (result.dups || []).map { |w|  w.info[:fid] }
-        junk = (result.junk || []).map { |w|  w.info[:fid] }
-        replacement = nil
         case result.type
+        when :success
+          batch_data.record_file_result(work_item.index, result: result.type, fid: work_item.file.id)
+          logger.info(
+            'MOVING File',
+            source: work_item.source.path,
+            dest: result.destination,
+            batch_progress:,
+            processed: "#{batch_data.processed}/#{batch_data.count}",
+          )
         when :duplicate
           logger.warn(
             'DUPLICATE file',
-            source: work_item.file.path,
+            source: work_item.source.path,
             dest: result.destination,
+            batch_progress:,
+            processed: "#{batch_data.processed}/#{batch_data.count}",
           )
-        when :success
-          logger.info(
-            'MOVING File',
-            source: work_item.file.path,
-            dest: result.destination,
-          )
-          success = [fid]
-        when :resolved_duplicates_unchanged
-          logger.info(
-            'RETAINING file',
-            source: result.destination,
-          )
-        when :resolved_duplicates_replaced
-          logger.info(
-            'REPLACING file',
-            source: result.replacement[:new_item].file.path,
-            dest: work_item.file.path,
-          )
-          replacement = {
-            old: result.replacement[:old_item].info[:fid].to_s,
-            new: result.replacement[:new_item].info[:fid].to_s,
-            reason: result.replacement[:reason],
-          }
+        when :resolved_duplicates_unchanged, :resolved_duplicates_replaced
+          { junk: result.junk, dup: result.dups }.each do |type, items|
+            items.each do |w|
+              # The standard requests are for newly scanned files. Thats why
+              # we only record it's progress
+              next if w.request_type != :standard
+
+              batch_data.record_file_result(w.index, result: type, fid: w.file.id)
+            end
+          end
+
+          if result.type == :resolved_duplicates_replaced
+            new_item = result.replacement[:new_item]
+            batch_data.record_file_result(new_item.index,
+              result: :replacement,
+              fid: new_item.file.id.to_s,
+              replaced_fid: result.replacement[:old_item].file.id.to_s,
+              reason: result.replacement[:reason])
+          end
+          if result.type == :resolved_duplicates_unchanged
+            logger.info(
+              'RETAINING file',
+              source: result.destination,
+              batch_progress:,
+              processed: "#{batch_data.processed}/#{batch_data.count}",
+            )
+          else
+            logger.info(
+              'REPLACING file',
+              source: result.replacement[:new_item].source.path,
+              dest: work_item.source.path,
+              reason: result.replacement[:reason],
+              batch_progress:,
+              processed: "#{batch_data.processed}/#{batch_data.count}",
+            )
+          end
         else
           raise "Unknown response type #{result.type}"
         end
-        batch_data.record_progress(
-          aid,
-          success:,
-          dups:,
-          junk:,
-          replacement:,
-        )
       end
-      on_update.call(:process, batch_data)
+      @on_update_callback.call(event: :process, batch_data:)
     end
 
     # runs on processor thread
-    def process_items(type, batch_data, on_update, work_items)
+    def process_items(type, batch_data, work_items)
       logger.debug("Processing #{work_items.count} #{type} items")
       results = {}
       results.compare_by_identity
       work_items.each do |work_item|
         FileProcessor.instance.process(work_item) do |result|
           results[work_item] = result
-          on_process(batch_data, on_update, work_item, result)
+          on_process(batch_data, work_item, result, "#{results.count}/#{work_items.count}")
           signal << true if results.count == work_items.count
         end
       end
@@ -270,7 +313,7 @@ module Cisqua
           logger.error(
             'could not update plex',
             plex_server: uri,
-            code: resp.code,
+            status: resp.status,
             body: resp.body,
           )
         end

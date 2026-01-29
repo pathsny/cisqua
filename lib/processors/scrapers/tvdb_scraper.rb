@@ -4,7 +4,7 @@ module Cisqua
   class TvdbScraper
     include SemanticLogger::Loggable
 
-    def initialize(options, override: false)
+    def initialize(options, override: false, **)
       @options = options
       @override = override
     end
@@ -19,7 +19,7 @@ module Cisqua
     end
 
     def fetch_image_url(meta)
-      logger.info('about to fetch tvdb for', meta.instance_values)
+      logger.info('about to fetch tvdb for', id: meta.id, source_id: meta.source_id)
       response = fetch_show_data(meta)
       return nil unless response.success?
 

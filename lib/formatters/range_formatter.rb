@@ -2,7 +2,7 @@ module Cisqua
   class RangeFormatter
     include SemanticLogger::Loggable
     def from_mylist(anime)
-      from_fids(anime, MyList.fids(anime.id))
+      from_files(anime, MyList.instance.entries[anime.id].files)
     end
 
     def from_fids(anime, fids)
@@ -121,8 +121,8 @@ module Cisqua
       when /Part (?<p_num>\d) of (?<p_count>\d)/
         m = Regexp.last_match
         {
-          number: Integer(m[:p_num]),
-          total_parts: Integer(m[:p_count]),
+          number: Integer(m[:p_num], 10),
+          total_parts: Integer(m[:p_count], 10),
         }
       end
     end
@@ -130,7 +130,7 @@ module Cisqua
     def special_info(episode)
       match = /^(?<spc_type>[A-Z])?(?<num>\d+)$/.match(episode.epno)
       {
-        number: Integer(match[:num].sub(/^[0]*/, '')),
+        number: Integer(match[:num].sub(/^[0]*/, ''), 10),
         type: match[:spc_type],
         epno: episode.epno,
       }

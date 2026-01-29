@@ -15,13 +15,13 @@ module Cisqua
     def file_list
       extensions = options[:extensions] == :all ? '*' : "{#{extension_glob options[:extensions]}}"
       Dir.glob(File.join(basedir.to_s, "#{'**/' if options[:recursive]}*.#{extensions}"), File::FNM_CASEFOLD)
-        .reject { |n| File.symlink? n }
+        .reject { |n| File.symlink?(n) || !File.file?(n) }
     end
 
-    def work_item_files
+    def work_item_sources
       file_list.map do |path|
         name = Pathname.new(path).relative_path_from(Pathname.new(basedir)).to_s
-        WorkItemFile.new(path:, name:)
+        WorkItemSource.new(path:, name:)
       end
     end
 
@@ -34,6 +34,12 @@ module Cisqua
       ed2k_block = 9500 * 1024
       ed2k_hash = ''
       file_size = nil
+
+      # Ensure we're dealing with a file, not a directory
+      unless File.file?(file_name)
+        raise ArgumentError, "Path is not a file: #{file_name}"
+      end
+
       File.open(file_name, 'rb') do |f|
         file_size = f.stat.size # while at it, fetch the size of the file
         while (block = f.read(ed2k_block))
