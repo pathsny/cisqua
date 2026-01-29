@@ -43,13 +43,18 @@ end
 
 def s_pattern_fix(folder_name)
   f = Regexp.quote(folder_name)
-  [{ r: Regexp.new("(^#{f}\\.?\\s- episode \\d+)((?:\\[[\\w&-\\.~\\s!=]+\\])?\\.[A-Za-z0-9]+$)"),
-     p: [1, ' ',
-         2] }, { r: Regexp.new("(^#{f}\\.?\\s- episode [A-Z](\\d+))((?:\\[[\\w&-\\.~\\s!=]+\\])?\s\\[\\(XS-\\d+-\\2\\)\\]\\.[A-Za-z0-9]+$)"),
-                 p: [2, ' ', 3] }, {
-                   r: Regexp.new("(^#{f}\\.?\\s- episode \\d+)\s(\\.[A-Za-z0-9]+$)"),
-                   p: [1, 2],
-                 }]
+  [{
+    r: Regexp.new("(^#{f}\\.?\\s- episode \\d+)((?:\\[[\\w&-\\.~\\s!=]+\\])?\\.[A-Za-z0-9]+$)"),
+    p: [1, ' ', 2],
+  }, {
+    # rubocop:disable Layout/LineLength
+    r: Regexp.new("(^#{f}\\.?\\s- episode [A-Z](\\d+))((?:\\[[\\w&-\\.~\\s!=]+\\])?\s\\[\\(XS-\\d+-\\2\\)\\]\\.[A-Za-z0-9]+$)"),
+    # rubocop:enable Layout/LineLength
+    p: [2, ' ', 3],
+  }, {
+    r: Regexp.new("(^#{f}\\.?\\s- episode \\d+)\s(\\.[A-Za-z0-9]+$)"),
+    p: [1, 2],
+  }]
 end
 
 DUPLICATES = {}

@@ -59,6 +59,7 @@ class MovieRenamerFoPlex
     if /\[\(X/.match(movie)
       work_item = WorkItem.new(
         file: movie,
+        index: 0, # there is no batching
         name: extract_info_from_name_assuming_old_scheme(movie),
       )
       @options[:renamer][:dry_run_mode] = @script_options[:dry_run_mode]
@@ -67,7 +68,7 @@ class MovieRenamerFoPlex
       logger.info { "moved #{movie} to #{resp.destination}" }
     else
       info = extract_info_from_name_assuming_current_scheme(movie)
-      work_item = WorkItem.new(file: movie, info:)
+      work_item = WorkItem.new(file: movie, info:, index: 0)
 
       # we dont expect any changes since this file should be named correctly
       @options[:renamer][:dry_run_mode] = true
@@ -101,7 +102,6 @@ class MovieRenamerFoPlex
     }
   end
 
-  CURRENT_SCHEME_REGEX = /^ - (?:(?<ep_english_name>Complete Movie|Part \d of \d)|episode (?<epno>\w?\d+(?:-\d+)?) - (?<ep_english_name>[^\[]*))(?: \[(?<group_short_name>[^\]()]*)\])?\.(?<ext>\w*)$/
   def movie_file_info_using_current_scheme(movie)
     dirname = File.dirname(movie)
     romaji_name = File.basename(dirname)
@@ -117,8 +117,6 @@ class MovieRenamerFoPlex
     end
     assert(match, "#{movie} did not match pattern")
   end
-
-  OLD_SCHEME_REGEX = /^ - (?<ep_english_name>[^\[]*)(?: \[(?<group_short_name>[^\]()]*)\])? \[\(X(?:S-(?<spc_type>\d+))?-(?<epno>\d+(?:-\d+)?)\)\]\.(?<ext>\w*)$/
 
   def movie_file_info_using_old_scheme(movie)
     dirname = File.dirname(movie)
@@ -143,6 +141,11 @@ class MovieRenamerFoPlex
       ep_english_name: match[:ep_english_name],
     }
   end
+
+  # rubocop:disable Layout/LineLength
+  OLD_SCHEME_REGEX = /^ - (?<ep_english_name>[^\[]*)(?: \[(?<group_short_name>[^\]()]*)\])? \[\(X(?:S-(?<spc_type>\d+))?-(?<epno>\d+(?:-\d+)?)\)\]\.(?<ext>\w*)$/
+  CURRENT_SCHEME_REGEX = /^ - (?:(?<ep_english_name>Complete Movie|Part \d of \d)|episode (?<epno>\w?\d+(?:-\d+)?) - (?<ep_english_name>[^\[]*))(?: \[(?<group_short_name>[^\]()]*)\])?\.(?<ext>\w*)$/
+  # rubocop:enable Layout/LineLength
 end
 
 renamer = MovieRenamerFoPlex.new(options, script_options)

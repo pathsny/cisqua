@@ -32,7 +32,7 @@ module Cisqua
   options[:log_level] = script_options[:log_level] if script_options.key?(:log_level)
   AppLogger.log_level = options[:log_level]
 
-  RedisScripts.instance.with_redis(options.redis.conf_path) do
+  RedisScripts.instance.with_redis do
     Registry.instance.redis.flushdb
     MylistImporter.new(script_options[:mylist], Registry.instance.proxy_client).run
   end

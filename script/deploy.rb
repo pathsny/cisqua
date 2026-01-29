@@ -10,17 +10,11 @@ require 'open3'
 CONFIG = YAML.load_file(File.expand_path('../data/deploy.yml', __dir__))
 
 class Deploy
-  def build_image
+  def build_image(push: false)
+    command = push ? 'cd docker-app && ./build.sh --push' : 'cd docker-app && ./build.sh'
     run_command(
-      'Building Docker image ...',
-      "docker build --platform=linux/amd64 . -t #{CONFIG[:dockerhub_repo]}:#{CONFIG[:image_tag]}",
-    )
-  end
-
-  def push
-    run_command(
-      'Pushing Docker image to Docker Hub...',
-      "docker push #{CONFIG[:dockerhub_repo]}:#{CONFIG[:image_tag]}",
+      push ? 'Building and pushing Docker image ...' : 'Building Docker image for testing ...',
+      command,
     )
   end
 
@@ -122,11 +116,35 @@ class Deploy
         end
       when :download_db
         remote_db_file = File.join(CONFIG[:remote_db_location], 'dump.rdb')
-        local_db_file = File.expand_path(data.first)
+        location = File.expand_path(data.first)
+        assert(File.directory?(location), 'expecting a directory')
+        timestamp = Time.now.strftime('%Y_%m_%d_%H_%M')
+        local_db_file = File.join(location, "dump_#{timestamp}.rdb")
+
         comment "have to download #{remote_db_file} to #{local_db_file}"
         Net::SCP.start(CONFIG[:remote_host], CONFIG[:remote_user]) do |scp|
           scp.download!(remote_db_file, local_db_file)
         end
+      when :download_images
+        location = File.expand_path(data.first)
+        assert(File.directory?(location), 'expecting a directory')
+        comment "have to download images to #{location}"
+        remote_images_dir = File.join(CONFIG[:remote_db_location], 'show_images')
+
+        Net::SCP.start(CONFIG[:remote_host], CONFIG[:remote_user], password: CONFIG[:password]) do |scp|
+          scp.download!(remote_images_dir, location, recursive: true)
+        end
+
+        Net::SSH.start(CONFIG[:remote_host], CONFIG[:remote_user]) do |ssh|
+          ssh.exec!("tar czf - -C #{remote_images_dir} .") do |_, stream, data|
+            if stream == :stderr
+              puts "Error: #{data}"
+            elsif stream == :stdout
+              File.binwrite("#{location}/images.tar.gz", data)
+            end
+          end
+        end
+        system("tar xzf #{location}/images.tar.gz -C #{location}/")
       when :restart
         comment 'finding deployments'
         result = exec_remote_command(
@@ -201,12 +219,12 @@ options = {
 OptionParser.new do |opts|
   opts.banner = 'Usage: deploy.rb [options]'
 
-  opts.on('-b', '--build', 'Build Docker image') do
-    options[:build] = true
+  opts.on('-b', '--build', 'Build Docker image for local testing') do
+    options[:build] = { push: false }
   end
 
-  opts.on('-p', '--push', 'Push Latest Docker image to Docker Hub') do
-    options[:push] = true
+  opts.on('-p', '--build_push', 'Build and push Docker image to registry') do
+    options[:build] = { push: true }
   end
 
   opts.on('-r', '--remote_pull', 'Pull Docker image on remote system') do
@@ -236,6 +254,10 @@ OptionParser.new do |opts|
   opts.on('-e', '--extract_db DB', 'Extracts remote db to local file') do |db|
     options[:extract_db] = db
   end
+
+  opts.on('-i', '--download_images Location', 'Downloads images from remote server to specified location') do |location|
+    options[:download_images] = location
+  end
 end.parse!
 
 if (options.keys.count > 1 || options[:remote].count > 1) && options[:remote][:logs]
@@ -248,22 +270,21 @@ if options.empty?
   puts 'No command listed'
 else
   if options[:all]
-    d.build_image
-    d.push
-    d.remote(%i[pull start])
+    d.build_image(push: true) # all deployment should push
+    d.remote(%i[stop pull start])
     exit
   end
   if options[:build]
-    d.build_image
-  end
-  if options[:push]
-    d.push
+    d.build_image(**options[:build]) # spread the push: true/false option
   end
   if options[:extract_db]
     d.remote([:stop, [:download_db, options[:extract_db]]])
   end
   if options[:push_db]
     d.remote([:stop, :backup_db, [:copy_db, options[:push_db]]])
+  end
+  if options[:download_images]
+    d.remote([[:download_images, options[:download_images]]])
   end
   unless options[:remote].empty?
     d.remote(options[:remote].keys)

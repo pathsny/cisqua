@@ -8,11 +8,11 @@ module Cisqua
     def make_all(type)
       case type
       when :mylist
-        MyList.anime_ids.each do |id|
+        MyList.instance.anime_ids.each do |id|
           make_for_anime id
         end
       when :batch_data
-        BatchData.latest(:all) do |bd|
+        BatchCheck.instance.latest(:all) do |bd|
           fids = bd.success_fids + bd.replacement_fids + bd.duplicate_fids
           aids = fids.map { |fid| Cisqua::AnimeFile.find(fid).anime.id }.uniq
           aids.each { |aid| bd.calculate_updates_hash(aid) }
@@ -50,12 +50,13 @@ module Cisqua
   if script_options[:test_mode]
     TestUtil.prep_registry
   end
-  registry = Registry.instance
+  Registry.setup
   if script_options[:start_redis]
-    RedisScripts.instance.with_redis(registry.options.redis.conf_path) do
+    RedisScripts.instance.with_redis do
       RangeInitializer.new.make_all(script_options[:type])
     end
   else
+    RedisScripts.instance.confirm_redis_is_available
     RangeInitializer.new.make_all(script_options[:type])
   end
 end

@@ -13,6 +13,9 @@ module Cisqua
     opts.on('-t', '--test', 'run for testing') do
       script_options[:test_mode] = true
     end
+    opts.on('-l', '--local-redis', 'run redis locally') do
+      script_options[:run_redis_locally] = true
+    end
     opts.on('--dry-run', 'Dry Run. Does not move any files, create any directories or create symlinks') do
       script_options[:dry_run_mode] = true
     end
@@ -42,11 +45,20 @@ module Cisqua
     options[:renamer][:dry_run_mode] = script_options[:dry_run_mode] if script_options.key?(:dry_run_mode)
     Registry.options_override = options
   end
+
   registry = Registry.instance
-  RedisScripts.instance.with_redis(registry.options.redis.conf_path) do
+  process_proc = proc do
     processor = PostProcessor.new(registry.options, registry.scanner, FileProcessor.instance)
+    processor.setup(test_mode: script_options[:test_mode])
     processor.start
     processor.run
     processor.stop
+  end
+
+  if script_options[:run_redis_locally]
+    RedisScripts.instance.with_redis(&process_proc)
+  else
+    RedisScripts.instance.confirm_redis_is_available
+    process_proc.call
   end
 end

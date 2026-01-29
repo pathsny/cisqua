@@ -15,7 +15,7 @@ module Cisqua
     def set_metadata
       report = {}
 
-      MyList.anime_ids.each do |id|
+      MyList.instance.anime_ids.each do |id|
         @scraper.ensure_metadata_only(id)
         anime = Anime.find(id)
         m = anime.metadata
@@ -34,7 +34,7 @@ module Cisqua
     end
 
     def download_images
-      metas = MyList.anime_ids.map { |id| Anime.find(id).metadata }
+      metas = MyList.instance.anime_ids.map { |id| Anime.find(id).metadata }
       candidates = metas.select do |m|
         m &&
           !m.image_fetch_attempted? &&
@@ -89,10 +89,11 @@ module Cisqua
     ),
   )
   if script_options[:start_redis]
-    RedisScripts.instance.with_redis(registry.options.redis.conf_path) do
+    RedisScripts.instance.with_redis do
       downloader.run(script_options[:mode])
     end
   else
+    RedisScripts.instance.confirm_redis_is_available
     downloader.run(script_options[:mode])
   end
 end

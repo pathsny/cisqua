@@ -54,8 +54,8 @@ module Cisqua
     def delete_unused(bd_id, bd_key)
       updates = redis.hgetall(bd_key)['updates_json_str']
       assert(updates.nil?, 'no updates')
-      related_redis_keys = redis.keys("#{bd_key}:*")
-      assert(related_redis_keys.empty?, 'not yet supported')
+      related_redis_fields = redis.keys("#{bd_key}:*")
+      assert(related_redis_fields.empty?, 'not yet supported')
       redis.zrem('bd:timestamps', bd_id)
       redis.del(bd_key)
     end
@@ -100,7 +100,7 @@ module Cisqua
         redis.spop(existing_key) while redis.scard(existing_key).positive?
 
         fids_to_exclude = (success_map[aid] || []) + (success_fids_grpd[aid] || [])
-        existing_fids = MyList.fids(aid) - fids_to_exclude
+        existing_fids = MyList.instance.fids(aid) - fids_to_exclude
         redis.sadd(existing_key, *existing_fids) unless existing_fids.empty?
       end
 
@@ -141,12 +141,14 @@ module Cisqua
   if script_options[:test_mode]
     TestUtil.prep_registry
   end
-  registry = Registry.instance
+  Registry.setup
+
   if script_options[:start_redis]
-    RedisScripts.instance.with_redis(registry.options.redis.conf_path) do
+    RedisScripts.instance.with_redis do
       FixDBForRanges.new.run
     end
   else
+    RedisScripts.instance.confirm_redis_is_available
     FixDBForRanges.new.run
   end
 end
