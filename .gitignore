@@ -1,5 +1,6 @@
 data
 .DS_Store
+OPERATION.md
 .bundle
 .vscode
 config/deploy
@@ -8,4 +9,3 @@ node_modules
 *.sublime-workspace
 *.code-workspace
 script/test_post_process.rb
-
