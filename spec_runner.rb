@@ -76,15 +76,12 @@ if pattern_index
   integration_patterns = []
 
   patterns.each do |pattern|
-    match_data = %r{.*/(integration_?)(spec/)(\*\*)/.*}.match(pattern)
-    assert(match_data, "Pattern #{pattern} does not match expected format")
-    suffix = match_data[1]
-
-    case suffix
-    when 'integration_'
+    if pattern.include?('integration_spec/')
       integration_patterns << pattern
-    else
+    elsif pattern.include?('spec/')
       unit_patterns << pattern
+    else
+      assert(false, "Pattern #{pattern} must include spec/ or integration_spec/")
     end
   end
   puts "I see #{integration_patterns} integration"
