@@ -29,16 +29,18 @@ module Cisqua
         def resolve(original, duplicates)
           verify_data(original, duplicates)
           clones, rest = extract_clones(original, duplicates)
-          sorted_rest = rest.sort(&method(:compare_items)).reverse
+          best_rest = rest.max(&method(:compare_items))
           make_result = lambda do |selected, others|
             junk, dups = others.partition { |r| compare_items(selected, r).positive? }
             { junk: clones + junk, keep_current: original == selected, dups:, selected: }
           end
 
-          if !sorted_rest.empty? && compare_items(original, sorted_rest.first).negative?
-            make_result[sorted_rest.first, sorted_rest.drop(1)]
+          if best_rest && compare_items(original, best_rest).negative?
+            others = rest.dup
+            others.delete_at(others.index(best_rest))
+            make_result[best_rest, others]
           else
-            make_result[original, sorted_rest]
+            make_result[original, rest]
           end
         end
 
