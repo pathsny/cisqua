@@ -9,3 +9,5 @@ node_modules
 *.sublime-workspace
 *.code-workspace
 script/test_post_process.rb
+.codex
+bin
