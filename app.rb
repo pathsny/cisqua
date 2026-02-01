@@ -207,6 +207,11 @@ module Cisqua
       @view_data.for_batch_data(batch_data).to_json
     end
 
+    get '/version' do
+      content_type :json
+      AppVersion.fetch.to_json
+    end
+
     post '/test/hack_udp_cache' do
       unless Registry.instance.test_mode
         logger.error('Forbidden access to hack_udp_cache in non-test mode')
