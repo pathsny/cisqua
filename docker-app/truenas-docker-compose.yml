@@ -1,63 +1,70 @@
-version: '3.8'
 name: cisqua
-
 services:
   cisqua:
-    image: pathsny/cisqua:latest
     container_name: cisqua-web
-    pull_policy: always
-    ports:
-      - "4567:4567"
+    depends_on:
+      redis:
+        condition: service_healthy
     environment:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - TZ=Etc/UTC
       - RACK_ENV=production
       - UMASK=0022
+    healthcheck:
+      interval: 60s
+      retries: 2
+      start_period: 60s
+      test:
+        - CMD
+        - curl
+        - "-f"
+        - http://localhost:4567/
+      timeout: 5s
+    image: pathsny/cisqua:latest
+    ports:
+      - "4567:4567"
+    pull_policy: always
+    restart: unless-stopped
+    user: "1005:1000"
     volumes:
-      - type: bind
+      - bind:
+          create_host_path: False
+          propagation: rprivate
+        read_only: False
         source: /mnt/pool1/apps/cisqua
         target: /usr/src/app/data
-        bind:
-          create_host_path: false
+        type: bind
+      - bind:
+          create_host_path: False
           propagation: rprivate
-        read_only: false
-      - type: bind
+        read_only: False
         source: /mnt/pool1/media
         target: /media
-        bind:
-          create_host_path: false
-          propagation: rprivate
-        read_only: false
-    depends_on:
-      redis:
-        condition: service_healthy
-    restart: unless-stopped
+        type: bind
+  redis:
+    container_name: cisqua-redis
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:4567/"]
       interval: 60s
-      timeout: 5s
       retries: 2
       start_period: 60s
-
-  redis:
+      test:
+        - CMD
+        - redis-cli
+        - ping
+      timeout: 5s
     image: redis/redis-stack-server:latest
-    container_name: cisqua-redis
-    pull_policy: always
     ports:
       - "6379:6379"
+    pull_policy: always
+    restart: unless-stopped
+    user: "1005:1000"
     volumes:
-      - type: bind
+      - bind:
+          create_host_path: False
+          propagation: rprivate
+        read_only: False
         source: /mnt/pool1/apps/cisqua
         target: /data
-        bind:
-          create_host_path: false
-          propagation: rprivate
-        read_only: false
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 60s
-      timeout: 5s
-      retries: 2
-      start_period: 60s
+        type: bind
+version: "3.8"
