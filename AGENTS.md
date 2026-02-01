@@ -28,6 +28,11 @@
   - `cd docker-app && ./build.sh`
   - `docker compose up -d --force-recreate`
   - `docker compose down` to stop
+- Prod deploy (TrueNAS SCALE on `alita`):
+  - Build + push multi-arch image: `cd docker-app && ./build.sh --push`
+  - SSH to alita and redeploy the app: `midclt call app.redeploy cisqua`
+  - Verify status: `midclt call app.get_instance cisqua`
+  - Verify version endpoint: `curl -s http://127.0.0.1:4567/version`
 - Frontend formatting/linting (configured in `package.json`):
   - `npx prettier "public/**/*.{js,css}"`
   - `npx stylelint "public/**/*.css"`
