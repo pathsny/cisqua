@@ -14,6 +14,7 @@
 - Dev server (Sinatra/Puma): `RACK_ENV=development bundle exec ruby app.rb -l`
   - If Redis should start locally, keep `-l`; otherwise omit it.
   - Logs: `data/log/anidb.log` and `data/log/dev.stdout.log`
+  - Note: Local Redis binding may require escalated permissions (port 6379). If startup fails, rerun with approval.
   - Error watch (background): `ruby -e 'log=ARGV[0]; out=ARGV[1]; f=File.open(log); f.seek(0,IO::SEEK_END); File.open(out,"a") { |o| loop { if (line=f.gets); if line.include?("\u001b[31mE") || line.match?(/\bERROR\b|\berror\b|Exception|Traceback/); o.write(line); o.flush; end; else; sleep 0.2; end; } }' data/log/dev.stdout.log data/log/dev.errors.log > /dev/null 2>&1 &`
   - Stop error watch: `kill $(cat data/log/dev.error_watch.pid)` (if running)
   - Stop webserver: `lsof -i :4567` then `kill <PID>`
@@ -23,6 +24,10 @@
   - Requires escalated permissions so Redis can bind/connect
 - For webserver/web infrastructure changes, run integration specs in web mode:
   - `TEST_INTERFACE=web bundle exec ruby spec_runner.rb --pattern './integration_spec/**/*_spec.rb'`
+- Local Docker compose (use local build, avoid re-pull):
+  - `cd docker-app && ./build.sh`
+  - `docker compose up -d --force-recreate`
+  - `docker compose down` to stop
 - Frontend formatting/linting (configured in `package.json`):
   - `npx prettier "public/**/*.{js,css}"`
   - `npx stylelint "public/**/*.css"`
