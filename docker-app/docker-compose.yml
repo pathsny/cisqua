@@ -5,7 +5,7 @@ services:
   cisqua:
     image: pathsny/cisqua:latest
     container_name: cisqua-web
-    pull_policy: always
+    pull_policy: if_not_present
     ports:
       - "4567:4567"
     environment:
@@ -30,7 +30,7 @@ services:
   redis:
     image: redis/redis-stack-server:latest
     container_name: cisqua-redis
-    pull_policy: always
+    pull_policy: if_not_present
     ports:
       - "6379:6379"
     volumes:
