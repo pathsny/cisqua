@@ -1,3 +1,7 @@
+function isValidDate(value) {
+  return value instanceof Date && !Number.isNaN(value.getTime());
+}
+
 function makeConnection() {
   const connection = {
     connected: false,
@@ -48,9 +52,15 @@ function makeScansUpdate() {
       return !!this.scan_in_progress;
     },
     get scannedDate() {
+      if (!isValidDate(this.scanned_at)) {
+        return '';
+      }
       return dateFns.format(this.scanned_at, 'EEE, yyyy-MM-dd')
     },
     get scannedTime() {
+      if (!isValidDate(this.scanned_at)) {
+        return '';
+      }
       return dateFns.format(this.scanned_at, 'HH:mm:ss')
     }
   }
@@ -91,31 +101,42 @@ function makeLastUpdate() {
       }
     },
     updateTimeSince() {
-      this.scans.timeSinceLastCheck = dateFns.formatDistanceToNow(
-        this.scans.checked_at,
-        { addSuffix: true },
-      )
+      this.scans.timeSinceLastCheck = isValidDate(this.scans.checked_at) ?
+        dateFns.formatDistanceToNow(
+          this.scans.checked_at,
+          { addSuffix: true },
+        ) :
+        '';
       if (this.connection.connected) {
         this.connection.timeSinceDisconnected = '';
       } else {
         const now = new Date();
-        if (dateFns.differenceInMinutes(now, this.connection.disconnected_at) > 1) {
+        if (
+          isValidDate(this.connection.disconnected_at) &&
+          dateFns.differenceInMinutes(now, this.connection.disconnected_at) > 1
+        ) {
           this.connection.isConnected = false;
         }
-        this.connection.timeSinceDisconnected = dateFns.formatDistance(
-          this.connection.disconnected_at,
-          now,
-          { addSuffix: true },
-        );
+        this.connection.timeSinceDisconnected = isValidDate(this.connection.disconnected_at) ?
+          dateFns.formatDistance(
+            this.connection.disconnected_at,
+            now,
+            { addSuffix: true },
+          ) :
+          '';
       }
-      this.connection.timeSinceLastQueried = dateFns.formatDistanceToNow(
-        this.connection.queried_at,
-        { addSuffix: true },
-      )
-      this.torrents.timeSinceLastSync = dateFns.formatDistanceToNow(
-        this.torrents.synced_at,
-        { addSuffix: true },
-      )
+      this.connection.timeSinceLastQueried = isValidDate(this.connection.queried_at) ?
+        dateFns.formatDistanceToNow(
+          this.connection.queried_at,
+          { addSuffix: true },
+        ) :
+        '';
+      this.torrents.timeSinceLastSync = isValidDate(this.torrents.synced_at) ?
+        dateFns.formatDistanceToNow(
+          this.torrents.synced_at,
+          { addSuffix: true },
+        ) :
+        '';
     },
   }
 }
