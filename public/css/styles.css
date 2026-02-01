@@ -159,11 +159,32 @@ body {
   margin-bottom: 20px;
   background-color: #2c3e50;
   color: #ecf0f1;
+  position: relative;
   text-align: center;
 }
 
+.main-header-content {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.main-header .version-link {
+  color: #f0c674;
+  position: absolute;
+  right: 12px;
+  top: 6px;
+  font-size: 0.72rem;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.main-header .version-link:hover {
+  color: #ffffff;
+}
+
 .main-header h1 {
-  margin-bottom: 10px;
+  margin: 0;
   font-size: 2rem;
 }
 
@@ -1156,6 +1177,116 @@ footer {
   display: flex;
   align-items: center;
   gap: 10px;
+}
+
+[x-cloak] {
+  display: none !important;
+}
+
+.version-link {
+  cursor: pointer;
+}
+
+.version-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.version-overlay-backdrop {
+  position: absolute;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.45);
+}
+
+.version-overlay-card {
+  position: relative;
+  z-index: 1;
+  width: min(640px, 92vw);
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.2);
+  padding: 20px;
+}
+
+.version-overlay-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.version-overlay-header h2 {
+  font-size: 1.3rem;
+}
+
+.version-close-button {
+  border: none;
+  background: transparent;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #555;
+}
+
+.version-overlay-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  font-size: 0.95rem;
+}
+
+.version-overlay-loading,
+.version-overlay-error {
+  padding: 12px;
+  background-color: #f4f6f9;
+  border-radius: 6px;
+}
+
+.version-overlay-error {
+  color: #c0392b;
+}
+
+.version-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.version-row {
+  display: grid;
+  grid-template-columns: 120px 1fr auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.version-label {
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.version-value {
+  word-break: break-all;
+  color: #333;
+}
+
+.version-copy-button {
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: #f7f7f7;
+  cursor: pointer;
+  padding: 4px 8px;
+}
+
+.version-copy-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.version-copy-button:hover:not(:disabled) {
+  background-color: #e9ecef;
 }
 
 .details-container {

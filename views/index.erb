@@ -14,51 +14,57 @@
     }
   </style>
   <body>
-    <header class="main-header">
-      <h1>Cisqua
-        <% if test_mode %>TEST MODE<% end %>
-      </h1>
-    </header>
-    <div class="container" x-data="mainTab">
-      <%= erb :_left_column, locals: { dry_run: dry_run } %>
-      <div class="main-content">
-        <div x-show="$store.notification.data">
-          <div class="notification" :class="$store.notification.data?.css_class">
-            <span x-text="$store.notification.data?.badge"></span>
-            <span x-text="$store.notification.data?.message"></span>
+    <div x-data="versionOverlay" @keydown.escape.window="close()">
+      <header class="main-header">
+        <div class="main-header-content">
+          <h1>Cisqua
+            <% if test_mode %>TEST MODE<% end %>
+          </h1>
+        </div>
+        <a class="version-link" href="#" @click.prevent="show()">Version</a>
+      </header>
+      <div class="container" x-data="mainTab">
+        <%= erb :_left_column, locals: { dry_run: dry_run } %>
+        <div class="main-content">
+          <div x-show="$store.notification.data">
+            <div class="notification" :class="$store.notification.data?.css_class">
+              <span x-text="$store.notification.data?.badge"></span>
+              <span x-text="$store.notification.data?.message"></span>
+            </div>
           </div>
+          <div class="tabs-header">
+            <button
+              :class="{ 'active-tab': isTabActive('scans') }"
+              class="tab-button"
+              @click="setActiveTab('scans')"
+            >
+              Scans
+            </button>
+            <button
+              :class="{ 'active-tab': isTabActive('library') }"
+              class="tab-button"
+              @click="setActiveTab('library')"
+            >
+              Library
+            </button>
+            <button
+              :class="{ 'active-tab': isTabActive('torrents') }"
+              class="tab-button"
+              @click="setActiveTab('torrents')"
+            >
+              Torrents
+            </button>
+          </div>
+          <%= erb :_scrollable_section, locals: { tabName: :scans, content: erb(:_scans) } %>
+          <%= erb :_scrollable_section, locals: { tabName: :library, content: erb(:_library) } %>
+          <%= erb :_scrollable_section, locals: { tabName: :torrents, content: erb(:_torrents) } %>
         </div>
-        <div class="tabs-header">
-          <button
-            :class="{ 'active-tab': isTabActive('scans') }"
-            class="tab-button"
-            @click="setActiveTab('scans')"
-          >
-            Scans
-          </button>
-          <button
-            :class="{ 'active-tab': isTabActive('library') }"
-            class="tab-button"
-            @click="setActiveTab('library')"
-          >
-            Library
-          </button>
-          <button
-            :class="{ 'active-tab': isTabActive('torrents') }"
-            class="tab-button"
-            @click="setActiveTab('torrents')"
-          >
-            Torrents
-          </button>
-        </div>
-        <%= erb :_scrollable_section, locals: { tabName: :scans, content: erb(:_scans) } %>
-        <%= erb :_scrollable_section, locals: { tabName: :library, content: erb(:_library) } %>
-        <%= erb :_scrollable_section, locals: { tabName: :torrents, content: erb(:_torrents) } %>
       </div>
+      <%= erb :_version_overlay %>
+      <footer>
+        <p>&copy; 2023 cisqua</p>
+      </footer>
     </div>
-    <footer>
-      <p>&copy; 2023 cisqua</p>
-    </footer>
     <script type="module">
       window.initialData = <%= initial_data.to_json.html_safe %>;
     </script>

@@ -9,6 +9,7 @@ import scanShow from './viewModels/scanShow.js';
 import torrentFiles from './viewModels/torrentFiles.js';
 import searchLibrary from './viewModels/searchLibrary.js';
 import requestScanForm from './viewModels/requestScanForm.js';
+import versionOverlay from './viewModels/versionOverlay.js';
 import mainService from './services/mainService.js';
 import { notify, copyText } from './utils/utils.js';
 
@@ -27,6 +28,7 @@ document.addEventListener('alpine:init', () => {
   Alpine.data('searchLibrary', () => searchLibrary());
   Alpine.data('requestScanForm', (dryRun) => requestScanForm(dryRun));
   Alpine.data('torrentFiles', (torrent) => torrentFiles(torrent));
+  Alpine.data('versionOverlay', () => versionOverlay());
 
   // Register Magic Functions
   Alpine.magic('notify', () => {

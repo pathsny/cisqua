@@ -1,0 +1,62 @@
+<div class="version-overlay" x-show="open" x-cloak>
+  <div class="version-overlay-backdrop" @click="close()"></div>
+  <div class="version-overlay-card" @click.stop>
+    <div class="version-overlay-header">
+      <h2>Version Info</h2>
+      <button class="version-close-button" @click="close()" aria-label="Close version info">×</button>
+    </div>
+    <div class="version-overlay-body">
+      <template x-if="loading">
+        <div class="version-overlay-loading">Loading...</div>
+      </template>
+      <template x-if="error">
+        <div class="version-overlay-error" x-text="error"></div>
+      </template>
+      <template x-if="!loading && !error">
+        <div class="version-grid">
+          <div class="version-row">
+            <span class="version-label">Commit</span>
+            <span class="version-value" x-text="data?.commit || 'Unavailable'"></span>
+            <button
+              class="version-copy-button"
+              :disabled="!data?.commit"
+              @click.prevent="copyValue(data?.commit, 'commit')"
+            >
+              <i class="fas fa-copy"></i>
+            </button>
+          </div>
+          <div class="version-row">
+            <span class="version-label">Branch</span>
+            <span class="version-value" x-text="data?.branch || 'Unavailable'"></span>
+            <button
+              class="version-copy-button"
+              :disabled="!data?.branch"
+              @click.prevent="copyValue(data?.branch, 'branch')"
+            >
+              <i class="fas fa-copy"></i>
+            </button>
+          </div>
+          <div class="version-row">
+            <span class="version-label">Commit time</span>
+            <span class="version-value" x-text="data?.commit_time || 'Unavailable'"></span>
+            <button
+              class="version-copy-button"
+              :disabled="!data?.commit_time"
+              @click.prevent="copyValue(data?.commit_time, 'commit time')"
+            >
+              <i class="fas fa-copy"></i>
+            </button>
+          </div>
+          <div class="version-row">
+            <span class="version-label">Relative</span>
+            <span class="version-value" x-text="commitRelative || 'Unavailable'"></span>
+          </div>
+          <div class="version-row">
+            <span class="version-label">Source</span>
+            <span class="version-value" x-text="data?.source || 'unknown'"></span>
+          </div>
+        </div>
+      </template>
+    </div>
+  </div>
+</div>
